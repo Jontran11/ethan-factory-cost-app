@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Dự Báo Mua Hàng & Quản Lý Chi Phí - Factory Manager</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Access Protection Login Overlay -->
+  <div id="login-overlay" style="position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); transition: opacity 0.4s ease, visibility 0.4s ease;">
+    <div class="glass-card" style="width: 100%; max-width: 400px; padding: 2.5rem; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(30, 41, 59, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; display: flex; flex-direction: column; gap: 1.5rem;">
+      <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; color: #ef4444; font-size: 1.8rem; box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);">
+        🔒
+      </div>
+      <div>
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; color: #fff; margin-bottom: 0.25rem;">FactoryCost</h2>
+        <span style="font-size: 0.85rem; color: var(--text-secondary);">Hệ thống Quản lý &amp; Dự báo nội bộ</span>
+      </div>
+      <form id="login-form" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="form-group" style="text-align: left;">
+          <label for="login-passcode" style="font-size: 0.8rem; color: #a5b4fc; font-weight: 500;">Mật khẩu truy cập:</label>
+          <input type="password" id="login-passcode" class="form-input" required placeholder="Nhập passcode nội bộ" style="text-align: center; font-size: 1.1rem; letter-spacing: 0.2em; min-height: 44px; margin-top: 0.4rem;">
+        </div>
+        <div id="login-error-msg" style="color: #f87171; font-size: 0.8rem; min-height: 1.2rem; font-weight: 500; margin-top: -0.5rem;"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 42px; font-weight: 600; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">Xác nhận</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h2>FactoryCost</h2>
+          <span>Forecast & Analytics</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard" aria-selected="true" role="tab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+          <span>Tổng Quan</span>
+        </button>
+        <button class="nav-item" data-tab="calculator" aria-selected="false" role="tab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          <span>Tính Giá Thành</span>
+        </button>
+        <button class="nav-item" data-tab="forecast" aria-selected="false" role="tab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+          <span>Dự Báo Mua Hàng</span>
+        </button>
+        <button class="nav-item" data-tab="settings" aria-selected="false" role="tab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span>Cấu Hình</span>
+        </button>
+        <button class="nav-item" id="btn-logout" style="margin-top: 2rem; color: #f87171; border-color: rgba(248, 113, 113, 0.2);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <span>Đăng xuất</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="factory-badges">
+          <div class="badge badge-print">
+            <span class="dot"></span>
+            Nhà máy In
+          </div>
+          <div class="badge badge-embroid">
+            <span class="dot"></span>
+            Nhà máy Thêu
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top header bar -->
+      <header class="top-header">
+        <div class="header-title-container">
+          <h1 id="page-title">Tổng Quan Dashboard</h1>
+          <p class="text-secondary" id="page-subtitle">Thống kê chi phí sản xuất & Kế hoạch mua hàng tháng tới</p>
+        </div>
+        <div class="header-actions">
+          <div class="datetime-display" id="current-datetime">
+            27/07/2026 08:55
+          </div>
+          <button id="btn-export" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Xuất dữ liệu JSON
+          </button>
+          <button id="btn-import" class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Nhập dữ liệu JSON
+          </button>
+          <input type="file" id="import-file-input" style="display: none;" accept=".json">
+        </div>
+      </header>
+
+      <!-- App Content Tabs container -->
+      <div class="tab-content-container">
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="tab-dashboard" class="tab-pane active" role="tabpanel">
+          <!-- Overview Cards Grid -->
+          <div class="metrics-grid">
+            <div class="metric-card glass">
+              <div class="card-header">
+                <span class="card-label">Tổng Dự Chi Mua Hàng Tháng Tới</span>
+                <span class="card-icon money">₫</span>
+              </div>
+              <div class="card-value" id="dashboard-total-purchase-cost">₫0</div>
+              <div class="card-footer">
+                <span class="trend-indicator pos" id="dashboard-total-qty-badge">0 sản phẩm</span>
+                <span class="footer-text">cần đặt mua</span>
+              </div>
+            </div>
+
+            <div class="metric-card glass">
+              <div class="card-header">
+                <span class="card-label">Nhà Máy In (Dự Chi)</span>
+                <span class="card-icon print">In</span>
+              </div>
+              <div class="card-value" id="dashboard-print-cost">₫0</div>
+              <div class="card-footer">
+                <span class="trend-indicator" id="dashboard-print-qty-badge">0 sản phẩm</span>
+                <span class="footer-text">chiếm tỷ trọng</span>
+              </div>
+            </div>
+
+            <div class="metric-card glass">
+              <div class="card-header">
+                <span class="card-label">Nhà Máy Thêu (Dự Chi)</span>
+                <span class="card-icon embroid">Thêu</span>
+              </div>
+              <div class="card-value" id="dashboard-embroid-cost">₫0</div>
+              <div class="card-footer">
+                <span class="trend-indicator" id="dashboard-embroid-qty-badge">0 sản phẩm</span>
+                <span class="footer-text">chiếm tỷ trọng</span>
+              </div>
+            </div>
+
+            <div class="metric-card glass">
+              <div class="card-header">
+                <span class="card-label">Sản Phẩm Đang Quản Lý</span>
+                <span class="card-icon items">📦</span>
+              </div>
+              <div class="card-value" id="dashboard-total-products">0</div>
+              <div class="card-footer">
+                <span class="trend-indicator font-semibold" id="dashboard-active-factories">2 Nhà máy</span>
+                <span class="footer-text">In &amp; Thêu hoạt động</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts and List row -->
+          <div class="dashboard-row grid-2-1">
+            <!-- Chart Card -->
+            <div class="dashboard-card glass card-chart">
+              <div class="card-title-bar">
+                <h3>Phân Tích Chi Phí Mua Hàng</h3>
+                <span class="text-secondary">Tương quan In vs Thêu &amp; Cơ cấu chi phí</span>
+              </div>
+              <div class="chart-container-split">
+                <!-- Circular Chart (SVG Donut) -->
+                <div class="chart-box">
+                  <h4>Tỷ Trọng Ngân Sách</h4>
+                  <div class="chart-visual" id="donut-chart-container">
+                    <!-- Dynamic SVG Donut Chart inserted here -->
+                  </div>
+                  <div class="chart-legend" id="donut-legend">
+                    <!-- Dynamic Legend -->
+                  </div>
+                </div>
+
+                <!-- Bar Chart (SVG Horizontal Bar) -->
+                <div class="chart-box">
+                  <h4>Cơ Cấu Chi Phí Sản Phẩm Trung Bình</h4>
+                  <div class="chart-visual" id="bar-chart-container">
+                    <!-- Dynamic SVG Bar Chart inserted here -->
+                  </div>
+                  <div class="chart-legend" id="bar-legend">
+                    <!-- Dynamic Legend -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alerts Card -->
+            <div class="dashboard-card glass card-alerts">
+              <div class="card-title-bar">
+                <h3>Cảnh Báo Hết Hàng</h3>
+                <span class="text-secondary">Sản phẩm có tồn kho thấp dưới mức an toàn</span>
+              </div>
+              <div class="alerts-list" id="dashboard-alerts-list">
+                <!-- Dynamic alerts list here -->
+                <div class="no-data">Không có sản phẩm nào dưới mức tồn an toàn.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Table Card -->
+          <div class="dashboard-card glass table-card">
+            <div class="card-title-bar">
+              <h3>Top Sản Phẩm Chi Phí Mua Hàng Cao Nhất</h3>
+              <div class="table-actions">
+                <button class="btn btn-sm btn-primary" id="btn-dashboard-go-forecast">Xem chi tiết dự báo</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Sản phẩm</th>
+                    <th>Nhà máy</th>
+                    <th>Giá vốn (Base cost)</th>
+                    <th>Cần mua (Tháng tới)</th>
+                    <th>Tổng ngân sách mua</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-top-products-table">
+                  <!-- Dynamic content -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- TAB 2: COST CALCULATOR -->
+        <section id="tab-calculator" class="tab-pane" role="tabpanel">
+          <div class="toolbar glass">
+            <div class="search-filter-group">
+              <input type="text" id="calc-search" class="form-input search-input" placeholder="Tìm tên sản phẩm...">
+              <select id="calc-filter-factory" class="form-input select-input">
+                <option value="all">Tất cả nhà máy</option>
+                <option value="In">Nhà máy In</option>
+                <option value="Thêu">Nhà máy Thêu</option>
+              </select>
+            </div>
+            <button id="btn-add-product" class="btn btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Thêm sản phẩm mới
+            </button>
+          </div>
+
+          <div class="calculator-layout">
+            <!-- Left Panel: Product List -->
+            <div class="product-list-panel glass">
+              <div class="panel-header">
+                <h3>Danh Sách Sản Phẩm</h3>
+                <span class="badge-count" id="product-count-badge">0 sản phẩm</span>
+              </div>
+              <div class="product-cards-container" id="product-cards-list">
+                <!-- Dynamically populated product items -->
+              </div>
+            </div>
+
+            <!-- Right Panel: Detailed Calculator Form -->
+            <div class="calculator-form-panel glass" id="calc-details-panel">
+              <div class="no-product-selected" id="no-product-selected-view">
+                <div class="illustration-box">📐</div>
+                <h3>Chưa chọn sản phẩm</h3>
+                <p class="text-secondary">Vui lòng chọn một sản phẩm bên trái hoặc click nút "Thêm sản phẩm mới" để bắt đầu tính toán giá vốn chi tiết.</p>
+              </div>
+
+              <form id="product-cost-form" class="product-cost-form hidden">
+                <input type="hidden" id="form-product-id">
+                
+                <div class="form-section-header">
+                  <h3 id="form-title-text">Chi Tiết Giá Thành Sản Phẩm</h3>
+                  <div class="factory-toggle-group">
+                    <label class="toggle-btn-label">Nhà máy sản xuất:</label>
+                    <div class="factory-options">
+                      <input type="radio" name="factoryType" id="factory-print" value="In" checked>
+                      <label for="factory-print" class="btn-factory select-print">In ấn</label>
+                      
+                      <input type="radio" name="factoryType" id="factory-embroid" value="Thêu">
+                      <label for="factory-embroid" class="btn-factory select-embroid">Thêu dệt</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sticky Summary Bar with Profit Input and Seller Price -->
+                <div class="sticky-cost-bar" style="position: sticky; top: -1.75rem; z-index: 100; margin: 0 -1.75rem 1.5rem -1.75rem; padding: 1rem 1.75rem; background: rgba(22, 28, 45, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 8px 20px -6px rgba(0,0,0,0.5);">
+                  <div style="display: flex; flex-direction: column; gap: 0.15rem;">
+                    <span style="font-size: 0.72rem; color: #a5b4fc; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">Giá vốn cơ bản</span>
+                    <strong style="font-size: 1.15rem; color: #fff;">₫<span id="sticky-base-cost">0</span></strong>
+                  </div>
+                  
+                  <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                    <label for="profit-margin-percentage" style="font-size: 0.75rem; color: #a5b4fc; font-weight: 500; cursor: pointer; white-space: nowrap;">Lợi nhuận (%):</label>
+                    <input type="number" id="profit-margin-percentage" value="20" min="0" step="0.5" class="form-input calc-trigger" style="max-width: 65px; min-height: 28px; padding: 0.15rem 0.35rem; font-size: 0.75rem; text-align: center; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; margin: 0;">
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 0.15rem; text-align: right;">
+                    <span style="font-size: 0.72rem; color: #34d399; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">Giá bán cho Seller</span>
+                    <strong style="font-size: 1.3rem; color: #34d399;">₫<span id="sticky-seller-price">0</span></strong>
+                  </div>
+                </div>
+
+                <div class="form-grid-3">
+                  <div class="form-group">
+                    <label for="product-name">Tên sản phẩm <span class="required">*</span></label>
+                    <input type="text" id="product-name" required placeholder="Ví dụ: Áo thun in nhiệt cao cấp" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label for="product-code">Mã sản phẩm / SKU</label>
+                    <input type="text" id="product-code" placeholder="Ví dụ: TS-PRINT-01" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label for="product-category">Phân nhóm / Line hàng</label>
+                    <input type="text" id="product-category" placeholder="Ví dụ: Thời trang nam" class="form-input">
+                  </div>
+                </div>
+
+                <!-- Part 1: Raw Materials Cost Section -->
+                <div class="cost-section">
+                  <div class="section-title-bar">
+                    <h4>1. Nguyên Vật Liệu Trực Tiếp (Direct Materials)</h4>
+                    <button type="button" class="btn btn-xs btn-outline" id="btn-add-material-row">
+                      + Thêm vật tư
+                    </button>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="inputs-table" id="materials-table">
+                      <thead>
+                        <tr>
+                          <th>Tên vật tư / Phụ liệu</th>
+                          <th width="120">Số lượng (Qty)</th>
+                          <th width="120">Đơn vị</th>
+                          <th width="160">Đơn giá (₫)</th>
+                          <th width="160">Thành tiền (₫)</th>
+                          <th width="50"></th>
+                        </tr>
+                      </thead>
+                      <tbody id="materials-tbody">
+                        <!-- Materials rows will be dynamically appended here -->
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="section-summary-row">
+                    <span>Tổng chi phí nguyên vật liệu:</span>
+                    <strong id="summary-materials-cost">₫0</strong>
+                  </div>
+                </div>
+
+                <!-- Part 2: Labor Cost Section -->
+                <div class="cost-section">
+                  <h4>2. Chi Phí Nhân Công Trực Tiếp (Direct Labor)</h4>
+                  
+                  <!-- Conditional Labor Input for Printing Factory -->
+                  <div class="factory-labor-block active-for-print" id="labor-print-block">
+                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label for="labor-print-designer">Khâu Thiết Kế (Designer POD) - Số giờ/SP</label>
+                        <input type="number" step="0.001" min="0" id="labor-print-designer" value="0.01" class="form-input calc-trigger">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Lương/Giờ</label>
+                        <div class="calculated-box" id="rate-print-designer" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Thành tiền</label>
+                        <div class="calculated-box" id="cost-print-designer" style="min-height:48px; font-weight: 600;">₫0</div>
+                      </div>
+                    </div>
+
+                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label for="labor-print-production">Khâu Sản Xuất (In POD) - Số giờ/SP</label>
+                        <input type="number" step="0.001" min="0" id="labor-print-production" value="0.1" class="form-input calc-trigger">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Lương/Giờ</label>
+                        <div class="calculated-box" id="rate-print-production" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Thành tiền</label>
+                        <div class="calculated-box" id="cost-print-production" style="min-height:48px; font-weight: 600;">₫0</div>
+                      </div>
+                    </div>
+
+                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label for="labor-print-qc">Khâu Kiểm Hàng (QC In) - Số giờ/SP</label>
+                        <input type="number" step="0.001" min="0" id="labor-print-qc" value="0.05" class="form-input calc-trigger">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Lương/Giờ</label>
+                        <div class="calculated-box" id="rate-print-qc" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Thành tiền</label>
+                        <div class="calculated-box" id="cost-print-qc" style="min-height:48px; font-weight: 600;">₫0</div>
+                      </div>
+                    </div>
+
+                    <div class="section-summary-row" style="margin-top: 0.5rem;">
+                      <span>Tổng tiền công khâu In:</span>
+                      <strong id="calc-labor-print-cost">₫0</strong>
+                    </div>
+                  </div>
+
+                  <!-- Conditional Labor Input for Embroidery Factory -->
+                  <div class="factory-labor-block active-for-embroid" id="labor-embroid-block" style="display: none;">
+                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label for="labor-embroid-designer">Thiết kế thêu (Designer EMB) - Số giờ/SP</label>
+                        <input type="number" step="0.001" min="0" id="labor-embroid-designer" value="0.02" class="form-input calc-trigger">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Lương/Giờ</label>
+                        <div class="calculated-box" id="rate-embroid-designer" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Thành tiền</label>
+                        <div class="calculated-box" id="cost-embroid-designer" style="min-height:48px; font-weight: 600;">₫0</div>
+                      </div>
+                    </div>
+
+                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label for="labor-embroid-laser">Chuẩn bị Laser (Preparing Laser) - Số giờ/SP</label>
+                        <input type="number" step="0.001" min="0" id="labor-embroid-laser" value="0.01" class="form-input calc-trigger">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Lương/Giờ</label>
+                        <div class="calculated-box" id="rate-embroid-laser" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Thành tiền</label>
+                        <div class="calculated-box" id="cost-embroid-laser" style="min-height:48px; font-weight: 600;">₫0</div>
+                      </div>
+                    </div>
+
+                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label for="labor-embroid-production">Vận hành máy (Production EMB) - Số giờ/SP</label>
+                        <input type="number" step="0.001" min="0" id="labor-embroid-production" value="0.15" class="form-input calc-trigger">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Lương/Giờ</label>
+                        <div class="calculated-box" id="rate-embroid-production" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Thành tiền</label>
+                        <div class="calculated-box" id="cost-embroid-production" style="min-height:48px; font-weight: 600;">₫0</div>
+                      </div>
+                    </div>
+
+                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label for="labor-embroid-qc">Kiểm hàng thêu (QC EMB) - Số giờ/SP</label>
+                        <input type="number" step="0.001" min="0" id="labor-embroid-qc" value="0.05" class="form-input calc-trigger">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Lương/Giờ</label>
+                        <div class="calculated-box" id="rate-embroid-qc" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label>Thành tiền</label>
+                        <div class="calculated-box" id="cost-embroid-qc" style="min-height:48px; font-weight: 600;">₫0</div>
+                      </div>
+                    </div>
+
+                    <div class="section-summary-row" style="margin-top: 0.5rem;">
+                      <span>Tổng tiền công khâu Thêu:</span>
+                      <strong id="calc-labor-embroid-cost">₫0</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Part 3: Utility & Electricity Cost Section -->
+                <div class="cost-section">
+                  <h4>3. Chi Phí Điện Năng (Utility/Electricity Cost)</h4>
+                  <div class="form-grid-3">
+                    <div class="form-group">
+                      <label for="utility-machine-power">Công suất máy (kW)</label>
+                      <input type="number" step="0.1" min="0" id="utility-machine-power" value="2.5" class="form-input calc-trigger">
+                    </div>
+                    <div class="form-group">
+                      <label for="utility-run-time">Thời gian sản xuất 1 sản phẩm (Giờ)</label>
+                      <input type="number" step="0.05" min="0" id="utility-run-time" value="0.25" class="form-input calc-trigger">
+                    </div>
+                    <div class="form-group">
+                      <label for="utility-electricity-price">Đơn giá điện (/kWh)</label>
+                      <input type="text" id="utility-electricity-price" class="form-input currency-input calc-trigger" placeholder="Đọc từ cấu hình">
+                    </div>
+                  </div>
+                  <div class="form-grid-3">
+                    <div class="form-group">
+                      <!-- Spacer -->
+                    </div>
+                    <div class="form-group">
+                      <!-- Spacer -->
+                    </div>
+                    <div class="form-group">
+                      <label>Thành tiền điện</label>
+                      <div class="calculated-box" id="calc-electricity-cost">₫0</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Part 4: Factory Overheads -->
+                <div class="cost-section">
+                  <h4>4. Chi Phí Quản Lý Phân Bổ (Factory Overheads)</h4>
+                  <div class="form-grid-3">
+                    <div class="form-group">
+                      <label for="overhead-rate-percentage">Tỷ lệ phân bổ chi phí chung (%)</label>
+                      <input type="number" step="0.5" min="0" id="overhead-rate-percentage" value="10" class="form-input calc-trigger">
+                      <span class="help-text">Phần trăm tính trên tổng (NVL + Nhân công + Điện)</span>
+                    </div>
+                    <div class="form-group">
+                      <!-- Spacer -->
+                    </div>
+                    <div class="form-group">
+                      <label>Thành tiền chi phí chung</label>
+                      <div class="calculated-box" id="calc-overhead-cost">₫0</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Total cost results summary -->
+                <div class="form-result-block glass-card">
+                  <div class="base-cost-title">
+                    <h4>GIÁ VỐN SẢN PHẨM CƠ BẢN (BASE COST)</h4>
+                    <span class="badge-factory-type" id="form-result-factory-badge">Nhà máy In</span>
+                  </div>
+                  <div class="base-cost-display">
+                    <span class="currency-symbol">₫</span><span id="calculated-base-cost">0</span>
+                  </div>
+                  <div class="base-cost-breakdown" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+                    <div class="breakdown-item">
+                      <span>Vật tư:</span>
+                      <strong id="breakdown-materials">₫0 (0%)</strong>
+                    </div>
+                    <div class="breakdown-item">
+                      <span>Nhân công:</span>
+                      <strong id="breakdown-labor">₫0 (0%)</strong>
+                    </div>
+                    <div class="breakdown-item">
+                      <span>Điện năng:</span>
+                      <strong id="breakdown-electricity">₫0 (0%)</strong>
+                    </div>
+                    <div class="breakdown-item">
+                      <span>Phí chung:</span>
+                      <strong id="breakdown-overhead">₫0 (0%)</strong>
+                    </div>
+                  </div>
+
+                  <!-- Profit Margin & Seller Price Calculation -->
+                  <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                      <span style="font-size: 0.85rem; color: #a5b4fc; font-weight: 500;">Tỷ lệ lợi nhuận mong muốn:</span>
+                      <span style="font-size: 0.85rem; color: #fff; font-weight: 600;"><span id="bottom-profit-percentage">20</span>%</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.25rem;">
+                      <span style="font-size: 0.9rem; color: #34d399; font-weight: 600;">GIÁ BÁN CHO SELLER:</span>
+                      <span style="font-size: 1.5rem; color: #34d399; font-weight: 700;"><span style="font-size: 1.1rem;">₫</span><span id="calculated-seller-price">0</span></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Form Buttons -->
+                <div class="form-actions-row">
+                  <button type="button" class="btn btn-danger" id="btn-delete-product">Xóa sản phẩm</button>
+                  <div class="right-buttons">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-edit">Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-product">Lưu thông tin</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- TAB 3: PURCHASE FORECAST -->
+        <section id="tab-forecast" class="tab-pane" role="tabpanel">
+          <div class="toolbar glass">
+            <div class="search-filter-group">
+              <input type="text" id="forecast-search" class="form-input search-input" placeholder="Tìm tên sản phẩm...">
+              <select id="forecast-filter-factory" class="form-input select-input">
+                <option value="all">Tất cả nhà máy</option>
+                <option value="In">Nhà máy In</option>
+                <option value="Thêu">Nhà máy Thêu</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Monthly Sales & Revenue Summary Cards -->
+          <div class="dashboard-grid" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; border-left: 4px solid var(--color-print);">
+              <span class="metric-label" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Doanh Thu Nhà Máy (Tháng này)</span>
+              <div class="metric-value" id="forecast-factory-revenue" style="font-size: 1.5rem; font-weight: 700; color: #fff;">₫0</div>
+              <span class="metric-trend text-secondary" id="forecast-factory-revenue-print-emb" style="font-size: 0.72rem;">In: ₫0 | Thêu: ₫0</span>
+            </div>
+            
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; border-left: 4px solid #34d399; border-color: rgba(52, 211, 153, 0.3);">
+              <span class="metric-label" style="font-size: 0.8rem; color: #34d399; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Doanh Thu Seller (Tháng này)</span>
+              <div class="metric-value" style="font-size: 1.5rem; font-weight: 700; color: #34d399;" id="forecast-seller-revenue">₫0</div>
+              <span class="metric-trend text-secondary" id="forecast-seller-revenue-print-emb" style="font-size: 0.72rem;">In: ₫0 | Thêu: ₫0</span>
+            </div>
+
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; border-left: 4px solid var(--color-primary);">
+              <span class="metric-label" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Tổng Ngân Sách Mua (Tháng sau)</span>
+              <div class="metric-value text-primary" id="forecast-summary-total-cost" style="font-size: 1.5rem; font-weight: 700; color: var(--color-primary);">₫0</div>
+              <span class="metric-trend text-secondary" id="forecast-summary-items-count" style="font-size: 0.72rem;">(0 sản phẩm, 0 cái)</span>
+            </div>
+          </div>
+
+          <div class="dashboard-card glass table-card">
+            <div class="card-title-bar" style="flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h3>Kế Hoạch &amp; Công Cụ Dự Báo Mua Hàng Tháng Tới</h3>
+                <span class="text-secondary" style="font-size: 0.8rem; display: block; margin-top: 0.25rem;">Công thức: Dự báo tháng sau = Sản lượng bán × 1.1 | Cần mua = Dự báo + Tồn an toàn - Tồn hiện tại</span>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table edit-table">
+                <thead>
+                  <tr>
+                    <th>Sản phẩm</th>
+                    <th>Nhà máy</th>
+                    <th width="150">Đơn giá (Vốn / Seller)</th>
+                    <th width="120">Sản lượng bán (Tháng này)</th>
+                    <th width="120">Dự báo bán (Tháng sau)</th>
+                    <th width="110">Tồn kho hiện tại</th>
+                    <th width="110">Tồn kho an toàn</th>
+                    <th width="110">Số lượng cần mua</th>
+                    <th width="150">Dự chi mua hàng</th>
+                    <th width="100">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody id="forecast-table-tbody">
+                  <!-- Dynamically populated list of products with forecast inputs -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Material Requirements Planning (MRP) Supplier Ordering Forecast -->
+          <div class="dashboard-card glass table-card" style="margin-top: 1.5rem;" id="mrp-card">
+            <div class="card-title-bar" style="flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h3>Dự Tính Nhu Cầu Nguyên Vật Liệu Cần Mua (MRP)</h3>
+                <span class="text-secondary" style="font-size: 0.8rem; display: block; margin-top: 0.25rem;">Bóc tách chi tiết tổng số lượng nguyên vật liệu cần đặt mua từ nhà cung cấp dựa trên nhu cầu sản phẩm</span>
+              </div>
+              <span class="status-summary-inline" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-weight: 500;">
+                Tổng chi phí vật tư đặt mua: <strong id="mrp-summary-total-cost" style="color: #38bdf8; font-weight: 700;">₫0</strong>
+              </span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nguyên vật liệu</th>
+                    <th width="180">Nhà cung cấp</th>
+                    <th width="160" class="text-center" style="text-align: center;">Quy cách đóng gói</th>
+                    <th width="140" class="text-right" style="text-align: right;">Nhu cầu thực tế</th>
+                    <th width="160" class="text-center" style="text-align: center;">Đặt mua (Làm tròn)</th>
+                    <th width="130" class="text-right" style="text-align: right;">Đơn giá gói</th>
+                    <th width="180" class="text-right" style="text-align: right;">Tổng chi phí dự kiến</th>
+                  </tr>
+                </thead>
+                <tbody id="mrp-table-tbody">
+                  <!-- Dynamically exploded BOM list from product forecast needed quantity -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- TAB 4: SETTINGS -->
+        <section id="tab-settings" class="tab-pane" role="tabpanel">
+          <div class="settings-layout">
+            
+            <div class="settings-column">
+              <!-- General Global Rates -->
+              <div class="dashboard-card glass">
+                <div class="card-title-bar">
+                  <h3>Cấu Hình Chi Phí Cơ Bản</h3>
+                  <span class="text-secondary">Định cấu hình các thông số chung dùng cho tính toán giá thành tự động</span>
+                </div>
+                <form id="settings-cost-form" class="settings-form">
+                  <div class="form-group">
+                    <label for="settings-electricity-unit-price">Đơn giá điện năng (đ/kWh) <span class="required">*</span></label>
+                    <input type="text" id="settings-electricity-unit-price" class="form-input currency-input" required value="3.000">
+                    <span class="help-text">Giá điện công nghiệp trung bình được áp dụng khi chưa có kế hoạch dự báo sản lượng.</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="settings-monthly-electricity-print">Tổng tiền điện tháng - Nhà máy In (VND)</label>
+                    <input type="text" id="settings-monthly-electricity-print" class="form-input currency-input" value="8.000.000">
+                    <span class="help-text">Dùng để tự động phân bổ chi phí điện năng cho từng sản phẩm In dựa trên sản lượng dự báo.</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="settings-monthly-electricity-emb">Tổng tiền điện tháng - Nhà máy Thêu (VND)</label>
+                    <input type="text" id="settings-monthly-electricity-emb" class="form-input currency-input" value="11.000.000">
+                    <span class="help-text">Dùng để tự động phân bổ chi phí điện năng cho từng sản phẩm Thêu dựa trên sản lượng dự báo.</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="settings-default-overhead">Tỷ lệ chi phí quản lý phân bổ mặc định (%)</label>
+                    <input type="number" id="settings-default-overhead" class="form-input" min="0" max="100" value="10">
+                    <span class="help-text">Tỷ lệ phần trăm phân bổ chi phí chung (quản lý, hao mòn nhà xưởng, văn phòng phẩm...).</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="settings-default-profit">Tỷ lệ lợi nhuận mặc định (%)</label>
+                    <input type="number" id="settings-default-profit" class="form-input" min="0" max="1000" value="20">
+                    <span class="help-text">Tỷ lệ phần trăm lợi nhuận cộng thêm vào giá vốn cơ bản để tính giá bán đề xuất cho seller.</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="settings-standard-hours">Số giờ công làm việc tiêu chuẩn / tháng <span class="required">*</span></label>
+                    <input type="number" id="settings-standard-hours" class="form-input" required min="1" max="720" value="208">
+                    <span class="help-text">Số giờ làm việc tiêu chuẩn của nhân viên để quy đổi lương tháng sang lương giờ (mặc định 208 giờ).</span>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary" style="width: 100%;">Lưu cấu hình chi phí &amp; giờ công</button>
+                </form>
+              </div>
+
+              <!-- HR & Payroll Configuration -->
+              <div class="dashboard-card glass" style="margin-top: 1.5rem;">
+                <div class="card-title-bar">
+                  <h3>Quản Lý Nhân Sự &amp; Lương Chi Tiết</h3>
+                  <span class="text-secondary">Cấu hình chi tiết lương cho từng nhân sự (A, B, C...) trong mỗi khâu</span>
+                </div>
+                <form id="settings-hr-form" class="settings-form">
+                  <h4 style="font-size: 0.95rem; margin: 1rem 0 0.5rem; color: #a5b4fc; border-left: 3px solid var(--color-print); padding-left: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Nhà Máy In</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; text-transform: none;">Tổng quỹ lương: <strong id="settings-print-payroll-total" style="color: #fb7185;">₫0</strong></span>
+                  </h4>
+                  <div id="hr-print-accordion-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <!-- Dynamically populated accordion panels for In departments -->
+                  </div>
+
+                  <h4 style="font-size: 0.95rem; margin: 1.5rem 0 0.5rem; color: #f472b6; border-left: 3px solid var(--color-embroid); padding-left: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Nhà Máy Thêu</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; text-transform: none;">Tổng quỹ lương: <strong id="settings-emb-payroll-total" style="color: #fb7185;">₫0</strong></span>
+                  </h4>
+                  <div id="hr-emb-accordion-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <!-- Dynamically populated accordion panels for Thêu departments -->
+                  </div>
+
+                  <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Lưu cấu hình nhân sự &amp; bảng lương</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="settings-column">
+              <!-- Security & Passcode Configuration -->
+              <div class="dashboard-card glass" style="margin-bottom: 1.5rem;">
+                <div class="card-title-bar">
+                  <h3>Bảo Mật &amp; Khóa Truy Cập</h3>
+                  <span class="text-secondary">Thay đổi mật khẩu (passcode) bảo vệ hệ thống nội bộ</span>
+                </div>
+                <form id="settings-security-form" class="settings-form">
+                  <div class="form-group">
+                    <label for="security-current-passcode">Mật khẩu hiện tại <span class="required">*</span></label>
+                    <input type="password" id="security-current-passcode" class="form-input" required placeholder="Nhập mật khẩu hiện tại">
+                  </div>
+                  <div class="form-group">
+                    <label for="security-new-passcode">Mật khẩu mới <span class="required">*</span></label>
+                    <input type="password" id="security-new-passcode" class="form-input" required placeholder="Tối thiểu 4 ký tự">
+                  </div>
+                  <div class="form-group">
+                    <label for="security-confirm-passcode">Xác nhận mật khẩu mới <span class="required">*</span></label>
+                    <input type="password" id="security-confirm-passcode" class="form-input" required placeholder="Nhập lại mật khẩu mới">
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="width: 100%;">Cập nhật mật khẩu truy cập</button>
+                </form>
+              </div>
+
+              <!-- Backup & Restore Data -->
+              <div class="dashboard-card glass">
+                <div class="card-title-bar">
+                  <h3>Quản Lý Dữ Liệu &amp; Hệ Thống</h3>
+                  <span class="text-secondary">Nhập/Xuất hoặc reset lại toàn bộ dữ liệu ứng dụng</span>
+                </div>
+                <div class="settings-actions">
+                  <div class="action-card">
+                    <h4>Xuất file dữ liệu dự phòng (Backup)</h4>
+                    <p class="text-secondary">Tải xuống toàn bộ cấu hình, sản phẩm, dữ liệu tính giá thành và số liệu dự báo mua hàng dưới định dạng JSON.</p>
+                    <button id="btn-settings-export" class="btn btn-secondary">Tải dữ liệu (.json)</button>
+                  </div>
+                  
+                  <div class="action-card">
+                    <h4>Xóa &amp; Nạp lại dữ liệu mẫu (Reset)</h4>
+                    <p class="text-secondary">Khôi phục ứng dụng về trạng thái mặc định ban đầu với các sản phẩm mẫu có sẵn cho Nhà máy In và Nhà máy Thêu.</p>
+                    <button id="btn-settings-reset" class="btn btn-danger">Reset Dữ Liệu Mẫu</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Calculation reference formulas -->
+              <div class="dashboard-card glass">
+                <div class="card-title-bar">
+                  <h3>Tài Liệu Hướng Dẫn Tính Giá</h3>
+                  <span class="text-secondary">Các công thức toán học sử dụng trong hệ thống</span>
+                </div>
+                <div class="formula-doc">
+                  <div class="formula-item">
+                    <h5>1. Giá thành sản phẩm In:</h5>
+                    <p>$$\text{Base Cost} = \sum \text{Vật tư} + (\text{Giờ In} \times \text{Lương/Giờ}) + (\text{Công suất} \times \text{Giờ In} \times \text{Giá điện}) + \text{Phân bổ}$$</p>
+                  </div>
+                  <div class="formula-item">
+                    <h5>2. Giá thành sản phẩm Thêu:</h5>
+                    <p>$$\text{Base Cost} = \sum \text{Vật tư} + (\frac{\text{Mũi Thêu}}{1000} \times \text{Lương/1k Mũi}) + (\text{Công suất} \times \text{Giờ chạy} \times \text{Giá điện}) + \text{Phân bổ}$$</p>
+                  </div>
+                  <div class="formula-item">
+                    <h5>3. Số lượng hàng cần mua tháng tới:</h5>
+                    <p>$$\text{Cần Mua} = \text{Dự Báo Bán} + \text{Tồn An Toàn} - \text{Tồn Hiện Tại}$$</p>
+                    <p class="note">Lưu ý: Nếu kết quả tính ra âm (tồn kho nhiều hơn nhu cầu), số lượng cần mua sẽ được tự động quy về 0.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Dynamic Modal for Adding/Editing Custom Products -->
+  <dialog id="product-modal" class="glass-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Thêm sản phẩm mới</h3>
+        <button class="btn-close" id="modal-close-btn">&times;</button>
+      </div>
+      <form id="modal-product-form">
+        <div class="form-group">
+          <label for="modal-product-name">Tên sản phẩm <span class="required">*</span></label>
+          <input type="text" id="modal-product-name" required placeholder="Ví dụ: Áo hoodie thêu chữ nổi" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="modal-factory-type">Nhà máy sản xuất <span class="required">*</span></label>
+          <select id="modal-factory-type" required class="form-input select-input">
+            <option value="In">Nhà máy In</option>
+            <option value="Thêu">Nhà máy Thêu</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="modal-product-code">Mã SKU</label>
+          <input type="text" id="modal-product-code" placeholder="Ví dụ: HD-EMB-02" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="modal-product-category">Phân nhóm / Line</label>
+          <input type="text" id="modal-product-category" placeholder="Ví dụ: Áo khoác" class="form-input">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="modal-btn-cancel">Hủy</button>
+          <button type="submit" class="btn btn-primary">Tạo sản phẩm</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- LaTeX rendering via MathJax -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Application script -->
+  <script src="app.js?v=6.0" type="module"></script>
+</body>
+</html>
