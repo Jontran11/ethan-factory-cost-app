@@ -7,6 +7,8 @@
 // 1. Initial Mock Data & State Configuration
 // ==========================================================================
 
+const DEFAULT_GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwoheq43Jz30MQWTkDqzC6KJ7zdOKUJDlWAyk75oI39q8YNesK-NYzKqqVhyZP1oNqF/exec";
+
 const DEFAULT_SETTINGS = {
   electricityPrice: 3000,   // đ/kWh
   defaultOverhead: 10,      // %
@@ -256,7 +258,13 @@ class AppStateManager {
     this.products = this.loadProducts();
     this.activeTab = "dashboard";
     this.selectedProductId = null;
-    this.googleSheetUrl = localStorage.getItem("factory_sheet_url_v2") || "";
+    
+    const savedUrl = localStorage.getItem("factory_sheet_url_v2");
+    if (savedUrl === "none") {
+      this.googleSheetUrl = "";
+    } else {
+      this.googleSheetUrl = savedUrl || DEFAULT_GOOGLE_SHEET_URL;
+    }
   }
 
   loadSettings() {
@@ -2368,7 +2376,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-disconnect-sheet").addEventListener("click", () => {
     if (confirm("Bạn có muốn ngắt kết nối với Google Sheets? Dữ liệu của bạn sẽ quay về lưu trữ cục bộ trên máy này.")) {
       state.googleSheetUrl = "";
-      localStorage.removeItem("factory_sheet_url_v2");
+      localStorage.setItem("factory_sheet_url_v2", "none");
       updateCloudStatus("local");
       renderSettings();
     }
