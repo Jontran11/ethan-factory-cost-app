@@ -842,7 +842,7 @@ function renderDonutChart(printVal, embroidVal) {
   const svgHTML = `
     <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
       <!-- Background Circle -->
-      <circle cx="${center}" cy="${center}" r="${radius}" fill="transparent" stroke="rgba(255,255,255,0.02)" stroke-width="${strokeWidth}" />
+      <circle cx="${center}" cy="${center}" r="${radius}" fill="transparent" stroke="var(--border-glass)" stroke-width="${strokeWidth}" />
       
       <!-- Embroidery Arc -->
       <circle class="chart-donut-segment" cx="${center}" cy="${center}" r="${radius}" 
@@ -863,8 +863,8 @@ function renderDonutChart(printVal, embroidVal) {
               transform="rotate(-90 ${center} ${center})" />
               
       <!-- Center Text -->
-      <text x="${center}" y="${center - 2}" text-anchor="middle" fill="#9ca3af" font-size="10" font-weight="600">TỔNG NGÂN SÁCH</text>
-      <text x="${center}" y="${center + 14}" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">${formatVND(total).split(',')[0]}K</text>
+      <text x="${center}" y="${center - 2}" text-anchor="middle" fill="var(--text-secondary)" font-size="10" font-weight="600">TỔNG NGÂN SÁCH</text>
+      <text x="${center}" y="${center + 14}" text-anchor="middle" fill="var(--text-primary)" font-size="13" font-weight="700">${formatVND(total).split(',')[0]}K</text>
     </svg>
   `;
 
@@ -943,7 +943,7 @@ function renderBarChart() {
     <svg width="100%" height="60" viewBox="0 0 ${w} 60" preserveAspectRatio="none" style="overflow: visible;">
       <g transform="translate(0, 10)">
         <!-- Background pill -->
-        <rect x="0" y="0" width="${w}" height="${h}" rx="${r}" fill="rgba(255,255,255,0.02)" stroke="var(--border-glass)" />
+        <rect x="0" y="0" width="${w}" height="${h}" rx="${r}" fill="var(--bg-glass)" stroke="var(--border-glass)" />
         
         <!-- Mask for rounded corners of segments -->
         <defs>
@@ -967,7 +967,7 @@ function renderBarChart() {
         </g>
       </g>
       <!-- Center text indicating Average Base Cost -->
-      <text x="0" y="55" fill="#f3f4f6" font-size="10" font-weight="600">Giá vốn TB: ${formatVND(avgTotal)}/sản phẩm</text>
+      <text x="0" y="55" fill="var(--text-primary)" font-size="10" font-weight="600">Giá vốn TB: ${formatVND(avgTotal)}/sản phẩm</text>
     </svg>
   `;
 
@@ -2175,6 +2175,32 @@ function bindDynamicRowEvents() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Theme Toggle Logic (Light/Dark Mode)
+  const themeToggleBtn = document.getElementById("btn-theme-toggle");
+  
+  const updateThemeUI = (theme) => {
+    if (theme === "light") {
+      document.body.classList.add("light-mode");
+      themeToggleBtn.textContent = "🌙";
+      themeToggleBtn.title = "Chuyển sang Chế độ Tối";
+    } else {
+      document.body.classList.remove("light-mode");
+      themeToggleBtn.textContent = "☀️";
+      themeToggleBtn.title = "Chuyển sang Chế độ Sáng";
+    }
+  };
+
+  const currentTheme = localStorage.getItem("factory_theme") || "dark";
+  updateThemeUI(currentTheme);
+
+  themeToggleBtn.addEventListener("click", () => {
+    const isLight = document.body.classList.contains("light-mode");
+    const newTheme = isLight ? "dark" : "light";
+    localStorage.setItem("factory_theme", newTheme);
+    updateThemeUI(newTheme);
+    updateDashboard(); // Redraw charts
+  });
+
   // Auth validation overlay logic
   const loginForm = document.getElementById("login-form");
   const loginOverlay = document.getElementById("login-overlay");
