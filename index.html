@@ -827,8 +827,7 @@ function doGet(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var val = sheet.getRange("A1").getValue();
   return ContentService.createTextOutput(val || "{}")
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader("Access-Control-Allow-Origin", "*");
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
@@ -836,8 +835,7 @@ function doPost(e) {
   var json = e.postData.contents;
   sheet.getRange("A1").setValue(json);
   return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader("Access-Control-Allow-Origin", "*");
+    .setMimeType(ContentService.MimeType.JSON);
 }</pre>
                     <ol start="4" style="font-size: 0.75rem; color: var(--text-secondary); padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.5rem;">
                       <li>Nhấn <strong>Triển khai (Deploy)</strong> &rarr; <strong>Triển khai mới (New deployment)</strong>.</li>
