@@ -98,6 +98,10 @@
           <p class="text-secondary" id="page-subtitle">Thống kê chi phí sản xuất & Kế hoạch mua hàng tháng tới</p>
         </div>
         <div class="header-actions">
+          <span id="cloud-sync-status" class="sync-badge local" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; padding: 0.25rem 0.6rem; border-radius: 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: var(--text-secondary); font-weight: 500; cursor: pointer; user-select: none;">
+            <span class="status-dot" style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--text-secondary); display: inline-block;"></span>
+            <span>Ngoại tuyến (Local)</span>
+          </span>
           <div class="datetime-display" id="current-datetime">
             27/07/2026 08:55
           </div>
@@ -794,6 +798,57 @@
                 </form>
               </div>
 
+              <!-- Google Sheets Database Integration -->
+              <div class="dashboard-card glass" style="margin-bottom: 1.5rem;">
+                <div class="card-title-bar">
+                  <h3>Đồng Bộ Google Sheets (Database Trung Tâm)</h3>
+                  <span class="text-secondary">Sử dụng Google Sheets làm database dùng chung hoàn toàn miễn phí cho cả đội ngũ</span>
+                </div>
+                <div class="settings-form">
+                  <div class="form-group">
+                    <label for="settings-sheet-url">Google Apps Script Web App URL</label>
+                    <input type="url" id="settings-sheet-url" class="form-input" placeholder="https://script.google.com/macros/s/.../exec">
+                    <span class="help-text">Nhập URL của Web App bạn đã Deploy từ Google Apps Script trong Bảng tính của bạn.</span>
+                  </div>
+                  <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+                    <button type="button" class="btn btn-primary" id="btn-test-sheet" style="flex: 1; min-height: 38px;">Kết nối &amp; Đồng bộ</button>
+                    <button type="button" class="btn btn-danger" id="btn-disconnect-sheet" style="flex: 0.6; display: none; min-height: 38px;">Hủy kết nối</button>
+                  </div>
+                  
+                  <div style="margin-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1rem;">
+                    <h4 style="font-size: 0.8rem; color: #fff; margin-bottom: 0.4rem;">Cách cài đặt cơ sở dữ liệu Google Sheet:</h4>
+                    <ol style="font-size: 0.75rem; color: var(--text-secondary); padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                      <li>Tạo 1 Google Sheet trống trong tài khoản của bạn.</li>
+                      <li>Vào <strong>Mở rộng (Extensions)</strong> &rarr; <strong>Apps Script</strong>.</li>
+                      <li>Xóa hết code cũ, dán đoạn mã bên dưới vào và nhấn <strong>Lưu</strong>:</li>
+                    </ol>
+                    <pre style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 6px; font-size: 0.7rem; color: #a5b4fc; font-family: monospace; overflow-x: auto; margin-top: 0.5rem; border: 1px solid rgba(255,255,255,0.04); max-height: 150px; user-select: all;">
+function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var val = sheet.getRange("A1").getValue();
+  return ContentService.createTextOutput(val || "{}")
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeader("Access-Control-Allow-Origin", "*");
+}
+
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var json = e.postData.contents;
+  sheet.getRange("A1").setValue(json);
+  return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeader("Access-Control-Allow-Origin", "*");
+}</pre>
+                    <ol start="4" style="font-size: 0.75rem; color: var(--text-secondary); padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.5rem;">
+                      <li>Nhấn <strong>Triển khai (Deploy)</strong> &rarr; <strong>Triển khai mới (New deployment)</strong>.</li>
+                      <li>Chọn loại là <strong>Ứng dụng web (Web app)</strong>.</li>
+                      <li>Cấu hình: Người có quyền truy cập chọn là <strong>Bất kỳ ai (Anyone)</strong>.</li>
+                      <li>Bấm Triển khai, cấp quyền truy cập của Google Sheet và sao chép <strong>URL ứng dụng web</strong> dán vào ô bên trên.</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
               <!-- Backup & Restore Data -->
               <div class="dashboard-card glass">
                 <div class="card-title-bar">
@@ -886,6 +941,6 @@
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=6.0" type="module"></script>
+  <script src="app.js?v=7.0" type="module"></script>
 </body>
 </html>

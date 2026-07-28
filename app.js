@@ -256,6 +256,7 @@ class AppStateManager {
     this.products = this.loadProducts();
     this.activeTab = "dashboard";
     this.selectedProductId = null;
+    this.googleSheetUrl = localStorage.getItem("factory_sheet_url_v2") || "";
   }
 
   loadSettings() {
@@ -315,6 +316,7 @@ class AppStateManager {
   saveSettings(newSettings) {
     this.settings = { ...newSettings };
     localStorage.setItem("factory_settings_v2", JSON.stringify(this.settings));
+    this.syncToCloud();
   }
 
   loadProducts() {
@@ -351,6 +353,59 @@ class AppStateManager {
 
   saveProducts() {
     localStorage.setItem("factory_products_v2", JSON.stringify(this.products));
+    this.syncToCloud();
+  }
+
+  async syncFromCloud() {
+    if (!this.googleSheetUrl) return false;
+    try {
+      updateCloudStatus("syncing");
+      const res = await fetch(this.googleSheetUrl);
+      if (!res.ok) throw new Error("Fetch failed");
+      const data = await res.json();
+      
+      if (data && data.products && data.settings) {
+        this.products = data.products;
+        this.settings = data.settings;
+        localStorage.setItem("factory_settings_v2", JSON.stringify(this.settings));
+        localStorage.setItem("factory_products_v2", JSON.stringify(this.products));
+        updateCloudStatus("synced");
+        return true;
+      }
+      throw new Error("Invalid data format");
+    } catch (e) {
+      console.error("Failed to sync from cloud:", e);
+      updateCloudStatus("error");
+      return false;
+    }
+  }
+
+  async syncToCloud() {
+    if (!this.googleSheetUrl) {
+      updateCloudStatus("local");
+      return false;
+    }
+    try {
+      updateCloudStatus("syncing");
+      const stateData = {
+        products: this.products,
+        settings: this.settings,
+        saved: new Date().toLocaleString('vi-VN')
+      };
+      
+      await fetch(this.googleSheetUrl, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(stateData)
+      });
+      
+      updateCloudStatus("synced");
+      return true;
+    } catch (e) {
+      console.error("Failed to sync to cloud:", e);
+      updateCloudStatus("error");
+      return false;
+    }
   }
 
   resetData() {
@@ -387,6 +442,43 @@ function parseCurrencyInput(value) {
   if (typeof value === 'number') return value;
   const clean = String(value).replace(/[^0-9]/g, '');
   return parseInt(clean, 10) || 0;
+}
+
+/**
+ * Cập nhật giao diện trạng thái đồng bộ hóa đám mây
+ */
+function updateCloudStatus(status) {
+  const statusEl = document.getElementById("cloud-sync-status");
+  if (!statusEl) return;
+  
+  const dot = statusEl.querySelector(".status-dot");
+  const label = statusEl.querySelector("span:not(.status-dot)");
+  
+  if (status === "synced") {
+    statusEl.style.color = "#34d399";
+    statusEl.style.backgroundColor = "rgba(52,211,153,0.1)";
+    statusEl.style.borderColor = "rgba(52,211,153,0.2)";
+    if (dot) dot.style.backgroundColor = "#34d399";
+    if (label) label.textContent = "Google Sheets";
+  } else if (status === "syncing") {
+    statusEl.style.color = "#f59e0b";
+    statusEl.style.backgroundColor = "rgba(245,158,11,0.1)";
+    statusEl.style.borderColor = "rgba(245,158,11,0.2)";
+    if (dot) dot.style.backgroundColor = "#f59e0b";
+    if (label) label.textContent = "Đang đồng bộ...";
+  } else if (status === "error") {
+    statusEl.style.color = "#f87171";
+    statusEl.style.backgroundColor = "rgba(248,113,113,0.1)";
+    statusEl.style.borderColor = "rgba(248,113,113,0.2)";
+    if (dot) dot.style.backgroundColor = "#f87171";
+    if (label) label.textContent = "Lỗi kết nối";
+  } else {
+    statusEl.style.color = "var(--text-secondary)";
+    statusEl.style.backgroundColor = "rgba(255,255,255,0.04)";
+    statusEl.style.borderColor = "rgba(255,255,255,0.08)";
+    if (dot) dot.style.backgroundColor = "var(--text-secondary)";
+    if (label) label.textContent = "Ngoại tuyến (Local)";
+  }
 }
 
 /**
@@ -1739,6 +1831,23 @@ function renderSettings() {
   document.getElementById("settings-monthly-electricity-print").value = monthlyElecPrint.toLocaleString('vi-VN');
   document.getElementById("settings-monthly-electricity-emb").value = monthlyElecEmb.toLocaleString('vi-VN');
 
+  const sheetUrlInput = document.getElementById("settings-sheet-url");
+  const testBtn = document.getElementById("btn-test-sheet");
+  const disconnectBtn = document.getElementById("btn-disconnect-sheet");
+
+  if (sheetUrlInput) {
+    sheetUrlInput.value = state.googleSheetUrl;
+    if (state.googleSheetUrl) {
+      sheetUrlInput.disabled = true;
+      testBtn.textContent = "Đồng bộ ngay";
+      disconnectBtn.style.display = "block";
+    } else {
+      sheetUrlInput.disabled = false;
+      testBtn.textContent = "Kết nối & Đồng bộ";
+      disconnectBtn.style.display = "none";
+    }
+  }
+
   renderHrAccordion("In", "hr-print-accordion-container");
   renderHrAccordion("Thêu", "hr-emb-accordion-container");
 
@@ -2201,6 +2310,104 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("modal-close-btn").addEventListener("click", closeCreateProductModal);
   document.getElementById("modal-btn-cancel").addEventListener("click", closeCreateProductModal);
   document.getElementById("modal-product-form").addEventListener("submit", handleCreateProductSubmit);
+
+  // Google Sheets Database Event Listeners
+  document.getElementById("btn-test-sheet").addEventListener("click", async () => {
+    const urlInput = document.getElementById("settings-sheet-url");
+    const url = urlInput.value.trim();
+    if (!url) {
+      alert("Vui lòng nhập URL Web App của Google Apps Script!");
+      return;
+    }
+    if (!url.startsWith("https://script.google.com/")) {
+      alert("URL không đúng định dạng Google Apps Script (bắt đầu bằng https://script.google.com/)!");
+      return;
+    }
+
+    const oldUrl = state.googleSheetUrl;
+    state.googleSheetUrl = url;
+    
+    updateCloudStatus("syncing");
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Connect failed");
+      const data = await res.json();
+      
+      if (data && data.products && data.settings) {
+        if (confirm("Tìm thấy dữ liệu trên Google Sheets! Bạn có muốn nạp dữ liệu này đè lên máy hiện tại không?\n\n- Chọn OK để NẠP dữ liệu từ Google Sheets về máy này.\n- Chọn Cancel để ĐẨY dữ liệu máy này lên Google Sheets.")) {
+          state.products = data.products;
+          state.settings = data.settings;
+          localStorage.setItem("factory_settings_v2", JSON.stringify(state.settings));
+          localStorage.setItem("factory_products_v2", JSON.stringify(state.products));
+          localStorage.setItem("factory_sheet_url_v2", url);
+          alert("Nạp dữ liệu từ Google Sheets về máy thành công!");
+        } else {
+          localStorage.setItem("factory_sheet_url_v2", url);
+          await state.syncToCloud();
+          alert("Đẩy dữ liệu máy cục bộ lên Google Sheets thành công!");
+        }
+      } else {
+        localStorage.setItem("factory_sheet_url_v2", url);
+        await state.syncToCloud();
+        alert("Khởi tạo database trống trên Google Sheets và đồng bộ thành công!");
+      }
+      
+      renderCalculator();
+      renderForecast();
+      renderSettings();
+      recalculateForecastTotals();
+      updateDashboard();
+    } catch (e) {
+      console.error(e);
+      alert("Không thể kết nối tới Google Apps Script URL. Vui lòng kiểm tra lại cấu hình Deploy Web App!");
+      state.googleSheetUrl = oldUrl;
+      updateCloudStatus(oldUrl ? "synced" : "local");
+    }
+  });
+
+  document.getElementById("btn-disconnect-sheet").addEventListener("click", () => {
+    if (confirm("Bạn có muốn ngắt kết nối với Google Sheets? Dữ liệu của bạn sẽ quay về lưu trữ cục bộ trên máy này.")) {
+      state.googleSheetUrl = "";
+      localStorage.removeItem("factory_sheet_url_v2");
+      updateCloudStatus("local");
+      renderSettings();
+    }
+  });
+
+  document.getElementById("cloud-sync-status").addEventListener("click", () => {
+    if (!state.googleSheetUrl) {
+      switchTab("settings");
+      document.getElementById("settings-sheet-url").focus();
+    } else {
+      state.syncFromCloud().then(success => {
+        if (success) {
+          renderCalculator();
+          renderForecast();
+          renderSettings();
+          recalculateForecastTotals();
+          updateDashboard();
+          alert("Đã tải dữ liệu mới nhất từ Google Sheets!");
+        } else {
+          alert("Đồng bộ thất bại. Vui lòng kiểm tra kết nối mạng!");
+        }
+      });
+    }
+  });
+
+  // Cloud Database Sync on Startup
+  if (state.googleSheetUrl) {
+    state.syncFromCloud().then(success => {
+      if (success) {
+        renderCalculator();
+        renderForecast();
+        renderSettings();
+        recalculateForecastTotals();
+        updateDashboard();
+      }
+    });
+  } else {
+    updateCloudStatus("local");
+  }
 
   // Initialize
   switchTab("dashboard");
