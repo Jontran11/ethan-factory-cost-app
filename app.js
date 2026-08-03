@@ -1634,6 +1634,97 @@ function renderMaterialRequirements() {
   document.getElementById("mrp-summary-total-cost").textContent = formatVND(totalMrpCost);
 }
 
+function renderActualMaterialConsumption() {
+  const tbody = document.getElementById("consumption-table-tbody");
+  if (!tbody) return 0;
+  tbody.innerHTML = "";
+
+  const materialMap = {};
+
+  // Explode BOM based on July actualSales
+  state.products.forEach(p => {
+    const actual = p.forecast.actualSales || 0;
+    if (actual > 0 && p.materials && Array.isArray(p.materials)) {
+      p.materials.forEach(mat => {
+        const key = mat.name.trim();
+        if (!key) return;
+
+        const reqQty = mat.qty * actual;
+
+        if (!materialMap[key]) {
+          materialMap[key] = {
+            name: mat.name,
+            unit: mat.unit,
+            price: mat.price,
+            totalQty: 0
+          };
+        }
+        materialMap[key].totalQty += reqQty;
+      });
+    }
+  });
+
+  const materialsList = Object.values(materialMap);
+  let totalSpentCost = 0;
+
+  if (materialsList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="no-data">Không có tiêu hao nguyên vật liệu nào (chưa nhập sản lượng bán tháng này).</td></tr>`;
+    const sumEl = document.getElementById("consumption-summary-total-cost");
+    if (sumEl) sumEl.textContent = formatVND(0);
+    return 0;
+  }
+
+  const processedList = materialsList.map(mat => {
+    const nameLower = mat.name.toLowerCase();
+    const isClick = nameLower.includes("click") || nameLower.includes("in konica") || nameLower.includes("in hộp") || nameLower.includes("in dải cuốn");
+    
+    let ncc = "Nhà CC khác";
+    if (isClick) {
+      ncc = "Nội bộ (Click máy)";
+    } else {
+      const match = findSupplierProduct(mat.name);
+      if (match) {
+        ncc = match.ncc;
+      }
+    }
+
+    const matTotalCost = mat.totalQty * mat.price;
+
+    return {
+      name: mat.name,
+      unit: mat.unit,
+      totalQty: mat.totalQty,
+      ncc,
+      price: mat.price,
+      matTotalCost
+    };
+  });
+
+  processedList.sort((a, b) => b.matTotalCost - a.matTotalCost);
+
+  processedList.forEach(mat => {
+    totalSpentCost += mat.matTotalCost;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <strong style="color: #f8fafc;">${mat.name}</strong>
+      </td>
+      <td><span style="font-size: 0.85rem; color: #a5b4fc; font-weight: 500;">${mat.ncc}</span></td>
+      <td class="text-center" style="text-align: center; font-size: 0.85rem; color: #cbd5e1;">${mat.unit}</td>
+      <td class="text-right" style="text-align: right; font-size: 0.85rem; font-weight: 600; color: #f59e0b;">${mat.totalQty.toLocaleString('vi-VN', {maximumFractionDigits:4})}</td>
+      <td class="text-right" style="text-align: right; font-size: 0.85rem; color: #cbd5e1;">${formatVND(mat.price)}</td>
+      <td class="text-right font-bold" style="text-align: right; color: #f8fafc; font-size: 0.9rem;">${formatVND(mat.matTotalCost)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const sumEl = document.getElementById("consumption-summary-total-cost");
+  if (sumEl) sumEl.textContent = formatVND(totalSpentCost);
+  
+  return totalSpentCost;
+}
+
 function renderForecast() {
   const searchVal = document.getElementById("forecast-search").value.toLowerCase();
   const filterFactory = document.getElementById("forecast-filter-factory").value;
@@ -1759,6 +1850,7 @@ function recalculateForecastTotals() {
   let totalSellerRevenue = 0;
   let totalForecastBudget = 0;
   let totalForecastQty = 0;
+  let totalActualSalesQty = 0;
   let itemsCount = 0;
 
   let factoryRevenueIn = 0;
@@ -1776,6 +1868,7 @@ function recalculateForecastTotals() {
 
     totalFactoryRevenue += prodFactoryRev;
     totalSellerRevenue += prodSellerRev;
+    totalActualSalesQty += actual;
 
     if (p.factoryType === "In") {
       factoryRevenueIn += prodFactoryRev;
@@ -1799,6 +1892,13 @@ function recalculateForecastTotals() {
 
   document.getElementById("forecast-seller-revenue").textContent = formatVND(totalSellerRevenue);
   document.getElementById("forecast-seller-revenue-print-emb").textContent = `In: ${formatVND(sellerRevenueIn)} | Thêu: ${formatVND(sellerRevenueEmb)}`;
+
+  // Render actual material consumption
+  const spentMaterialsCost = renderActualMaterialConsumption();
+  const spentCard = document.getElementById("forecast-spent-materials-cost");
+  if (spentCard) spentCard.textContent = formatVND(spentMaterialsCost);
+  const spentCountCard = document.getElementById("forecast-spent-materials-items-count");
+  if (spentCountCard) spentCountCard.textContent = `Tổng bán: ${totalActualSalesQty.toLocaleString('vi-VN')} cái`;
 
   document.getElementById("forecast-summary-total-cost").textContent = formatVND(totalForecastBudget);
   document.getElementById("forecast-summary-items-count").textContent = `(${itemsCount} sản phẩm, ${totalForecastQty.toLocaleString('vi-VN')} cái)`;
