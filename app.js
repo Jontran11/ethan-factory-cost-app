@@ -2345,6 +2345,141 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("modal-btn-cancel").addEventListener("click", closeCreateProductModal);
   document.getElementById("modal-product-form").addEventListener("submit", handleCreateProductSubmit);
 
+  // Spreadsheet Template Selector Event Listeners
+  const templateSelect = document.getElementById("template-select");
+  const templateSizeContainer = document.getElementById("template-size-container");
+  const templateSizeSelect = document.getElementById("template-size");
+  const btnApplyTemplate = document.getElementById("btn-apply-template");
+
+  if (templateSelect) {
+    templateSelect.addEventListener("change", (e) => {
+      const val = e.target.value;
+      if (val.startsWith("sticker-") || val === "uv-dtf") {
+        templateSizeContainer.style.display = "flex";
+      } else {
+        templateSizeContainer.style.display = "none";
+      }
+    });
+
+    btnApplyTemplate.addEventListener("click", () => {
+      const template = templateSelect.value;
+      if (!template) {
+        alert("Vui lòng chọn một mẫu sản phẩm!");
+        return;
+      }
+      
+      const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+      if (!selectedProduct) {
+        alert("Vui lòng chọn một sản phẩm ở cột bên trái trước khi áp dụng mẫu!");
+        return;
+      }
+
+      const size = parseFloat(templateSizeSelect.value) || 2.0;
+      let materials = [];
+
+      if (template.startsWith("sticker-")) {
+        let matKey = "";
+        let matPrice = 0;
+        if (template === "sticker-sua-mo") {
+          matKey = "Decal Sữa Mờ ThaiKK";
+          matPrice = 2826;
+        } else if (template === "sticker-trong") {
+          matKey = "Decal Trong ThaiKK";
+          matPrice = 2709;
+        } else if (template === "sticker-bac-bong") {
+          matKey = "Decal Bạc Bóng ThaiKK";
+          matPrice = 2313;
+        } else if (template === "sticker-kraft") {
+          matKey = "Decal Kraft ThaiKK";
+          matPrice = 1145;
+        }
+
+        let itemsPerSheet = 40;
+        if (template === "sticker-sua-mo" || template === "sticker-trong") {
+          const yields = { 1.5: 70, 2: 40, 3: 20, 4: 12, 5: 6 };
+          itemsPerSheet = yields[size] || 40;
+        } else {
+          const yields = { 1.5: 56, 2: 30, 3: 16, 4: 9, 5: 4 };
+          itemsPerSheet = yields[size] || 30;
+        }
+
+        const qty = 1 / itemsPerSheet;
+
+        materials = [
+          { name: matKey, qty: parseFloat(qty.toFixed(6)), unit: "Tờ", price: matPrice },
+          { name: "In Konica (1 mặt) - Click", qty: parseFloat(qty.toFixed(6)), unit: "Click", price: 1200 }
+        ];
+
+        selectedProduct.factoryType = "In";
+        const printRadio = document.getElementById("factory-print");
+        if (printRadio) printRadio.checked = true;
+        toggleFactoryInputs("In");
+
+      } else if (template === "skin-card") {
+        const qty = 1 / 21;
+        materials = [
+          { name: "Decal Sữa Mờ ThaiKK", qty: parseFloat(qty.toFixed(6)), unit: "Tờ", price: 2826 },
+          { name: "In Konica (1 mặt) - Click", qty: parseFloat(qty.toFixed(6)), unit: "Click", price: 1200 }
+        ];
+        selectedProduct.factoryType = "In";
+        const printRadio = document.getElementById("factory-print");
+        if (printRadio) printRadio.checked = true;
+        toggleFactoryInputs("In");
+
+      } else if (template === "uv-dtf") {
+        const yields = { 1.5: 135, 2: 84, 3: 45, 4: 28, 5: 18 };
+        const itemsPerMeter = yields[size] || 84;
+        const qty = 1 / itemsPerMeter;
+
+        materials = [
+          { name: "Màng A (pet in UV-DTF)", qty: parseFloat(qty.toFixed(6)), unit: "Mét", price: 14446 },
+          { name: "Màng B (cán định hình UV-DTF)", qty: parseFloat(qty.toFixed(6)), unit: "Mét", price: 14446 },
+          { name: "In UV-DTF - Click", qty: parseFloat(qty.toFixed(6)), unit: "Mét", price: 15000 }
+        ];
+        selectedProduct.factoryType = "In";
+        const printRadio = document.getElementById("factory-print");
+        if (printRadio) printRadio.checked = true;
+        toggleFactoryInputs("In");
+
+      } else if (template === "calendar") {
+        materials = [
+          { name: "Giấy Coucher A4 300gsm", qty: 13, unit: "Tờ", price: 460 },
+          { name: "In Konica (1 mặt) - Click", qty: 13, unit: "Click", price: 1200 }
+        ];
+        selectedProduct.factoryType = "In";
+        const printRadio = document.getElementById("factory-print");
+        if (printRadio) printRadio.checked = true;
+        toggleFactoryInputs("In");
+
+      } else if (template === "playing-cards") {
+        materials = [
+          { name: "Giấy Coucher A3 300gsm", qty: 3, unit: "Tờ", price: 900 },
+          { name: "In Konica (2 mặt) - Click", qty: 6, unit: "Click", price: 600 }
+        ];
+        selectedProduct.factoryType = "In";
+        const printRadio = document.getElementById("factory-print");
+        if (printRadio) printRadio.checked = true;
+        toggleFactoryInputs("In");
+
+      } else if (template === "hop-giay") {
+        materials = [
+          { name: "Giấy Irovy 33x48cm 300gsm", qty: 0.25, unit: "Tờ", price: 940 },
+          { name: "In hộp (Konica) - Click", qty: 0.25, unit: "Click", price: 1200 }
+        ];
+        selectedProduct.factoryType = "In";
+        const printRadio = document.getElementById("factory-print");
+        if (printRadio) printRadio.checked = true;
+        toggleFactoryInputs("In");
+      }
+
+      selectedProduct.materials = materials;
+      state.saveProducts();
+      
+      renderCalculator();
+      alert(`Đã áp dụng mẫu định mức "${templateSelect.options[templateSelect.selectedIndex].text}" (${template.startsWith("sticker-") || template === "uv-dtf" ? size + " inch" : "Mặc định"}) thành công!`);
+    });
+  }
+
   // Google Sheets Database Event Listeners
   document.getElementById("btn-test-sheet").addEventListener("click", async () => {
     const urlInput = document.getElementById("settings-sheet-url");

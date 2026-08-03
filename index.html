@@ -338,6 +338,50 @@
                   </div>
                 </div>
 
+                <!-- Spreadsheet Template Selector for Auto BOM -->
+                <div class="dashboard-card glass" style="margin-bottom: 1.5rem; padding: 1.25rem; background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.15);">
+                  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                      <h4 style="font-size: 0.85rem; color: #fff; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.4rem;">
+                        <span>📋</span> Định Mức Tự Động Theo Khổ &amp; Kích Thước (BOM Auto-Fill)
+                      </h4>
+                      <p class="text-secondary" style="font-size: 0.72rem; margin: 0;">Áp dụng nhanh định mức vật tư tiêu hao dựa trên bảng tỷ lệ hao hụt Sticker/Skin Card/UV-DTF.</p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                      <div style="display: flex; flex-direction: column; gap: 0.15rem;">
+                        <label for="template-select" style="font-size: 0.7rem; color: #a5b4fc; font-weight: 500;">Chọn mẫu sản phẩm:</label>
+                        <select id="template-select" class="form-input" style="min-height: 32px; padding: 0.25rem 0.5rem; font-size: 0.75rem; max-width: 180px; margin: 0; background: rgba(0,0,0,0.3); border-radius: 4px; border: 1px solid var(--border-glass); color: var(--text-primary);">
+                          <option value="">-- Chọn mẫu định mức --</option>
+                          <option value="sticker-sua-mo">Sticker (Decal Sữa Mờ)</option>
+                          <option value="sticker-trong">Sticker (Decal Trong)</option>
+                          <option value="sticker-bac-bong">Sticker (Decal Bạc Bóng)</option>
+                          <option value="sticker-kraft">Sticker (Decal Kraft)</option>
+                          <option value="skin-card">Skin Card (Decal Sữa Mờ)</option>
+                          <option value="uv-dtf">UV-DTF (Màng A + B)</option>
+                          <option value="calendar">Calendar (Lịch để bàn)</option>
+                          <option value="playing-cards">Playing Cards (Bộ bài 54 lá)</option>
+                          <option value="hop-giay">Hộp Bài Giấy</option>
+                        </select>
+                      </div>
+                      
+                      <div id="template-size-container" style="display: none; flex-direction: column; gap: 0.15rem;">
+                        <label for="template-size" style="font-size: 0.7rem; color: #a5b4fc; font-weight: 500;">Chọn kích thước:</label>
+                        <select id="template-size" class="form-input" style="min-height: 32px; padding: 0.25rem 0.5rem; font-size: 0.75rem; max-width: 110px; margin: 0; background: rgba(0,0,0,0.3); border-radius: 4px; border: 1px solid var(--border-glass); color: var(--text-primary);">
+                          <option value="1.5">1.5 inch</option>
+                          <option value="2">2.0 inch</option>
+                          <option value="3">3.0 inch</option>
+                          <option value="4">4.0 inch</option>
+                          <option value="5">5.0 inch</option>
+                        </select>
+                      </div>
+                      
+                      <button type="button" class="btn btn-primary" id="btn-apply-template" style="min-height: 32px; padding: 0 0.75rem; font-size: 0.75rem; margin-top: auto; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem;">
+                        <span>⚡</span> Áp dụng
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Part 1: Raw Materials Cost Section -->
                 <div class="cost-section">
                   <div class="section-title-bar">
@@ -942,6 +986,6 @@ function doPost(e) {
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=9.0" type="module"></script>
+  <script src="app.js?v=10.0" type="module"></script>
 </body>
 </html>
