@@ -2465,6 +2465,124 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("forecast-search").addEventListener("input", renderForecast);
   document.getElementById("forecast-filter-factory").addEventListener("change", renderForecast);
 
+  const salesCsvFileInput = document.getElementById("sales-csv-file");
+  if (salesCsvFileInput) {
+    salesCsvFileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        const text = evt.target.result;
+        if (!text) {
+          alert("File CSV trống hoặc không đúng định dạng!");
+          return;
+        }
+
+        const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+        if (lines.length < 2) {
+          alert("File CSV cần ít nhất 1 dòng tiêu đề và 1 dòng dữ liệu!");
+          return;
+        }
+
+        const firstLine = lines[0];
+        let sep = ",";
+        if (firstLine.includes(";")) sep = ";";
+        else if (firstLine.includes("\t")) sep = "\t";
+
+        const splitCSVRow = (row) => {
+          const result = [];
+          let insideQuote = false;
+          let entry = "";
+          for (let i = 0; i < row.length; i++) {
+            const char = row[i];
+            if (char === '"') {
+              insideQuote = !insideQuote;
+            } else if (char === sep && !insideQuote) {
+              result.push(entry.trim().replace(/^"|"$/g, ''));
+              entry = "";
+            } else {
+              entry += char;
+            }
+          }
+          result.push(entry.trim().replace(/^"|"$/g, ''));
+          return result;
+        };
+
+        const headers = splitCSVRow(lines[0]).map(h => h.toLowerCase());
+        
+        let skuIdx = -1;
+        let nameIdx = -1;
+        let qtyIdx = -1;
+
+        headers.forEach((h, idx) => {
+          if (h.includes("sku") || h.includes("mã") || h.includes("code")) {
+            skuIdx = idx;
+          } else if (h.includes("tên") || h.includes("name") || h.includes("sản phẩm") || h.includes("product")) {
+            nameIdx = idx;
+          }
+          if (h.includes("sản lượng") || h.includes("số lượng") || h.includes("qty") || h.includes("quantity") || h.includes("sales") || h.includes("bán")) {
+            qtyIdx = idx;
+          }
+        });
+
+        if (skuIdx === -1 && nameIdx === -1) {
+          skuIdx = 0;
+        }
+        if (qtyIdx === -1) {
+          qtyIdx = 1;
+        }
+
+        let updatedCount = 0;
+        let unmatchedRows = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const cols = splitCSVRow(lines[i]);
+          if (cols.length < 2) continue;
+
+          const identifier = cols[skuIdx] || cols[nameIdx] || "";
+          const qtyVal = parseFloat(cols[qtyIdx]) || 0;
+
+          if (!identifier) continue;
+
+          const matchedProd = state.products.find(p => {
+            const skuMatch = p.code && p.code.toLowerCase().trim() === identifier.toLowerCase().trim();
+            const nameMatch = p.name && p.name.toLowerCase().trim() === identifier.toLowerCase().trim();
+            return skuMatch || nameMatch;
+          });
+
+          if (matchedProd) {
+            matchedProd.forecast.actualSales = qtyVal;
+            matchedProd.forecast.salesForecast = Math.round(qtyVal * 1.1);
+            updatedCount++;
+          } else {
+            unmatchedRows.push(identifier);
+          }
+        }
+
+        if (updatedCount > 0) {
+          state.saveProducts();
+          renderForecast();
+          recalculateForecastTotals();
+          if (state.googleSheetUrl) {
+            state.syncToCloud();
+          }
+
+          let msg = `Đã cập nhật sản lượng bán thành công cho ${updatedCount} sản phẩm!`;
+          if (unmatchedRows.length > 0) {
+            msg += `\n\nKhông tìm thấy ${unmatchedRows.length} mã/tên trong hệ thống (đã bỏ qua): ${unmatchedRows.slice(0, 5).join(", ")}${unmatchedRows.length > 5 ? "..." : ""}`;
+          }
+          alert(msg);
+        } else {
+          alert("Không khớp được sản phẩm nào trong file CSV! Vui lòng kiểm tra lại cột Mã sản phẩm (SKU) hoặc Tên sản phẩm.");
+        }
+        
+        salesCsvFileInput.value = "";
+      };
+      reader.readAsText(file);
+    });
+  }
+
   // 4. Settings tab triggers
   document.getElementById("settings-cost-form").addEventListener("submit", saveSettingsForm);
   document.getElementById("settings-hr-form").addEventListener("submit", saveHrSettingsForm);
