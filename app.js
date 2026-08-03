@@ -1845,7 +1845,43 @@ function renderForecast() {
   recalculateForecastTotals();
 }
 
+function updateDynamicForecastMonths() {
+  const currentDate = new Date();
+  const currentMonthNum = currentDate.getMonth() + 1;
+  const lastMonthNum = currentMonthNum === 1 ? 12 : currentMonthNum - 1;
+  
+  const labelFactory = document.getElementById("label-factory-revenue");
+  if (labelFactory) labelFactory.textContent = `Doanh Thu Nhà Máy (Tháng ${lastMonthNum})`;
+  
+  const labelSeller = document.getElementById("label-seller-revenue");
+  if (labelSeller) labelSeller.textContent = `Doanh Thu Seller (Tháng ${lastMonthNum})`;
+  
+  const labelSpent = document.getElementById("label-spent-materials");
+  if (labelSpent) labelSpent.textContent = `Vật tư đã tiêu hao (Tháng ${lastMonthNum})`;
+  
+  const labelForecast = document.getElementById("label-forecast-budget");
+  if (labelForecast) labelForecast.textContent = `Tổng Ngân Sách Mua (Tháng ${currentMonthNum})`;
+  
+  const thActualSales = document.getElementById("th-actual-sales");
+  if (thActualSales) thActualSales.textContent = `Sản lượng bán (Tháng ${lastMonthNum})`;
+  
+  const thForecastSales = document.getElementById("th-forecast-sales");
+  if (thForecastSales) thForecastSales.textContent = `Dự báo bán (Tháng ${currentMonthNum})`;
+  
+  const titleConsumption = document.getElementById("title-consumption-report");
+  if (titleConsumption) titleConsumption.textContent = `Báo Cáo Vật Tư Tiêu Hao Thực Tế (Tháng ${lastMonthNum})`;
+  
+  const titleMRP = document.getElementById("title-mrp-report");
+  if (titleMRP) titleMRP.textContent = `Kế Hoạch Mua Hàng Chuẩn Bị Cho Tháng ${currentMonthNum} (MRP)`;
+
+  const alertBannerText = document.getElementById("alert-banner-text");
+  if (alertBannerText) {
+    alertBannerText.innerHTML = `Hôm nay là <strong>Tháng ${currentMonthNum}/${currentDate.getFullYear()}</strong>. Vui lòng nhập <strong>Sản lượng bán thực tế của Tháng ${lastMonthNum}</strong> vào bảng bên dưới để hệ thống tính toán chi tiêu nguyên liệu và dự đoán mua thêm vật liệu cho <strong>Tháng ${currentMonthNum}</strong>.`;
+  }
+}
+
 function recalculateForecastTotals() {
+  updateDynamicForecastMonths();
   let totalFactoryRevenue = 0;
   let totalSellerRevenue = 0;
   let totalForecastBudget = 0;
@@ -2300,6 +2336,9 @@ document.addEventListener("DOMContentLoaded", () => {
     updateThemeUI(newTheme);
     updateDashboard(); // Redraw charts
   });
+
+  // Dynamic forecast months initialization
+  updateDynamicForecastMonths();
 
   // Auth validation overlay logic
   const loginForm = document.getElementById("login-form");

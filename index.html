@@ -657,28 +657,34 @@
             </div>
           </div>
 
+          <!-- Help Alert Banner -->
+          <div class="alert alert-info glass" style="margin-bottom: 1.5rem; border-left: 4px solid var(--color-primary); background: rgba(99, 102, 241, 0.05); padding: 0.85rem 1.25rem; border-radius: 6px; font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);">
+            <span style="font-size: 1.1rem;">ℹ️</span>
+            <span id="alert-banner-text">Vui lòng nhập sản lượng bán thực tế của tháng cũ để xem chi phí tiêu hao và dự báo cho tháng tới.</span>
+          </div>
+
           <!-- Monthly Sales & Revenue Summary Cards -->
           <div class="dashboard-grid" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
             <div class="dashboard-card glass metric-card" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; border-left: 4px solid var(--color-print);">
-              <span class="metric-label" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Doanh Thu Nhà Máy (Tháng này)</span>
+              <span class="metric-label" id="label-factory-revenue" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Doanh Thu Nhà Máy (Tháng này)</span>
               <div class="metric-value" id="forecast-factory-revenue" style="font-size: 1.5rem; font-weight: 700; color: #fff;">₫0</div>
               <span class="metric-trend text-secondary" id="forecast-factory-revenue-print-emb" style="font-size: 0.72rem;">In: ₫0 | Thêu: ₫0</span>
             </div>
             
             <div class="dashboard-card glass metric-card" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; border-left: 4px solid #34d399; border-color: rgba(52, 211, 153, 0.3);">
-              <span class="metric-label" style="font-size: 0.8rem; color: #34d399; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Doanh Thu Seller (Tháng này)</span>
+              <span class="metric-label" id="label-seller-revenue" style="font-size: 0.8rem; color: #34d399; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Doanh Thu Seller (Tháng này)</span>
               <div class="metric-value" style="font-size: 1.5rem; font-weight: 700; color: #34d399;" id="forecast-seller-revenue">₫0</div>
               <span class="metric-trend text-secondary" id="forecast-seller-revenue-print-emb" style="font-size: 0.72rem;">In: ₫0 | Thêu: ₫0</span>
             </div>
 
             <div class="dashboard-card glass metric-card" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; border-left: 4px solid var(--color-warning); border-color: rgba(245, 158, 11, 0.3);">
-              <span class="metric-label" style="font-size: 0.8rem; color: #f59e0b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Vật tư đã tiêu hao (Tháng này)</span>
+              <span class="metric-label" id="label-spent-materials" style="font-size: 0.8rem; color: #f59e0b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Vật tư đã tiêu hao (Tháng này)</span>
               <div class="metric-value" style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;" id="forecast-spent-materials-cost">₫0</div>
               <span class="metric-trend text-secondary" id="forecast-spent-materials-items-count" style="font-size: 0.72rem;">In: ₫0 | Thêu: ₫0</span>
             </div>
 
             <div class="dashboard-card glass metric-card" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; border-left: 4px solid var(--color-primary);">
-              <span class="metric-label" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Tổng Ngân Sách Mua (Tháng sau)</span>
+              <span class="metric-label" id="label-forecast-budget" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Tổng Ngân Sách Mua (Tháng sau)</span>
               <div class="metric-value text-primary" id="forecast-summary-total-cost" style="font-size: 1.5rem; font-weight: 700; color: var(--color-primary);">₫0</div>
               <span class="metric-trend text-secondary" id="forecast-summary-items-count" style="font-size: 0.72rem;">(0 sản phẩm, 0 cái)</span>
             </div>
@@ -698,8 +704,8 @@
                     <th>Sản phẩm</th>
                     <th>Nhà máy</th>
                     <th width="150">Đơn giá (Vốn / Seller)</th>
-                    <th width="120">Sản lượng bán (Tháng này)</th>
-                    <th width="120">Dự báo bán (Tháng sau)</th>
+                    <th width="120" id="th-actual-sales">Sản lượng bán (Tháng này)</th>
+                    <th width="120" id="th-forecast-sales">Dự báo bán (Tháng sau)</th>
                     <th width="110">Tồn kho hiện tại</th>
                     <th width="110">Tồn kho an toàn</th>
                     <th width="110">Số lượng cần mua</th>
@@ -718,7 +724,7 @@
           <div class="dashboard-card glass table-card" style="margin-top: 1.5rem;" id="consumption-card">
             <div class="card-title-bar" style="flex-wrap: wrap; gap: 1rem;">
               <div>
-                <h3>Báo Cáo Vật Tư Tiêu Hao Thực Tế (Tháng Này)</h3>
+                <h3 id="title-consumption-report">Báo Cáo Vật Tư Tiêu Hao Thực Tế (Tháng Này)</h3>
                 <span class="text-secondary" style="font-size: 0.8rem; display: block; margin-top: 0.25rem;">Tổng hợp chi tiết khối lượng và chi phí nguyên vật liệu thực sự tiêu thụ để sản xuất sản lượng bán trong tháng</span>
               </div>
               <span class="status-summary-inline" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-weight: 500;">
@@ -748,7 +754,7 @@
           <div class="dashboard-card glass table-card" style="margin-top: 1.5rem;" id="mrp-card">
             <div class="card-title-bar" style="flex-wrap: wrap; gap: 1rem;">
               <div>
-                <h3>Dự Tính Nhu Cầu Nguyên Vật Liệu Cần Mua (MRP)</h3>
+                <h3 id="title-mrp-report">Dự Tính Nhu Cầu Nguyên Vật Liệu Cần Mua (MRP)</h3>
                 <span class="text-secondary" style="font-size: 0.8rem; display: block; margin-top: 0.25rem;">Bóc tách chi tiết tổng số lượng nguyên vật liệu cần đặt mua từ nhà cung cấp dựa trên nhu cầu sản phẩm</span>
               </div>
               <span class="status-summary-inline" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-weight: 500;">
@@ -1022,6 +1028,6 @@ function doPost(e) {
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=11.0" type="module"></script>
+  <script src="app.js?v=12.0" type="module"></script>
 </body>
 </html>
