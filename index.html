@@ -309,7 +309,7 @@
                 <div class="sticky-cost-bar" style="position: sticky; top: -1.75rem; z-index: 100; margin: 0 -1.75rem 1.5rem -1.75rem; padding: 1rem 1.75rem; background: var(--bg-secondary); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-glass); display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 8px 20px -6px rgba(0,0,0,0.3);">
                   <div style="display: flex; flex-direction: column; gap: 0.15rem;">
                     <span style="font-size: 0.72rem; color: #a5b4fc; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">Giá vốn cơ bản</span>
-                    <strong style="font-size: 1.15rem; color: var(--text-primary);">₫<span id="sticky-base-cost">0</span></strong>
+                    <strong style="font-size: 1.15rem; color: var(--text-primary);">₫<span id="sticky-base-cost">0</span> <span id="sticky-payback-base-cost-badge" style="font-size: 0.72rem; color: #f59e0b; font-weight: 500; display: none;">(Trước HV: ₫0)</span></strong>
                   </div>
                   
                   <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-glass);">
@@ -319,7 +319,7 @@
 
                   <div style="display: flex; flex-direction: column; gap: 0.15rem; text-align: right;">
                     <span style="font-size: 0.72rem; color: #34d399; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">Giá bán cho Seller</span>
-                    <strong style="font-size: 1.3rem; color: #34d399;">₫<span id="sticky-seller-price">0</span></strong>
+                    <strong style="font-size: 1.3rem; color: #34d399;">₫<span id="sticky-seller-price">0</span> <span id="sticky-payback-seller-price-badge" style="font-size: 0.78rem; color: #f59e0b; font-weight: 600; display: none;">(Trước HV: ₫0)</span></strong>
                   </div>
                 </div>
 
@@ -589,14 +589,53 @@
                   </div>
                 </div>
 
+                <!-- Part 5: CapEx Amortization Surcharge -->
+                <div class="cost-section" style="background: rgba(245, 158, 11, 0.02); border: 1px dashed rgba(245, 158, 11, 0.2); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                  <h4 style="color: #f59e0b; display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; margin-bottom: 0.75rem;">
+                    <span>⚙️</span> 5. Khấu Hao Hòa Vốn Đầu Tư Máy Móc (Tùy Chọn)
+                  </h4>
+                  <div class="form-grid-3">
+                    <div class="form-group">
+                      <label for="payback-machine-select" style="color: var(--text-secondary);">Liên kết máy hoàn vốn:</label>
+                      <select id="payback-machine-select" class="form-input calc-trigger" style="background: var(--bg-input); border-color: var(--border-glass); color: var(--text-primary);">
+                        <option value="">-- Không liên kết --</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="payback-machine-qty" style="color: var(--text-secondary);">Số lượng tiêu hao/sản phẩm:</label>
+                      <input type="number" step="0.0001" min="0" id="payback-machine-qty" value="1" class="form-input calc-trigger" style="background: var(--bg-input); border-color: var(--border-glass); color: var(--text-primary);">
+                      <span class="help-text" id="payback-machine-unit-help">Đơn vị tiêu hao của máy</span>
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; justify-content: center;">
+                      <label style="color: var(--text-secondary);">Phụ phí hoàn vốn cộng thêm</label>
+                      <div class="font-bold" style="color: #f59e0b; font-size: 1.1rem; margin-top: 0.25rem;" id="calc-payback-surcharge">₫0</div>
+                    </div>
+                  </div>
+                  <div id="calc-payback-info-banner" style="display: none; margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); color: #34d399; font-size: 0.72rem; border-radius: 4px;">
+                    Thông tin hoàn vốn máy móc...
+                  </div>
+                </div>
+
                 <!-- Total cost results summary -->
                 <div class="form-result-block glass-card">
                   <div class="base-cost-title">
                     <h4>GIÁ VỐN SẢN PHẨM CƠ BẢN (BASE COST)</h4>
                     <span class="badge-factory-type" id="form-result-factory-badge">Nhà máy In</span>
                   </div>
-                  <div class="base-cost-display">
-                    <span class="currency-symbol">₫</span><span id="calculated-base-cost">0</span>
+                  <div id="cost-standard-container">
+                    <div class="base-cost-display">
+                      <span class="currency-symbol">₫</span><span id="calculated-base-cost">0</span>
+                    </div>
+                  </div>
+                  <div id="cost-payback-container" style="display: none; margin-bottom: 0.75rem; padding: 0.75rem; background: rgba(245, 158, 11, 0.05); border: 1px dashed rgba(245, 158, 11, 0.2); border-radius: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                      <span style="font-size: 0.78rem; color: #f59e0b; font-weight: 600;">Giai đoạn 1: Trước hòa vốn máy</span>
+                      <strong style="font-size: 1.15rem; color: #f59e0b;">₫<span id="calculated-payback-base-cost">0</span></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span style="font-size: 0.78rem; color: var(--text-secondary);">Giai đoạn 2: Sau hòa vốn (Tiêu chuẩn)</span>
+                      <strong style="font-size: 1.0rem; color: var(--text-muted);">₫<span id="calculated-standard-base-cost-label">0</span></strong>
+                    </div>
                   </div>
                   <div class="base-cost-breakdown" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
                     <div class="breakdown-item">
@@ -623,9 +662,21 @@
                       <span style="font-size: 0.85rem; color: #a5b4fc; font-weight: 500;">Tỷ lệ lợi nhuận mong muốn:</span>
                       <span style="font-size: 0.85rem; color: #fff; font-weight: 600;"><span id="bottom-profit-percentage">20</span>%</span>
                     </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.25rem;">
+                    
+                    <div id="seller-price-standard-container" style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.25rem;">
                       <span style="font-size: 0.9rem; color: #34d399; font-weight: 600;">GIÁ BÁN CHO SELLER:</span>
                       <span style="font-size: 1.5rem; color: #34d399; font-weight: 700;"><span style="font-size: 1.1rem;">₫</span><span id="calculated-seller-price">0</span></span>
+                    </div>
+
+                    <div id="seller-price-payback-container" style="display: none; flex-direction: column; gap: 0.35rem; margin-top: 0.25rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.06);">
+                      <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 0.85rem; color: #f59e0b; font-weight: 600;">GIÁ BÁN TRƯỚC HÒA VỐN:</span>
+                        <span style="font-size: 1.35rem; color: #f59e0b; font-weight: 700;"><span style="font-size: 1.0rem;">₫</span><span id="calculated-payback-seller-price">0</span></span>
+                      </div>
+                      <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 0.78rem; color: var(--text-secondary);">GIÁ BÁN SAU HÒA VỐN:</span>
+                        <span style="font-size: 1.0rem; color: var(--text-muted); font-weight: 600;"><span style="font-size: 0.85rem;">₫</span><span id="calculated-standard-seller-price-label">0</span></span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -867,6 +918,53 @@
                   <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Lưu cấu hình nhân sự &amp; bảng lương</button>
                 </form>
               </div>
+
+              <!-- CapEx Machine Payback Management -->
+              <div class="dashboard-card glass" style="margin-top: 1.5rem;" id="settings-capex-card">
+                <div class="card-title-bar">
+                  <h3>Quản Lý Đầu Tư &amp; Hòa Vốn Máy Móc (CapEx)</h3>
+                  <span class="text-secondary">Khai báo vốn đầu tư máy móc, số năm và sản lượng mục tiêu để tính phụ phí hoàn vốn</span>
+                </div>
+                
+                <!-- Form to Add Machine -->
+                <form id="settings-capex-form" class="settings-form" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 1.25rem; margin-bottom: 1.25rem;">
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label for="capex-mach-name">Tên máy móc đầu tư <span class="required">*</span></label>
+                      <input type="text" id="capex-mach-name" class="form-input" required placeholder="Ví dụ: Máy in Konica C4000">
+                    </div>
+                    <div class="form-group">
+                      <label for="capex-mach-investment">Vốn đầu tư (CapEx - ₫) <span class="required">*</span></label>
+                      <input type="text" id="capex-mach-investment" class="form-input currency-input" required placeholder="Ví dụ: 150.000.000">
+                    </div>
+                  </div>
+                  <div class="form-grid-3" style="margin-top: 0.5rem;">
+                    <div class="form-group">
+                      <label for="capex-mach-years">Số năm hoàn vốn mục tiêu <span class="required">*</span></label>
+                      <input type="number" id="capex-mach-years" min="0.5" step="0.5" value="2" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="capex-mach-expected-vol">Sản lượng dự kiến/năm <span class="required">*</span></label>
+                      <input type="number" id="capex-mach-expected-vol" min="1" value="20000" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="capex-mach-unit-type">Đơn vị tính máy móc <span class="required">*</span></label>
+                      <select id="capex-mach-unit-type" class="form-input" required style="background: var(--bg-input); border-color: var(--border-glass); color: var(--text-primary);">
+                        <option value="Click">Click (máy in Konica)</option>
+                        <option value="Tờ">Tờ (khổ decal)</option>
+                        <option value="Mét">Mét (khổ UV-DTF)</option>
+                        <option value="Cái">Cái (sản phẩm)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; background: var(--color-warning); border-color: var(--color-warning);">+ Thêm Máy Móc Đầu Tư</button>
+                </form>
+
+                <!-- List of Active Machine Investments -->
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;" id="settings-capex-list">
+                  <!-- Dynamically populated machine payback cards -->
+                </div>
+              </div>
             </div>
 
             <div class="settings-column">
@@ -1034,6 +1132,6 @@ function doPost(e) {
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=13.0" type="module"></script>
+  <script src="app.js?v=14.0" type="module"></script>
 </body>
 </html>

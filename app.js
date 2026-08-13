@@ -82,7 +82,29 @@ const DEFAULT_SETTINGS = {
         { name: "Nhân viên Thêu - QC D", salary: 8500000 }
       ]
     }
-  }
+  },
+  machines: [
+    {
+      id: "mach-konica",
+      name: "Máy in Konica C4000",
+      investment: 150000000,
+      paybackYears: 2,
+      expectedVolumePerYear: 20000,
+      currentVolume: 12000,
+      surchargePerUnit: 3750,
+      unitType: "Click"
+    },
+    {
+      id: "mach-uvdtf",
+      name: "Máy in UV-DTF 60cm",
+      investment: 200000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 15000,
+      currentVolume: 8000,
+      surchargePerUnit: 4444,
+      unitType: "Mét"
+    }
+  ]
 };
 
 const MOCK_PRODUCTS = [
@@ -312,7 +334,8 @@ class AppStateManager {
         return {
           ...DEFAULT_SETTINGS,
           ...parsed,
-          hr: migratedHr
+          hr: migratedHr,
+          machines: parsed.machines || DEFAULT_SETTINGS.machines || []
         };
       } catch (e) { 
         console.error("Error parsing settings", e); 
@@ -586,12 +609,32 @@ function calculateProductCost(product, settings) {
   const baseSubtotal = materialsCost + laborCost + electricityCost;
   const overheadCost = baseSubtotal * (overheadPercentage / 100);
 
-  // 5. Tổng giá vốn cơ bản
+  // 5. Tổng giá vốn cơ bản (sau khi hòa vốn - Tiêu chuẩn)
   const baseCost = Math.round(baseSubtotal + overheadCost);
 
-  // 6. Giá bán đề xuất cho Seller (+ lợi nhuận mong muốn)
+  // 6. Giá bán đề xuất cho Seller sau khi hòa vốn
   const profitPercentage = product.profitPercentage !== undefined ? product.profitPercentage : (settings.defaultProfitMargin !== undefined ? settings.defaultProfitMargin : 20);
   const sellerPrice = Math.round(baseCost * (1 + profitPercentage / 100));
+
+  // 7. Tính toán phụ phí hòa vốn máy móc (nếu có)
+  let paybackSurcharge = 0;
+  let machineName = "";
+  let isMachineActive = false;
+
+  if (product.paybackMachineId && settings.machines) {
+    const machine = settings.machines.find(m => m.id === product.paybackMachineId);
+    if (machine) {
+      machineName = machine.name;
+      const targetVolume = (machine.paybackYears || 0) * (machine.expectedVolumePerYear || 0);
+      if ((machine.currentVolume || 0) < targetVolume) {
+        isMachineActive = true;
+        paybackSurcharge = (product.paybackMachineQty || 0) * (machine.surchargePerUnit || 0);
+      }
+    }
+  }
+
+  const paybackBaseCost = baseCost + Math.round(paybackSurcharge);
+  const paybackSellerPrice = Math.round(paybackBaseCost * (1 + profitPercentage / 100));
 
   return {
     materialsCost,
@@ -600,6 +643,11 @@ function calculateProductCost(product, settings) {
     overheadCost,
     baseCost,
     sellerPrice,
+    paybackBaseCost,
+    paybackSellerPrice,
+    isMachineActive,
+    machineName,
+    paybackSurcharge,
     profitPercentage,
     breakdown: {
       designerCost,
@@ -1107,6 +1155,26 @@ function renderCalculator() {
   document.getElementById("overhead-rate-percentage").value = selectedProduct.overheadPercentage !== undefined ? selectedProduct.overheadPercentage : state.settings.defaultOverhead;
   document.getElementById("profit-margin-percentage").value = selectedProduct.profitPercentage !== undefined ? selectedProduct.profitPercentage : (state.settings.defaultProfitMargin !== undefined ? state.settings.defaultProfitMargin : 20);
 
+  // Populate payback machine dropdown options
+  const paybackSelect = document.getElementById("payback-machine-select");
+  if (paybackSelect) {
+    paybackSelect.innerHTML = `<option value="">-- Không liên kết --</option>`;
+    if (state.settings.machines) {
+      state.settings.machines.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = m.name;
+        paybackSelect.appendChild(opt);
+      });
+    }
+    paybackSelect.value = selectedProduct.paybackMachineId || "";
+  }
+
+  const paybackQtyInput = document.getElementById("payback-machine-qty");
+  if (paybackQtyInput) {
+    paybackQtyInput.value = selectedProduct.paybackMachineQty !== undefined ? selectedProduct.paybackMachineQty : 1;
+  }
+
   // Run calculation & update displays
   triggerLiveCalculation();
 }
@@ -1314,6 +1382,115 @@ function triggerLiveCalculation() {
   document.getElementById("sticky-seller-price").textContent = sellerPrice.toLocaleString('vi-VN');
   document.getElementById("bottom-profit-percentage").textContent = profitPercentage;
 
+  // 7. Tính khấu hao hoàn vốn máy móc live
+  const paybackMachineSelect = document.getElementById("payback-machine-select");
+  const paybackMachineQty = parseFloat(document.getElementById("payback-machine-qty").value) || 0;
+  const paybackSurchargeEl = document.getElementById("calc-payback-surcharge");
+  const paybackInfoEl = document.getElementById("calc-payback-info-banner");
+  
+  const costStandardContainer = document.getElementById("cost-standard-container");
+  const costPaybackContainer = document.getElementById("cost-payback-container");
+  const sellerPriceStandard = document.getElementById("seller-price-standard-container");
+  const sellerPricePayback = document.getElementById("seller-price-payback-container");
+  
+  const stickyPaybackBaseCostBadge = document.getElementById("sticky-payback-base-cost-badge");
+  const stickyPaybackSellerPriceBadge = document.getElementById("sticky-payback-seller-price-badge");
+
+  let paybackSurcharge = 0;
+  let isMachineActive = false;
+
+  if (paybackMachineSelect && paybackMachineSelect.value && state.settings.machines) {
+    const machine = state.settings.machines.find(m => m.id === paybackMachineSelect.value);
+    if (machine) {
+      const targetVolume = (machine.paybackYears || 0) * (machine.expectedVolumePerYear || 0);
+      paybackSurcharge = paybackMachineQty * (machine.surchargePerUnit || 0);
+      
+      const helpTextEl = document.getElementById("payback-machine-unit-help");
+      if (helpTextEl) helpTextEl.textContent = `Quy đổi theo đơn vị ${machine.unitType} của máy`;
+      
+      if ((machine.currentVolume || 0) < targetVolume) {
+        isMachineActive = true;
+      }
+      
+      if (paybackInfoEl) {
+        paybackInfoEl.style.display = "block";
+        const progress = ((machine.currentVolume || 0) / targetVolume * 100).toFixed(1);
+        
+        let monthlyVolume = 0;
+        state.products.forEach(p => {
+          if (p.paybackMachineId === machine.id) {
+            const qtyInProduct = p.paybackMachineQty || 0;
+            const salesMonth = p.forecast.actualSales || 0;
+            monthlyVolume += salesMonth * qtyInProduct;
+          }
+        });
+        
+        const annualRunRate = monthlyVolume * 12;
+        let speedHtml = "";
+        
+        if (annualRunRate > 0) {
+          const remainingVol = targetVolume - (machine.currentVolume || 0);
+          const remainingYearsTarget = remainingVol / (machine.expectedVolumePerYear || 20000);
+          const remainingYearsActual = remainingVol / annualRunRate;
+          
+          if (remainingYearsActual < remainingYearsTarget) {
+            const monthsActual = Math.round(remainingYearsActual * 12);
+            speedHtml = `<span style="display:block; margin-top: 0.2rem; color: #10b981; font-weight: 600;">🚀 Tốc độ bán thực tế: ${Math.round(annualRunRate).toLocaleString('vi-VN')} ${machine.unitType}/năm. Dự kiến hòa vốn sau ${monthsActual} tháng (Nhanh hơn dự kiến mục tiêu ${remainingYearsTarget.toFixed(1)} năm)!</span>`;
+          } else {
+            speedHtml = `<span style="display:block; margin-top: 0.2rem; color: #a5b4fc;">Tốc độ bán thực tế: ${Math.round(annualRunRate).toLocaleString('vi-VN')} ${machine.unitType}/năm. Dự kiến hòa vốn sau ${remainingYearsActual.toFixed(1)} năm.</span>`;
+          }
+        } else {
+          speedHtml = `<span style="display:block; margin-top: 0.2rem; color: var(--text-secondary);">Nhập sản lượng bán ở Tab Dự Báo để dự phóng thời gian hòa vốn thực tế.</span>`;
+        }
+
+        paybackInfoEl.innerHTML = `
+          <strong>${machine.name}</strong>: Đã hoàn vốn <strong>${progress}%</strong> (${(machine.currentVolume || 0).toLocaleString('vi-VN')} / ${targetVolume.toLocaleString('vi-VN')} ${machine.unitType}).
+          ${speedHtml}
+        `;
+      }
+    }
+  } else {
+    if (paybackInfoEl) paybackInfoEl.style.display = "none";
+    const helpTextEl = document.getElementById("payback-machine-unit-help");
+    if (helpTextEl) helpTextEl.textContent = `Đơn vị tiêu hao của máy`;
+  }
+
+  if (paybackSurchargeEl) {
+    paybackSurchargeEl.textContent = formatVND(paybackSurcharge);
+  }
+
+  if (isMachineActive && paybackSurcharge > 0) {
+    const paybackBaseCost = baseCost + Math.round(paybackSurcharge);
+    const paybackSellerPrice = Math.round(paybackBaseCost * (1 + profitPercentage / 100));
+
+    if (costStandardContainer) costStandardContainer.style.display = "none";
+    if (costPaybackContainer) costPaybackContainer.style.display = "block";
+    if (sellerPriceStandard) sellerPriceStandard.style.display = "none";
+    if (sellerPricePayback) sellerPricePayback.style.display = "flex";
+    
+    document.getElementById("calculated-payback-base-cost").textContent = paybackBaseCost.toLocaleString('vi-VN');
+    document.getElementById("calculated-standard-base-cost-label").textContent = baseCost.toLocaleString('vi-VN');
+    document.getElementById("calculated-payback-seller-price").textContent = paybackSellerPrice.toLocaleString('vi-VN');
+    document.getElementById("calculated-standard-seller-price-label").textContent = sellerPrice.toLocaleString('vi-VN');
+    
+    if (stickyPaybackBaseCostBadge) {
+      stickyPaybackBaseCostBadge.style.display = "inline";
+      stickyPaybackBaseCostBadge.textContent = `(Trước HV: ₫${paybackBaseCost.toLocaleString('vi-VN')})`;
+    }
+    if (stickyPaybackSellerPriceBadge) {
+      stickyPaybackSellerPriceBadge.style.display = "inline";
+      stickyPaybackSellerPriceBadge.textContent = `(Trước HV: ₫${paybackSellerPrice.toLocaleString('vi-VN')})`;
+    }
+  } else {
+    if (costStandardContainer) costStandardContainer.style.display = "block";
+    if (costPaybackContainer) costPaybackContainer.style.display = "none";
+    if (sellerPriceStandard) sellerPriceStandard.style.display = "flex";
+    if (sellerPricePayback) sellerPricePayback.style.display = "none";
+
+    if (stickyPaybackBaseCostBadge) stickyPaybackBaseCostBadge.style.display = "none";
+    if (stickyPaybackSellerPriceBadge) stickyPaybackSellerPriceBadge.style.display = "none";
+  }
+
   // Breakdown percentages
   if (baseCost > 0) {
     const matPct = Math.round((materialsCost / baseCost) * 100);
@@ -1388,6 +1565,10 @@ function saveProductCostForm(e) {
 
   // Cập nhật tỷ lệ lợi nhuận
   product.profitPercentage = parseFloat(document.getElementById("profit-margin-percentage").value) || 0;
+
+  // Cập nhật cấu hình hoàn vốn máy móc
+  product.paybackMachineId = document.getElementById("payback-machine-select").value || null;
+  product.paybackMachineQty = parseFloat(document.getElementById("payback-machine-qty").value) || 0;
 
   // Lưu vào localStorage
   state.saveProducts();
@@ -1997,6 +2178,132 @@ function renderSettings() {
 
   updateFactoryTotalPayrollBadge("In");
   updateFactoryTotalPayrollBadge("Thêu");
+  renderSettingsPaybackList();
+}
+
+function renderSettingsPaybackList() {
+  const container = document.getElementById("settings-capex-list");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!state.settings.machines || state.settings.machines.length === 0) {
+    container.innerHTML = `<div class="no-data" style="font-size: 0.78rem; text-align: center; padding: 1rem; color: var(--text-secondary);">Chưa khai báo máy móc đầu tư nào.</div>`;
+    return;
+  }
+
+  state.settings.machines.forEach(m => {
+    const targetVolume = (m.paybackYears || 0) * (m.expectedVolumePerYear || 0);
+    const progress = Math.min(100, ((m.currentVolume || 0) / targetVolume * 100)).toFixed(1);
+    
+    let monthlyVolume = 0;
+    state.products.forEach(p => {
+      if (p.paybackMachineId === m.id) {
+        const qtyInProduct = p.paybackMachineQty || 0;
+        const salesMonth = p.forecast.actualSales || 0;
+        monthlyVolume += salesMonth * qtyInProduct;
+      }
+    });
+
+    const annualRunRate = monthlyVolume * 12;
+    let speedHtml = "";
+    
+    if (annualRunRate > 0 && m.currentVolume < targetVolume) {
+      const remainingVol = targetVolume - (m.currentVolume || 0);
+      const remainingYearsTarget = remainingVol / (m.expectedVolumePerYear || 20000);
+      const remainingYearsActual = remainingVol / annualRunRate;
+      
+      if (remainingYearsActual < remainingYearsTarget) {
+        const monthsActual = Math.round(remainingYearsActual * 12);
+        speedHtml = `
+          <div style="margin-top: 0.5rem; padding: 0.4rem 0.6rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 4px; color: #10b981; font-size: 0.72rem; display: flex; align-items: center; gap: 0.35rem;">
+            <span>🚀</span> <strong>Tăng tốc:</strong> Doanh số Tháng 7 quy đổi đạt ${Math.round(annualRunRate).toLocaleString('vi-VN')} ${m.unitType}/năm. Hòa vốn sau <strong>${monthsActual} tháng</strong> (Nhanh hơn dự kiến mục tiêu ${remainingYearsTarget.toFixed(1)} năm)!
+          </div>
+        `;
+      } else {
+        speedHtml = `
+          <div style="margin-top: 0.5rem; padding: 0.4rem 0.6rem; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 4px; color: #a5b4fc; font-size: 0.72rem;">
+            📊 Tốc độ bán thực tế: ${Math.round(annualRunRate).toLocaleString('vi-VN')} ${m.unitType}/năm. Dự kiến hòa vốn sau ${remainingYearsActual.toFixed(1)} năm.
+          </div>
+        `;
+      }
+    } else if (m.currentVolume >= targetVolume) {
+      speedHtml = `
+        <div style="margin-top: 0.5rem; padding: 0.4rem 0.6rem; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); border-radius: 4px; color: #34d399; font-size: 0.72rem; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+          <span>✅</span> Đã hoàn thành hòa vốn! Phụ phí khấu hao máy này trên sản phẩm đã tự động giảm về 0.
+        </div>
+      `;
+    } else {
+      const remainingVol = targetVolume - (m.currentVolume || 0);
+      const remainingYearsTarget = remainingVol / (m.expectedVolumePerYear || 20000);
+      speedHtml = `
+        <div style="margin-top: 0.5rem; padding: 0.4rem 0.6rem; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 4px; color: var(--text-secondary); font-size: 0.72rem;">
+          💡 Tiến độ dự kiến ban đầu: Hòa vốn sau <strong>${remainingYearsTarget.toFixed(1)} năm</strong>. Hãy nhập sản lượng bán tháng 7 để theo dõi thời gian hòa vốn thực tế.
+        </div>
+      `;
+    }
+
+    const row = document.createElement("div");
+    row.className = "glass-card";
+    row.style.padding = "1rem";
+    row.style.background = "rgba(255,255,255,0.015)";
+    row.style.border = "1px solid var(--border-glass)";
+    row.style.borderRadius = "6px";
+    
+    row.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+        <div>
+          <strong style="color: #fff; font-size: 0.85rem;">${m.name}</strong>
+          <span style="font-size: 0.7rem; color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 0.1rem 0.35rem; border-radius: 3px; margin-left: 0.4rem;">+${formatVND(m.surchargePerUnit)} / ${m.unitType}</span>
+        </div>
+        <button type="button" class="btn btn-xs btn-danger capex-delete-btn" data-id="${m.id}" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;">Xóa</button>
+      </div>
+
+      <div style="font-size: 0.75rem; color: var(--text-secondary); display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.35rem; margin-bottom: 0.5rem;">
+        <div>Vốn đầu tư: <strong style="color: #fff;">${formatVND(m.investment)}</strong></div>
+        <div>Mục tiêu: <strong style="color: #fff;">${m.paybackYears} năm</strong> (${m.expectedVolumePerYear.toLocaleString('vi-VN')} ${m.unitType}/năm)</div>
+      </div>
+
+      <div style="margin-bottom: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.2rem;">
+          <span>Hòa vốn: ${m.currentVolume.toLocaleString('vi-VN')} / ${targetVolume.toLocaleString('vi-VN')} ${m.unitType}</span>
+          <strong>${progress}%</strong>
+        </div>
+        <div class="progress-bar-container" style="height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;">
+          <div style="width: ${progress}%; height: 100%; background: linear-gradient(90deg, #f59e0b, #eab308); border-radius: 3px;"></div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+        <label style="font-size: 0.7rem; color: var(--text-secondary);">Sản lượng đã tích lũy:</label>
+        <div style="display: flex; gap: 0.35rem;">
+          <input type="number" class="form-input capex-volume-input" value="${m.currentVolume}" style="max-width: 90px; min-height: 28px; font-size: 0.72rem; padding: 0.15rem 0.35rem; margin: 0; background: rgba(0,0,0,0.2); color: var(--text-primary); border: 1px solid var(--border-glass);">
+          <button type="button" class="btn btn-secondary capex-update-btn" data-id="${m.id}" style="min-height: 28px; padding: 0 0.5rem; font-size: 0.7rem;">Cập nhật</button>
+        </div>
+      </div>
+
+      ${speedHtml}
+    `;
+
+    row.querySelector(".capex-delete-btn").addEventListener("click", () => {
+      if (confirm(`Bạn có muốn xóa thiết lập hòa vốn cho "${m.name}" không?`)) {
+        state.settings.machines = state.settings.machines.filter(x => x.id !== m.id);
+        state.saveSettings(state.settings);
+        renderSettings();
+        renderCalculator();
+      }
+    });
+
+    row.querySelector(".capex-update-btn").addEventListener("click", () => {
+      const vol = parseFloat(row.querySelector(".capex-volume-input").value) || 0;
+      m.currentVolume = vol;
+      state.saveSettings(state.settings);
+      renderSettings();
+      renderCalculator();
+      alert(`Đã cập nhật sản lượng tích lũy của "${m.name}" lên ${vol.toLocaleString('vi-VN')} ${m.unitType}!`);
+    });
+
+    container.appendChild(row);
+  });
 }
 
 function renderHrAccordion(factoryKey, containerId) {
@@ -2589,6 +2896,52 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-settings-export").addEventListener("click", exportBackupData);
   document.getElementById("btn-settings-reset").addEventListener("click", resetMockData);
   document.querySelectorAll(".settings-form .currency-input").forEach(maskCurrencyInput);
+  
+  // CapEx Form submit handler
+  const capexForm = document.getElementById("settings-capex-form");
+  if (capexForm) {
+    const capexInvestmentInput = document.getElementById("capex-mach-investment");
+    if (capexInvestmentInput) maskCurrencyInput(capexInvestmentInput);
+    
+    capexForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("capex-mach-name").value.trim();
+      const investment = parseCurrencyInput(document.getElementById("capex-mach-investment").value);
+      const years = parseFloat(document.getElementById("capex-mach-years").value) || 2;
+      const expectedVol = parseFloat(document.getElementById("capex-mach-expected-vol").value) || 20000;
+      const unitType = document.getElementById("capex-mach-unit-type").value;
+
+      if (!name || investment <= 0 || years <= 0 || expectedVol <= 0) {
+        alert("Vui lòng điền đầy đủ và chính xác thông tin máy móc đầu tư!");
+        return;
+      }
+
+      const targetVolume = years * expectedVol;
+      const surcharge = Math.round(investment / targetVolume);
+      
+      const newMachine = {
+        id: `mach-${Date.now()}`,
+        name,
+        investment,
+        paybackYears: years,
+        expectedVolumePerYear: expectedVol,
+        currentVolume: 0,
+        surchargePerUnit: surcharge,
+        unitType
+      };
+
+      if (!state.settings.machines) {
+        state.settings.machines = [];
+      }
+      state.settings.machines.push(newMachine);
+      state.saveSettings(state.settings);
+
+      capexForm.reset();
+      renderSettings();
+      renderCalculator();
+      alert(`Đã thêm thiết lập hòa vốn thành công cho máy "${name}"!`);
+    });
+  }
   
   // Live hourly rate calculations in Settings
   document.getElementById("settings-standard-hours").addEventListener("input", () => {
