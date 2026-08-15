@@ -2805,50 +2805,76 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
       const file = e.target.files[0];
       if (!file) return;
       
+      const fileExt = file.name.split('.').pop().toLowerCase();
       const reader = new FileReader();
+
       reader.onload = async (evt) => {
-        const text = evt.target.result;
-        if (!text) {
-          alert("File CSV trống hoặc không đúng định dạng!");
-          return;
-        }
+        let rows = [];
 
-        const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-        if (lines.length < 2) {
-          alert("File CSV cần ít nhất 1 dòng tiêu đề và 1 dòng dữ liệu!");
-          return;
-        }
-
-        const firstLine = lines[0];
-        let sep = ",";
-        if (firstLine.includes(";")) sep = ";";
-        else if (firstLine.includes("\t")) sep = "\t";
-
-        const splitCSVRow = (row) => {
-          const result = [];
-          let insideQuote = false;
-          let entry = "";
-          for (let i = 0; i < row.length; i++) {
-            const char = row[i];
-            if (char === '"') {
-              insideQuote = !insideQuote;
-            } else if (char === sep && !insideQuote) {
-              result.push(entry.trim().replace(/^"|"$/g, ''));
-              entry = "";
-            } else {
-              entry += char;
+        try {
+          if (fileExt === 'xlsx' || fileExt === 'xls') {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          } else {
+            const text = evt.target.result;
+            if (!text) {
+              alert("File CSV trống hoặc không đúng định dạng!");
+              return;
             }
-          }
-          result.push(entry.trim().replace(/^"|"$/g, ''));
-          return result;
-        };
 
-        const headers = splitCSVRow(lines[0]).map(h => h.toLowerCase());
+            const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+            if (lines.length < 2) {
+              alert("File CSV cần ít nhất 1 dòng tiêu đề và 1 dòng dữ liệu!");
+              return;
+            }
+
+            const firstLine = lines[0];
+            let sep = ",";
+            if (firstLine.includes(";")) sep = ";";
+            else if (firstLine.includes("\t")) sep = "\t";
+
+            const splitCSVRow = (row) => {
+              const result = [];
+              let insideQuote = false;
+              let entry = "";
+              for (let i = 0; i < row.length; i++) {
+                const char = row[i];
+                if (char === '"') {
+                  insideQuote = !insideQuote;
+                } else if (char === sep && !insideQuote) {
+                  result.push(entry.trim().replace(/^"|"$/g, ''));
+                  entry = "";
+                } else {
+                  entry += char;
+                }
+              }
+              result.push(entry.trim().replace(/^"|"$/g, ''));
+              return result;
+            };
+
+            rows = lines.map(splitCSVRow);
+          }
+        } catch (error) {
+          console.error("Error parsing spreadsheet file:", error);
+          alert("Lỗi khi đọc file! Vui lòng đảm bảo file không bị hỏng và ở định dạng .xlsx, .xls hoặc .csv.");
+          return;
+        }
+
+        if (rows.length < 2) {
+          alert("Bảng tính cần ít nhất 1 dòng tiêu đề và 1 dòng dữ liệu!");
+          return;
+        }
+
+        const headers = rows[0].map(h => String(h || '').trim().toLowerCase());
         
         let skuIdx = -1;
         let nameIdx = -1;
         let varIdx = -1;
         let qtyIdx = -1;
+        let statusIdx = -1;
 
         headers.forEach((h, idx) => {
           if (h.includes("sku") || h.includes("mã") || h.includes("code")) {
@@ -2857,6 +2883,8 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
             nameIdx = idx;
           } else if (h.includes("biến thể") || h.includes("variation") || h.includes("variant") || h.includes("phân loại") || h.includes("kích thước") || h.includes("size")) {
             varIdx = idx;
+          } else if (h.includes("status") || h.includes("trạng thái") || h.includes("tình trạng")) {
+            statusIdx = idx;
           }
           
           if (h.includes("sản lượng") || h.includes("số lượng") || h.includes("qty") || h.includes("quantity") || h.includes("sales") || h.includes("bán")) {
@@ -2870,7 +2898,7 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
 
         const normalizeString = (str) => {
           if (!str) return "";
-          return str.toLowerCase()
+          return String(str).toLowerCase()
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
             .replace(/đ/g, "d")
@@ -2879,7 +2907,7 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
 
         const normalizeSize = (str) => {
           if (!str) return "";
-          const normalized = str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
+          const normalized = String(str).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
           const match = normalized.match(/([0-9]+(\.[0-9]+)?)\s*(inch|inches|in|ip|\"|s)/);
           if (match) return parseFloat(match[1]) + "in";
           const numMatch = normalized.match(/^[0-9]+(\.[0-9]+)?$/);
@@ -2895,13 +2923,13 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
           const normVar = normalizeString(csvVar);
           const normCsvSize = normalizeSize(csvVar) || normalizeSize(csvSku) || normalizeSize(csvName);
 
-          // 1. Exact SKU
+          // 1. Exact SKU Match
           if (normSku) {
             const match = products.find(p => normalizeString(p.code) === normSku);
             if (match) return match;
           }
 
-          // 2. Exact Name
+          // 2. Exact Name Match
           if (normName) {
             const match = products.find(p => normalizeString(p.name) === normName);
             if (match) return match;
@@ -2949,10 +2977,20 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
         let totalRowsParsed = 0;
         let matchedRowsCount = 0;
         let totalQtyImported = 0;
+        let cancelledCount = 0;
 
-        for (let i = 1; i < lines.length; i++) {
-          const cols = splitCSVRow(lines[i]);
-          if (cols.length < 2) continue;
+        for (let i = 1; i < rows.length; i++) {
+          const cols = rows[i];
+          if (!cols || cols.length < 2) continue;
+
+          // Filter out CANCEL status rows
+          if (statusIdx !== -1) {
+            const statusValue = String(cols[statusIdx] || '').trim().toUpperCase();
+            if (statusValue.includes("CANCEL") || statusValue.includes("HỦY")) {
+              cancelledCount++;
+              continue;
+            }
+          }
 
           totalRowsParsed++;
           const sku = cols[skuIdx] || "";
@@ -3027,8 +3065,14 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
 
           if (unmatchedList.length > 0) {
             unmatchedPanel.style.display = "block";
-            if (unmatchedTitle) unmatchedTitle.textContent = `⚠️ Không Thể Đối Khớp (${unmatchedList.length} dòng đã bỏ qua)`;
+            let warningText = `⚠️ Không Thể Đối Khớp (${unmatchedList.length} dòng đã bỏ qua)`;
+            if (cancelledCount > 0) warningText += ` [Đã lọc bỏ ${cancelledCount} dòng Hủy đơn]`;
+            if (unmatchedTitle) unmatchedTitle.textContent = warningText;
             unmatchedListEl.textContent = unmatchedList.join("\n");
+          } else if (cancelledCount > 0) {
+            unmatchedPanel.style.display = "block";
+            if (unmatchedTitle) unmatchedTitle.textContent = `ℹ️ Đã tự động lọc bỏ ${cancelledCount} dòng đơn hàng CANCEL/HỦY`;
+            unmatchedListEl.textContent = "Không có dòng không đối khớp nào bị lỗi.";
           } else {
             unmatchedPanel.style.display = "none";
           }
@@ -3037,12 +3081,17 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
             reportModal.showModal();
           }
         } else {
-          alert("Không khớp được sản phẩm nào trong file CSV! Vui lòng kiểm tra lại cột Mã sản phẩm (SKU) hoặc Tên sản phẩm.");
+          alert("Không khớp được sản phẩm nào trong file Excel/CSV! Vui lòng kiểm tra lại cột Mã sản phẩm (SKU) hoặc Tên sản phẩm.");
         }
         
         salesCsvFileInput.value = "";
       };
-      reader.readAsText(file);
+
+      if (fileExt === 'xlsx' || fileExt === 'xls') {
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.readAsText(file);
+      }
     });
   }
 

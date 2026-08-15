@@ -708,9 +708,9 @@
             </div>
             <div>
               <button type="button" class="btn btn-secondary" id="btn-import-sales-csv" onclick="document.getElementById('sales-csv-file').click()" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; background: rgba(245, 158, 11, 0.05); padding: 0.45rem 0.85rem; border-radius: 6px;">
-                <span>📊</span> Nhập Doanh Số (.csv)
+                <span>📊</span> Nhập Doanh Số (Excel/CSV)
               </button>
-              <input type="file" id="sales-csv-file" accept=".csv" style="display: none;">
+              <input type="file" id="sales-csv-file" accept=".xlsx, .xls, .csv" style="display: none;">
             </div>
           </div>
 
@@ -1228,7 +1228,10 @@ function doPost(e) {
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
+  <!-- Excel Parser via SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <!-- Application script -->
-  <script src="app.js?v=15.0" type="module"></script>
+  <script src="app.js?v=16.0" type="module"></script>
 </body>
 </html>
