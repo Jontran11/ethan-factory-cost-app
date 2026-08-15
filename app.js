@@ -2772,6 +2772,33 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("forecast-search").addEventListener("input", renderForecast);
   document.getElementById("forecast-filter-factory").addEventListener("change", renderForecast);
 
+  const downloadSampleBtn = document.getElementById("btn-download-sample-csv");
+  if (downloadSampleBtn) {
+    downloadSampleBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const csvContent = 
+`Mã sản phẩm (SKU),Tên sản phẩm,Biến thể (Size),Số lượng bán
+ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,2 inches,1500
+ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,2 inches,1200
+ST-TK-SUA-03,Sticker Decal ThaiKK Sữa Mờ,2 inches,2400
+ST-UV-DTF-04,Sticker UV-DTF,2 inches,3500
+PC-PAPER-01,Bộ bài Playing Cards (Hộp giấy),Mặc định,150
+HD-EMB-01,Áo hoodie thêu nổi chữ kí Signature,Mặc định,250
+ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,3 inches,800
+ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
+
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "doanh_so_mau_thang_7.csv");
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  }
+
   const salesCsvFileInput = document.getElementById("sales-csv-file");
   if (salesCsvFileInput) {
     salesCsvFileInput.addEventListener("change", (e) => {

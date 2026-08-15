@@ -720,6 +720,40 @@
             <span id="alert-banner-text">Vui lòng nhập sản lượng bán thực tế của tháng cũ để xem chi phí tiêu hao và dự báo cho tháng tới.</span>
           </div>
 
+          <!-- CSV Format Guide Panel -->
+          <div class="glass-card" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px dashed var(--border-glass); background: rgba(245, 158, 11, 0.02); border-radius: 8px;">
+            <h4 style="color: #f59e0b; font-size: 0.82rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
+              <span>💡</span> Hướng Dẫn Định Dạng File Excel/CSV Nhập Doanh Số:
+            </h4>
+            <p style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.5rem; line-height: 1.4;">
+              Hệ thống hỗ trợ đọc trực tiếp file xuất kho hoặc báo cáo bán hàng từ Shopee/Shopify/Lazada dưới dạng <strong>.csv</strong>. File của bạn cần có các cột chính sau:
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.5rem; font-size: 0.72rem; color: #fff; margin-bottom: 0.75rem;">
+              <div style="background: rgba(0,0,0,0.2); padding: 0.4rem; border-radius: 4px; border: 1px solid var(--border-glass);">
+                🔑 <strong>Cột 1: Mã sản phẩm (SKU)</strong><br>
+                <span style="color: var(--text-secondary); font-size: 0.65rem;">Chứa từ khóa: "sku", "mã", "code"</span>
+              </div>
+              <div style="background: rgba(0,0,0,0.2); padding: 0.4rem; border-radius: 4px; border: 1px solid var(--border-glass);">
+                📦 <strong>Cột 2: Tên sản phẩm</strong><br>
+                <span style="color: var(--text-secondary); font-size: 0.65rem;">Chứa từ khóa: "tên", "name", "sản phẩm"</span>
+              </div>
+              <div style="background: rgba(0,0,0,0.2); padding: 0.4rem; border-radius: 4px; border: 1px solid var(--border-glass);">
+                ⚙️ <strong>Cột 3: Biến thể (Kích thước)</strong><br>
+                <span style="color: var(--text-secondary); font-size: 0.65rem;">Chứa từ khóa: "biến thể", "size", "variation"</span>
+              </div>
+              <div style="background: rgba(0,0,0,0.2); padding: 0.4rem; border-radius: 4px; border: 1px solid var(--border-glass);">
+                📈 <strong>Cột 4: Số lượng bán</strong><br>
+                <span style="color: var(--text-secondary); font-size: 0.65rem;">Chứa từ khóa: "số lượng", "qty", "bán"</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 0.5rem;">
+              <span style="font-size: 0.7rem; color: var(--text-muted);">* Lưu ý: Hãy lưu file Excel của bạn ở dạng CSV UTF-8 (Comma Delimited) trước khi tải lên.</span>
+              <a href="#" id="btn-download-sample-csv" style="font-size: 0.7rem; color: #34d399; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;">
+                📥 Tải File CSV Mẫu Đối Khớp 2 Inches
+              </a>
+            </div>
+          </div>
+
           <!-- Monthly Sales & Revenue Summary Cards -->
           <div class="dashboard-grid" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
             <div class="dashboard-card glass metric-card" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; border-left: 4px solid var(--color-print);">
@@ -1195,6 +1229,6 @@ function doPost(e) {
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=14.0" type="module"></script>
+  <script src="app.js?v=15.0" type="module"></script>
 </body>
 </html>
