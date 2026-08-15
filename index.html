@@ -1127,6 +1127,69 @@ function doPost(e) {
     </div>
   </dialog>
 
+  <!-- Dynamic Modal for Sales Import & July Report -->
+  <dialog id="sales-report-modal" class="glass-modal" style="max-width: 800px; width: 90%;">
+    <div class="modal-content">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem;">
+        <h3 style="color: #34d399; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span>📊</span> Báo Cáo Kết Quả Nhập Doanh Số Tháng 7
+        </h3>
+        <button class="btn-close" id="sales-report-close-btn" style="background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 1rem 0; max-height: 60vh; overflow-y: auto;">
+        
+        <!-- Summary widgets -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="glass-card" style="padding: 0.75rem; border: 1px solid rgba(52,211,153,0.2); background: rgba(52,211,153,0.02); border-radius: 6px; text-align: center;">
+            <div style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Tổng Dòng Nhập Vào</div>
+            <strong style="font-size: 1.5rem; color: #34d399;" id="sales-report-total-rows">0</strong>
+          </div>
+          <div class="glass-card" style="padding: 0.75rem; border: 1px solid rgba(59,130,246,0.2); background: rgba(59,130,246,0.02); border-radius: 6px; text-align: center;">
+            <div style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Khớp Thành Công</div>
+            <strong style="font-size: 1.5rem; color: #60a5fa;" id="sales-report-matched-rows">0</strong>
+          </div>
+          <div class="glass-card" style="padding: 0.75rem; border: 1px solid rgba(245,158,11,0.2); background: rgba(245,158,11,0.02); border-radius: 6px; text-align: center;">
+            <div style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Số Lượng Bán Ra (Tổng)</div>
+            <strong style="font-size: 1.5rem; color: #f59e0b;" id="sales-report-total-qty">0</strong>
+          </div>
+        </div>
+
+        <h4 style="font-size: 0.85rem; color: #fff; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Bảng Đối Khớp & Sản Lượng Bán Lẻ Tháng 7</h4>
+        <div style="overflow-x: auto; border: 1px solid var(--border-glass); border-radius: 6px; margin-bottom: 1.5rem;">
+          <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left;">
+            <thead>
+              <tr style="background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-glass);">
+                <th style="padding: 0.6rem;">Mã SKU</th>
+                <th style="padding: 0.6rem;">Tên Sản Phẩm (Hệ Thống)</th>
+                <th style="padding: 0.6rem;">Biến thể (Size)</th>
+                <th style="padding: 0.6rem; text-align: right;">Số lượng bán T7</th>
+                <th style="padding: 0.6rem; text-align: right;">Dự báo T8 (+10%)</th>
+              </tr>
+            </thead>
+            <tbody id="sales-report-tbody">
+              <!-- Dynamically populated matched product summary rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Warning / Skip Rows Panel -->
+        <div id="sales-report-unmatched-panel" style="display: none;">
+          <h4 style="font-size: 0.82rem; color: #f87171; margin-bottom: 0.5rem; text-transform: uppercase;" id="sales-report-unmatched-title">
+            ⚠️ Không Thể Đối Khớp (0 dòng đã bỏ qua)
+          </h4>
+          <p style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+            Dưới đây là danh sách Mã/Tên không tìm thấy trong danh mục Sản phẩm hệ thống. Vui lòng tạo sản phẩm hoặc sửa mã để khớp tự động:
+          </p>
+          <pre id="sales-report-unmatched-list" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(248,113,113,0.2); padding: 0.5rem 0.75rem; border-radius: 4px; font-size: 0.7rem; color: #fca5a5; font-family: monospace; overflow-x: auto; max-height: 120px; white-space: pre-wrap; word-break: break-all;"></pre>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.75rem; display: flex; justify-content: flex-end;">
+        <button type="button" class="btn btn-primary" id="sales-report-btn-done">Hoàn thành &amp; Xem dự báo MRP</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- LaTeX rendering via MathJax -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>

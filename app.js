@@ -2820,6 +2820,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         let skuIdx = -1;
         let nameIdx = -1;
+        let varIdx = -1;
         let qtyIdx = -1;
 
         headers.forEach((h, idx) => {
@@ -2827,45 +2828,134 @@ document.addEventListener("DOMContentLoaded", () => {
             skuIdx = idx;
           } else if (h.includes("tên") || h.includes("name") || h.includes("sản phẩm") || h.includes("product")) {
             nameIdx = idx;
+          } else if (h.includes("biến thể") || h.includes("variation") || h.includes("variant") || h.includes("phân loại") || h.includes("kích thước") || h.includes("size")) {
+            varIdx = idx;
           }
+          
           if (h.includes("sản lượng") || h.includes("số lượng") || h.includes("qty") || h.includes("quantity") || h.includes("sales") || h.includes("bán")) {
             qtyIdx = idx;
           }
         });
 
-        if (skuIdx === -1 && nameIdx === -1) {
-          skuIdx = 0;
-        }
-        if (qtyIdx === -1) {
-          qtyIdx = 1;
+        if (skuIdx === -1) skuIdx = 0;
+        if (nameIdx === -1) nameIdx = 1;
+        if (qtyIdx === -1) qtyIdx = 2;
+
+        const normalizeString = (str) => {
+          if (!str) return "";
+          return str.toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d")
+            .replace(/[^a-z0-9]/g, "");
+        };
+
+        const normalizeSize = (str) => {
+          if (!str) return "";
+          const normalized = str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
+          const match = normalized.match(/([0-9]+(\.[0-9]+)?)\s*(inch|inches|in|ip|\"|s)/);
+          if (match) return parseFloat(match[1]) + "in";
+          const numMatch = normalized.match(/^[0-9]+(\.[0-9]+)?$/);
+          if (numMatch) return parseFloat(numMatch[0]) + "in";
+          const anyNum = normalized.match(/([0-9]+(\.[0-9]+)?)/);
+          if (anyNum) return parseFloat(anyNum[1]) + "in";
+          return "";
+        };
+
+        const findBestMatch = (csvSku, csvName, csvVar, products) => {
+          const normSku = normalizeString(csvSku);
+          const normName = normalizeString(csvName);
+          const normVar = normalizeString(csvVar);
+          const normCsvSize = normalizeSize(csvVar) || normalizeSize(csvSku) || normalizeSize(csvName);
+
+          // 1. Exact SKU
+          if (normSku) {
+            const match = products.find(p => normalizeString(p.code) === normSku);
+            if (match) return match;
+          }
+
+          // 2. Exact Name
+          if (normName) {
+            const match = products.find(p => normalizeString(p.name) === normName);
+            if (match) return match;
+          }
+
+          // 3. Partial Name/Code matching
+          const potentials = products.filter(p => {
+            const normPCode = normalizeString(p.code);
+            const normPName = normalizeString(p.name);
+            const skuPartial = normSku && (normPCode.includes(normSku) || normSku.includes(normPCode));
+            const namePartial = normName && (normPName.includes(normName) || normPName.includes(normPName));
+            return skuPartial || namePartial;
+          });
+
+          if (potentials.length === 1) return potentials[0];
+
+          if (potentials.length > 1) {
+            if (normCsvSize) {
+              const sizeMatch = potentials.find(p => {
+                const pSize = normalizeSize(p.name) || (p.sizeVariation ? p.sizeVariation + "in" : "");
+                return pSize === normCsvSize;
+              });
+              if (sizeMatch) return sizeMatch;
+            }
+            
+            const prefixMatch = potentials.find(p => {
+              if (!normSku || !p.code) return false;
+              return normSku.startsWith(normalizeString(p.code));
+            });
+            if (prefixMatch) return prefixMatch;
+          }
+          return null;
+        };
+
+        const overwrite = confirm("Hệ thống sẽ đặt lại số lượng bán Tháng 7 của tất cả sản phẩm về 0 trước khi nhập. Nhấn OK để đồng ý (Khuyên dùng), nhấn Cancel để CỘNG DỒN doanh số mới.");
+        if (overwrite) {
+          state.products.forEach(p => {
+            p.forecast.actualSales = 0;
+            p.forecast.salesForecast = 0;
+          });
         }
 
-        let updatedCount = 0;
-        let unmatchedRows = [];
+        const quantitiesToAdd = {};
+        const unmatchedList = [];
+        let totalRowsParsed = 0;
+        let matchedRowsCount = 0;
+        let totalQtyImported = 0;
 
         for (let i = 1; i < lines.length; i++) {
           const cols = splitCSVRow(lines[i]);
           if (cols.length < 2) continue;
 
-          const identifier = cols[skuIdx] || cols[nameIdx] || "";
+          totalRowsParsed++;
+          const sku = cols[skuIdx] || "";
+          const name = cols[nameIdx] || "";
+          const variation = varIdx !== -1 ? cols[varIdx] || "" : "";
           const qtyVal = parseFloat(cols[qtyIdx]) || 0;
 
-          if (!identifier) continue;
+          if (!sku && !name) continue;
 
-          const matchedProd = state.products.find(p => {
-            const skuMatch = p.code && p.code.toLowerCase().trim() === identifier.toLowerCase().trim();
-            const nameMatch = p.name && p.name.toLowerCase().trim() === identifier.toLowerCase().trim();
-            return skuMatch || nameMatch;
-          });
-
+          const matchedProd = findBestMatch(sku, name, variation, state.products);
           if (matchedProd) {
-            matchedProd.forecast.actualSales = qtyVal;
-            matchedProd.forecast.salesForecast = Math.round(qtyVal * 1.1);
-            updatedCount++;
+            quantitiesToAdd[matchedProd.id] = (quantitiesToAdd[matchedProd.id] || 0) + qtyVal;
+            matchedRowsCount++;
+            totalQtyImported += qtyVal;
           } else {
-            unmatchedRows.push(identifier);
+            const lineDesc = [sku, name, variation].filter(Boolean).join(" | ");
+            unmatchedList.push(`${lineDesc} (Qty: ${qtyVal})`);
           }
         }
+
+        // Apply quantities
+        let updatedCount = 0;
+        Object.keys(quantitiesToAdd).forEach(pId => {
+          const p = state.products.find(x => x.id === pId);
+          if (p) {
+            p.forecast.actualSales = (p.forecast.actualSales || 0) + quantitiesToAdd[pId];
+            p.forecast.salesForecast = Math.round(p.forecast.actualSales * 1.1);
+            updatedCount++;
+          }
+        });
 
         if (updatedCount > 0) {
           state.saveProducts();
@@ -2875,11 +2965,50 @@ document.addEventListener("DOMContentLoaded", () => {
             state.syncToCloud();
           }
 
-          let msg = `Đã cập nhật sản lượng bán thành công cho ${updatedCount} sản phẩm!`;
-          if (unmatchedRows.length > 0) {
-            msg += `\n\nKhông tìm thấy ${unmatchedRows.length} mã/tên trong hệ thống (đã bỏ qua): ${unmatchedRows.slice(0, 5).join(", ")}${unmatchedRows.length > 5 ? "..." : ""}`;
+          // Populate report modal
+          const reportModal = document.getElementById("sales-report-modal");
+          document.getElementById("sales-report-total-rows").textContent = totalRowsParsed.toLocaleString('vi-VN');
+          document.getElementById("sales-report-matched-rows").textContent = matchedRowsCount.toLocaleString('vi-VN');
+          document.getElementById("sales-report-total-qty").textContent = totalQtyImported.toLocaleString('vi-VN');
+
+          const reportTbody = document.getElementById("sales-report-tbody");
+          reportTbody.innerHTML = "";
+
+          state.products.forEach(p => {
+            if (p.forecast.actualSales > 0) {
+              const sizeLabel = p.sizeVariation ? `${p.sizeVariation} inch` : (normalizeSize(p.name) ? normalizeSize(p.name).replace("in", " inch") : "Mặc định");
+              const tr = document.createElement("tr");
+              tr.style.borderBottom = "1px solid var(--border-glass)";
+              tr.innerHTML = `
+                <td style="padding: 0.6rem; font-family: monospace;">${p.code || 'N/A'}</td>
+                <td style="padding: 0.6rem; color: #fff; font-weight: 500;">${p.name}</td>
+                <td style="padding: 0.6rem; color: #a5b4fc;">${sizeLabel}</td>
+                <td style="padding: 0.6rem; text-align: right; font-weight: 600; color: #f59e0b;">${p.forecast.actualSales.toLocaleString('vi-VN')}</td>
+                <td style="padding: 0.6rem; text-align: right; font-weight: 600; color: #34d399;">${p.forecast.salesForecast.toLocaleString('vi-VN')}</td>
+              `;
+              reportTbody.appendChild(tr);
+            }
+          });
+
+          if (reportTbody.innerHTML === "") {
+            reportTbody.innerHTML = `<tr><td colspan="5" style="padding: 1rem; text-align: center; color: var(--text-secondary);">Không có sản phẩm nào được nhập sản lượng bán lớn hơn 0.</td></tr>`;
           }
-          alert(msg);
+
+          const unmatchedPanel = document.getElementById("sales-report-unmatched-panel");
+          const unmatchedListEl = document.getElementById("sales-report-unmatched-list");
+          const unmatchedTitle = document.getElementById("sales-report-unmatched-title");
+
+          if (unmatchedList.length > 0) {
+            unmatchedPanel.style.display = "block";
+            if (unmatchedTitle) unmatchedTitle.textContent = `⚠️ Không Thể Đối Khớp (${unmatchedList.length} dòng đã bỏ qua)`;
+            unmatchedListEl.textContent = unmatchedList.join("\n");
+          } else {
+            unmatchedPanel.style.display = "none";
+          }
+
+          if (reportModal) {
+            reportModal.showModal();
+          }
         } else {
           alert("Không khớp được sản phẩm nào trong file CSV! Vui lòng kiểm tra lại cột Mã sản phẩm (SKU) hoặc Tên sản phẩm.");
         }
@@ -2887,6 +3016,19 @@ document.addEventListener("DOMContentLoaded", () => {
         salesCsvFileInput.value = "";
       };
       reader.readAsText(file);
+    });
+  }
+
+  // Register sales report modal closing triggers
+  const reportModal = document.getElementById("sales-report-modal");
+  if (reportModal) {
+    document.getElementById("sales-report-close-btn").addEventListener("click", () => reportModal.close());
+    document.getElementById("sales-report-btn-done").addEventListener("click", () => {
+      reportModal.close();
+      const mrpHeader = document.querySelector("#tab-forecast h4");
+      if (mrpHeader) {
+        mrpHeader.scrollIntoView({ behavior: 'smooth' });
+      }
     });
   }
 
@@ -3083,6 +3225,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       selectedProduct.materials = materials;
+      if (template.startsWith("sticker-") || template === "uv-dtf") {
+        selectedProduct.sizeVariation = size;
+      } else {
+        selectedProduct.sizeVariation = null;
+      }
       state.saveProducts();
       
       renderCalculator();
