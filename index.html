@@ -64,6 +64,10 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
           <span>Dự Báo Mua Hàng</span>
         </button>
+        <button class="nav-item" data-tab="monthly-report" aria-selected="false" role="tab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <span>Báo Cáo Từng Tháng</span>
+        </button>
         <button class="nav-item" data-tab="settings" aria-selected="false" role="tab">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
           <span>Cấu Hình</span>
@@ -540,59 +544,55 @@
                 </div>
 
                 <!-- Part 3: Utility & Electricity Cost Section -->
-                <div class="cost-section">
-                  <h4>3. Chi Phí Điện Năng (Utility/Electricity Cost)</h4>
-                  <div class="form-grid-3">
-                    <div class="form-group">
-                      <label for="utility-machine-power">Công suất máy (kW)</label>
-                      <input type="number" step="0.1" min="0" id="utility-machine-power" value="2.5" class="form-input calc-trigger">
-                    </div>
-                    <div class="form-group">
-                      <label for="utility-run-time">Thời gian sản xuất 1 sản phẩm (Giờ)</label>
-                      <input type="number" step="0.05" min="0" id="utility-run-time" value="0.25" class="form-input calc-trigger">
-                    </div>
-                    <div class="form-group">
-                      <label for="utility-electricity-price">Đơn giá điện (/kWh)</label>
-                      <input type="text" id="utility-electricity-price" class="form-input currency-input calc-trigger" placeholder="Đọc từ cấu hình">
-                    </div>
+                <div class="cost-section" style="opacity: 0.85;">
+                  <h4 style="display: flex; align-items: center; justify-content: space-between;">
+                    <span>3. Chi Phí Điện Năng (Utility/Electricity Cost)</span>
+                    <span style="font-size: 0.7rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.15); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: normal;">Chuyển vào Định Phí Xưởng Hàng Tháng</span>
+                  </h4>
+                  <div style="font-size: 0.74rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.08); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; border-left: 3px solid #6366f1;">
+                    ℹ️ <strong>Lưu ý:</strong> Hiện tại nhà máy chưa có công suất thực tế từng máy, nên điện năng trực tiếp trên sản phẩm được <strong>bỏ qua (tính 0₫)</strong>. Toàn bộ tiền điện xưởng (19tr/tháng) được đưa vào <strong>Báo Cáo Định Phí Xưởng Hàng Tháng</strong>.
                   </div>
                   <div class="form-grid-3">
                     <div class="form-group">
-                      <!-- Spacer -->
+                      <label for="utility-machine-power">Công suất máy (kW)</label>
+                      <input type="number" step="0.1" min="0" id="utility-machine-power" value="0" class="form-input calc-trigger">
                     </div>
                     <div class="form-group">
-                      <!-- Spacer -->
+                      <label for="utility-run-time">Thời gian sản xuất 1 sản phẩm (Giờ)</label>
+                      <input type="number" step="0.05" min="0" id="utility-run-time" value="0" class="form-input calc-trigger">
                     </div>
                     <div class="form-group">
-                      <label>Thành tiền điện</label>
-                      <div class="calculated-box" id="calc-electricity-cost">₫0</div>
+                      <label>Thành tiền điện trực tiếp</label>
+                      <div class="calculated-box" id="calc-electricity-cost" style="color: var(--text-muted);">₫0</div>
+                      <input type="hidden" id="utility-electricity-price" value="0">
                     </div>
                   </div>
                 </div>
 
                 <!-- Part 4: Factory Overheads -->
                 <div class="cost-section">
-                  <h4>4. Chi Phí Quản Lý Phân Bổ (Factory Overheads)</h4>
+                  <h4>4. Chi Phí Quản Lý Phân Bổ (Factory Overheads - Định Phí)</h4>
                   <div class="form-grid-3">
                     <div class="form-group">
                       <label for="overhead-rate-percentage">Tỷ lệ phân bổ chi phí chung (%)</label>
                       <input type="number" step="0.5" min="0" id="overhead-rate-percentage" value="10" class="form-input calc-trigger">
-                      <span class="help-text">Phần trăm tính trên tổng (NVL + Nhân công + Điện)</span>
+                      <span class="help-text">Phần trăm định phí quản lý chung tính trên Tổng Biến Phí</span>
                     </div>
                     <div class="form-group">
                       <!-- Spacer -->
                     </div>
                     <div class="form-group">
-                      <label>Thành tiền chi phí chung</label>
-                      <div class="calculated-box" id="calc-overhead-cost">₫0</div>
+                      <label>Thành tiền định phí phân bổ</label>
+                      <div class="calculated-box" id="calc-overhead-cost" style="color: #fb7185;">₫0</div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Part 5: CapEx Amortization Surcharge -->
                 <div class="cost-section" style="background: rgba(245, 158, 11, 0.02); border: 1px dashed rgba(245, 158, 11, 0.2); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                  <h4 style="color: #f59e0b; display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; margin-bottom: 0.75rem;">
-                    <span>⚙️</span> 5. Khấu Hao Hòa Vốn Đầu Tư Máy Móc (Tùy Chọn)
+                  <h4 style="color: #f59e0b; display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.75rem;">
+                    <span style="display: flex; align-items: center; gap: 0.4rem;"><span>⚙️</span> 5. Khấu Hao Máy Móc (3 Năm Đầu &amp; Sau 3 Năm)</span>
+                    <span style="font-size: 0.7rem; color: #fbbf24; font-weight: normal;">Sau 3 năm khấu hao giảm 80%</span>
                   </h4>
                   <div class="form-grid-3">
                     <div class="form-group">
@@ -607,7 +607,7 @@
                       <span class="help-text" id="payback-machine-unit-help">Đơn vị tiêu hao của máy</span>
                     </div>
                     <div class="form-group" style="display: flex; flex-direction: column; justify-content: center;">
-                      <label style="color: var(--text-secondary);">Phụ phí hoàn vốn cộng thêm</label>
+                      <label style="color: var(--text-secondary);">Phụ phí 3 năm đầu (Cao):</label>
                       <div class="font-bold" style="color: #f59e0b; font-size: 1.1rem; margin-top: 0.25rem;" id="calc-payback-surcharge">₫0</div>
                     </div>
                   </div>
@@ -616,69 +616,89 @@
                   </div>
                 </div>
 
+                <!-- 3-Pillar Cost Classification Summary Cards -->
+                <div style="margin-top: 1.5rem; margin-bottom: 1rem;">
+                  <h4 style="font-size: 0.85rem; color: #a5b4fc; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                    <span>📊</span> BẢNG PHÂN LOẠI CHI PHÍ SẢN PHẨM (COST CLASSIFICATION)
+                  </h4>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem;">
+                    <!-- Pillar 1: Biến Phí (Variable Cost) -->
+                    <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 0.85rem;">
+                      <div style="font-size: 0.72rem; color: #34d399; font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 0.35rem;">
+                        <span>🟢</span> 1. BIẾN PHÍ (VC)
+                      </div>
+                      <div style="font-size: 1.35rem; font-weight: 700; color: #34d399; margin: 0.35rem 0;" id="calc-summary-variable-cost">₫0</div>
+                      <div style="font-size: 0.7rem; color: var(--text-secondary);" id="calc-summary-variable-desc">NVL: ₫0 | Nhân công: ₫0</div>
+                    </div>
+
+                    <!-- Pillar 2: Định Phí Phân Bổ (Fixed Cost Allocation) -->
+                    <div style="background: rgba(244, 63, 94, 0.06); border: 1px solid rgba(244, 63, 94, 0.25); border-radius: 8px; padding: 0.85rem;">
+                      <div style="font-size: 0.72rem; color: #fb7185; font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 0.35rem;">
+                        <span>🔴</span> 2. ĐỊNH PHÍ PHÂN BỔ (FC)
+                      </div>
+                      <div style="font-size: 1.35rem; font-weight: 700; color: #fb7185; margin: 0.35rem 0;" id="calc-summary-fixed-cost">₫0</div>
+                      <div style="font-size: 0.7rem; color: var(--text-secondary);" id="calc-summary-fixed-desc">Quản lý chung Overhead (10%)</div>
+                    </div>
+
+                    <!-- Pillar 3: Khấu Hao Máy Móc 2 Giai Đoạn -->
+                    <div style="background: rgba(245, 158, 11, 0.06); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 0.85rem;">
+                      <div style="font-size: 0.72rem; color: #fbbf24; font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 0.35rem;">
+                        <span>🟡</span> 3. KHẤU HAO MÁY (CapEx)
+                      </div>
+                      <div style="font-size: 1.2rem; font-weight: 700; color: #fbbf24; margin: 0.35rem 0;" id="calc-summary-capex-cost">₫0</div>
+                      <div style="font-size: 0.7rem; color: var(--text-secondary);" id="calc-summary-capex-desc">3 năm đầu: ₫0 | Sau 3 năm: ₫0</div>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Total cost results summary -->
                 <div class="form-result-block glass-card">
                   <div class="base-cost-title">
-                    <h4>GIÁ VỐN SẢN PHẨM CƠ BẢN (BASE COST)</h4>
+                    <h4>KẾT QUẢ GIÁ THÀNH &amp; GIÁ BÁN 2 GIAI ĐOẠN</h4>
                     <span class="badge-factory-type" id="form-result-factory-badge">Nhà máy In</span>
                   </div>
-                  <div id="cost-standard-container">
-                    <div class="base-cost-display">
-                      <span class="currency-symbol">₫</span><span id="calculated-base-cost">0</span>
-                    </div>
-                  </div>
-                  <div id="cost-payback-container" style="display: none; margin-bottom: 0.75rem; padding: 0.75rem; background: rgba(245, 158, 11, 0.05); border: 1px dashed rgba(245, 158, 11, 0.2); border-radius: 6px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                      <span style="font-size: 0.78rem; color: #f59e0b; font-weight: 600;">Giai đoạn 1: Trước hòa vốn máy</span>
-                      <strong style="font-size: 1.15rem; color: #f59e0b;">₫<span id="calculated-payback-base-cost">0</span></strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                      <span style="font-size: 0.78rem; color: var(--text-secondary);">Giai đoạn 2: Sau hòa vốn (Tiêu chuẩn)</span>
-                      <strong style="font-size: 1.0rem; color: var(--text-muted);">₫<span id="calculated-standard-base-cost-label">0</span></strong>
-                    </div>
-                  </div>
-                  <div class="base-cost-breakdown" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
-                    <div class="breakdown-item">
-                      <span>Vật tư:</span>
-                      <strong id="breakdown-materials">₫0 (0%)</strong>
-                    </div>
-                    <div class="breakdown-item">
-                      <span>Nhân công:</span>
-                      <strong id="breakdown-labor">₫0 (0%)</strong>
-                    </div>
-                    <div class="breakdown-item">
-                      <span>Điện năng:</span>
-                      <strong id="breakdown-electricity">₫0 (0%)</strong>
-                    </div>
-                    <div class="breakdown-item">
-                      <span>Phí chung:</span>
-                      <strong id="breakdown-overhead">₫0 (0%)</strong>
-                    </div>
-                  </div>
 
-                  <!-- Profit Margin & Seller Price Calculation -->
-                  <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-                      <span style="font-size: 0.85rem; color: #a5b4fc; font-weight: 500;">Tỷ lệ lợi nhuận mong muốn:</span>
-                      <span style="font-size: 0.85rem; color: #fff; font-weight: 600;"><span id="bottom-profit-percentage">20</span>%</span>
-                    </div>
-                    
-                    <div id="seller-price-standard-container" style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.25rem;">
-                      <span style="font-size: 0.9rem; color: #34d399; font-weight: 600;">GIÁ BÁN CHO SELLER:</span>
-                      <span style="font-size: 1.5rem; color: #34d399; font-weight: 700;"><span style="font-size: 1.1rem;">₫</span><span id="calculated-seller-price">0</span></span>
-                    </div>
-
-                    <div id="seller-price-payback-container" style="display: none; flex-direction: column; gap: 0.35rem; margin-top: 0.25rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.06);">
-                      <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 0.85rem; color: #f59e0b; font-weight: 600;">GIÁ BÁN TRƯỚC HÒA VỐN:</span>
-                        <span style="font-size: 1.35rem; color: #f59e0b; font-weight: 700;"><span style="font-size: 1.0rem;">₫</span><span id="calculated-payback-seller-price">0</span></span>
+                  <!-- Two-stage pricing parallel cards -->
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <!-- Stage 1: First 3 Years -->
+                    <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 1rem;">
+                      <div style="font-size: 0.75rem; color: #f59e0b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span>Giai Đoạn 1: 3 Năm Đầu (Khấu Hao Cao)</span>
+                        <span style="font-size: 0.65rem; background: rgba(245, 158, 11, 0.2); padding: 0.1rem 0.4rem; border-radius: 4px;">Hoàn Vốn Nhanh</span>
                       </div>
-                      <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 0.78rem; color: var(--text-secondary);">GIÁ BÁN SAU HÒA VỐN:</span>
-                        <span style="font-size: 1.0rem; color: var(--text-muted); font-weight: 600;"><span style="font-size: 0.85rem;">₫</span><span id="calculated-standard-seller-price-label">0</span></span>
+                      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem;">
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">Giá Vốn (Base Cost):</span>
+                        <strong style="font-size: 1.15rem; color: #fff;">₫<span id="calculated-payback-base-cost">0</span></strong>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem;">
+                        <span style="font-size: 0.85rem; color: #f59e0b; font-weight: 600;">Giá Bán Cho Seller:</span>
+                        <strong style="font-size: 1.4rem; color: #f59e0b;">₫<span id="calculated-payback-seller-price">0</span></strong>
+                      </div>
+                    </div>
+
+                    <!-- Stage 2: After 3 Years -->
+                    <div style="background: rgba(52, 211, 153, 0.05); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 8px; padding: 1rem;">
+                      <div style="font-size: 0.75rem; color: #34d399; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span>Giai Đoạn 2: Sau 3 Năm (Khấu Hao Giảm 80%)</span>
+                        <span style="font-size: 0.65rem; background: rgba(52, 211, 153, 0.2); padding: 0.1rem 0.4rem; border-radius: 4px;">Cạnh Tranh Cao</span>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem;">
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">Giá Vốn (Base Cost):</span>
+                        <strong style="font-size: 1.15rem; color: #fff;">₫<span id="calculated-post-payback-base-cost">0</span></strong>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem;">
+                        <span style="font-size: 0.85rem; color: #34d399; font-weight: 600;">Giá Bán Cho Seller:</span>
+                        <strong style="font-size: 1.4rem; color: #34d399;">₫<span id="calculated-post-payback-seller-price">0</span></strong>
                       </div>
                     </div>
                   </div>
+
+                  <!-- Profit Margin display -->
+                  <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; color: var(--text-secondary); padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span>Biên lợi nhuận đề xuất: <strong style="color: #60a5fa;" id="bottom-profit-percentage">20</strong>%</span>
+                    <span>Số dư đảm phí (Contribution Margin): <strong style="color: #34d399;" id="calculated-contribution-margin">₫0</strong></span>
+                  </div>
+                </div>
                 </div>
 
                 <!-- Form Buttons -->
@@ -868,6 +888,119 @@
                 <tbody id="mrp-table-tbody">
                   <!-- Dynamically exploded BOM list from product forecast needed quantity -->
                 </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- TAB: MONTHLY FINANCIAL & COST REPORT -->
+        <section id="tab-monthly-report" class="tab-pane" role="tabpanel">
+          <div class="toolbar glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+              <label for="monthly-report-select" style="font-weight: 600; color: #fff; font-size: 0.85rem;">Chọn Tháng Báo Cáo:</label>
+              <select id="monthly-report-select" class="form-input select-input" style="min-width: 220px; font-weight: 600; color: #60a5fa; border-color: rgba(96, 165, 250, 0.4);">
+                <option value="7">Tháng 7/2026 (Sản Lượng Bán Thực Tế)</option>
+                <option value="8">Tháng 8/2026 (Kế Hoạch & Dự Báo Mua Hàng)</option>
+              </select>
+              <select id="monthly-report-filter-factory" class="form-input select-input">
+                <option value="all">Tất cả nhà máy</option>
+                <option value="In">Nhà máy In</option>
+                <option value="Thêu">Nhà máy Thêu</option>
+              </select>
+            </div>
+            <div>
+              <button type="button" class="btn btn-secondary" id="btn-export-monthly-report" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; border-color: rgba(96, 165, 250, 0.4); color: #60a5fa; background: rgba(96, 165, 250, 0.05); padding: 0.45rem 0.85rem; border-radius: 6px;">
+                <span>📥</span> Xuất Báo Cáo Tháng (.csv)
+              </button>
+            </div>
+          </div>
+
+          <!-- Monthly Financial KPI Summary Cards -->
+          <div class="dashboard-grid" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+            <!-- 1. Total Revenue -->
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #38bdf8;">
+              <span class="metric-label" style="font-size: 0.75rem; color: #38bdf8; font-weight: 600; text-transform: uppercase;">1. Tổng Doanh Thu Tháng</span>
+              <div class="metric-value" id="mr-total-revenue" style="font-size: 1.4rem; font-weight: 700; color: #fff;">₫0</div>
+              <span class="metric-trend text-secondary" id="mr-revenue-sub">Dựa trên sản lượng bán</span>
+            </div>
+
+            <!-- 2. Variable Cost -->
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #34d399;">
+              <span class="metric-label" style="font-size: 0.75rem; color: #34d399; font-weight: 600; text-transform: uppercase;">2. Tổng Biến Phí Tháng (VC)</span>
+              <div class="metric-value" id="mr-total-variable-cost" style="font-size: 1.4rem; font-weight: 700; color: #34d399;">₫0</div>
+              <span class="metric-trend text-secondary" id="mr-variable-sub">NVL: ₫0 | Nhân công: ₫0</span>
+            </div>
+
+            <!-- 3. Contribution Margin -->
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #a78bfa;">
+              <span class="metric-label" style="font-size: 0.75rem; color: #a78bfa; font-weight: 600; text-transform: uppercase;">3. Số Dư Đảm Phí (Lãi Gộp)</span>
+              <div class="metric-value" id="mr-contribution-margin" style="font-size: 1.4rem; font-weight: 700; color: #a78bfa;">₫0</div>
+              <span class="metric-trend text-secondary" id="mr-margin-ratio">Tỷ lệ đảm phí: 0%</span>
+            </div>
+
+            <!-- 4. Fixed Cost -->
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #fb7185;">
+              <span class="metric-label" style="font-size: 0.75rem; color: #fb7185; font-weight: 600; text-transform: uppercase;">4. Tổng Định Phí Tháng (FC)</span>
+              <div class="metric-value" id="mr-total-fixed-cost" style="font-size: 1.4rem; font-weight: 700; color: #fb7185;">₫0</div>
+              <span class="metric-trend text-secondary" id="mr-fixed-sub">Lương 44 NV + Tiền điện xưởng</span>
+            </div>
+
+            <!-- 5. Machine Depreciation Accrued -->
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #fbbf24;">
+              <span class="metric-label" style="font-size: 0.75rem; color: #fbbf24; font-weight: 600; text-transform: uppercase;">5. Khấu Hao Máy Trích Tháng</span>
+              <div class="metric-value" id="mr-total-capex" style="font-size: 1.4rem; font-weight: 700; color: #fbbf24;">₫0</div>
+              <span class="metric-trend text-secondary" id="mr-capex-sub">Thu hồi vốn 3 năm đầu</span>
+            </div>
+
+            <!-- 6. Net Operating Profit -->
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #10b981;">
+              <span class="metric-label" style="font-size: 0.75rem; color: #10b981; font-weight: 600; text-transform: uppercase;">6. Lợi Nhuận Ròng Hoạt Động</span>
+              <div class="metric-value" id="mr-net-profit" style="font-size: 1.4rem; font-weight: 700; color: #10b981;">₫0</div>
+              <span class="metric-trend text-secondary" id="mr-profit-sub">Doanh thu - Biến phí - Định phí - Máy</span>
+            </div>
+          </div>
+
+          <!-- Product Financial Breakdown Table -->
+          <div class="dashboard-card glass" style="padding: 1.25rem;">
+            <div class="card-title-bar" style="margin-bottom: 1rem;">
+              <div>
+                <h3 style="color: #fff; font-size: 1.05rem;">Chi Tiết Biến Phí &amp; Đóng Góp Lợi Nhuận Theo Từng Sản Phẩm</h3>
+                <span class="text-secondary" style="font-size: 0.75rem;">Phân tích cụ thể chi phí nguyên vật liệu, nhân công và doanh thu theo sản lượng tháng</span>
+              </div>
+            </div>
+
+            <div class="table-container responsive-table" style="max-height: 520px; overflow-y: auto;">
+              <table class="data-table" id="monthly-report-table">
+                <thead>
+                  <tr>
+                    <th style="width: 110px;">Mã SKU</th>
+                    <th>Tên Sản Phẩm</th>
+                    <th style="width: 90px; text-align: center;">Nhà Máy</th>
+                    <th style="width: 110px; text-align: right;">SL Bán Tháng</th>
+                    <th style="width: 130px; text-align: right;">Đơn Giá Biến Phí</th>
+                    <th style="width: 140px; text-align: right;">Tổng Biến Phí (VC)</th>
+                    <th style="width: 130px; text-align: right;">Giá Bán Seller</th>
+                    <th style="width: 140px; text-align: right;">Tổng Doanh Thu</th>
+                    <th style="width: 140px; text-align: right;">Lãi Gộp Đóng Góp</th>
+                    <th style="width: 120px; text-align: right;">Khấu Hao Máy</th>
+                  </tr>
+                </thead>
+                <tbody id="monthly-report-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+                <tfoot>
+                  <tr style="background: rgba(255,255,255,0.04); font-weight: 700; border-top: 2px solid var(--border-glass);">
+                    <td colspan="3" style="padding: 0.75rem; color: #fff;">TỔNG CỘNG THÁNG</td>
+                    <td style="padding: 0.75rem; text-align: right; color: #60a5fa;" id="mr-foot-qty">0</td>
+                    <td style="padding: 0.75rem; text-align: right; color: var(--text-secondary);">-</td>
+                    <td style="padding: 0.75rem; text-align: right; color: #34d399;" id="mr-foot-vc">₫0</td>
+                    <td style="padding: 0.75rem; text-align: right; color: var(--text-secondary);">-</td>
+                    <td style="padding: 0.75rem; text-align: right; color: #38bdf8;" id="mr-foot-rev">₫0</td>
+                    <td style="padding: 0.75rem; text-align: right; color: #a78bfa;" id="mr-foot-margin">₫0</td>
+                    <td style="padding: 0.75rem; text-align: right; color: #fbbf24;" id="mr-foot-capex">₫0</td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>
@@ -1232,6 +1365,6 @@ function doPost(e) {
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=16.0" type="module"></script>
+  <script src="app.js?v=17.0" type="module"></script>
 </body>
 </html>

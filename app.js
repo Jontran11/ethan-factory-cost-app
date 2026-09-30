@@ -88,10 +88,11 @@ const DEFAULT_SETTINGS = {
       id: "mach-konica",
       name: "Máy in Konica C4000",
       investment: 150000000,
-      paybackYears: 2,
+      paybackYears: 3,
       expectedVolumePerYear: 20000,
       currentVolume: 12000,
-      surchargePerUnit: 3750,
+      surchargePerUnit: 2500,
+      discountAfter3Years: 80,
       unitType: "Click"
     },
     {
@@ -102,7 +103,19 @@ const DEFAULT_SETTINGS = {
       expectedVolumePerYear: 15000,
       currentVolume: 8000,
       surchargePerUnit: 4444,
+      discountAfter3Years: 80,
       unitType: "Mét"
+    },
+    {
+      id: "mach-embroidery",
+      name: "Máy thêu vi tính 12 đầu",
+      investment: 360000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 24000,
+      currentVolume: 10000,
+      surchargePerUnit: 5000,
+      discountAfter3Years: 80,
+      unitType: "Cái"
     }
   ]
 };
@@ -125,8 +138,11 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.02, production: 0.15, qc: 0.05 },
     electricity: { power: 2.5, runTime: 0.2 },
     overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 1000,
+      actualSales: 920,
       currentStock: 100,
       safetyStock: 200
     }
@@ -148,8 +164,11 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.02, production: 0.12, qc: 0.04 },
     electricity: { power: 2.5, runTime: 0.15 },
     overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 600,
+      actualSales: 550,
       currentStock: 40,
       safetyStock: 120
     }
@@ -168,8 +187,11 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.03, production: 0.25, qc: 0.08 },
     electricity: { power: 2.5, runTime: 0.35 },
     overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 2,
     forecast: {
       salesForecast: 800,
+      actualSales: 750,
       currentStock: 150,
       safetyStock: 150
     }
@@ -187,8 +209,11 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.03, qc: 0.01 },
     electricity: { power: 1.5, runTime: 0.05 },
     overheadPercentage: 5,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 5000,
+      actualSales: 4800,
       currentStock: 1200,
       safetyStock: 1500
     }
@@ -207,8 +232,11 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.05, qc: 0.015 },
     electricity: { power: 1.8, runTime: 0.06 },
     overheadPercentage: 5,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 4000,
+      actualSales: 3600,
       currentStock: 300,
       safetyStock: 800
     }
@@ -226,8 +254,11 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.01, production: 0.08, qc: 0.02 },
     electricity: { power: 3.0, runTime: 0.12 },
     overheadPercentage: 8,
+    paybackMachineId: "mach-uvdtf",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 2000,
+      actualSales: 1850,
       currentStock: 100,
       safetyStock: 300
     }
@@ -246,8 +277,11 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.05, laser: 0.02, production: 0.3, qc: 0.08 },
     electricity: { power: 1.8, runTime: 0.3 },
     overheadPercentage: 12,
+    paybackMachineId: "mach-embroidery",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 600,
+      actualSales: 580,
       currentStock: 80,
       safetyStock: 150
     }
@@ -266,8 +300,11 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.03, laser: 0.01, production: 0.2, qc: 0.06 },
     electricity: { power: 1.2, runTime: 0.18 },
     overheadPercentage: 8,
+    paybackMachineId: "mach-embroidery",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 1500,
+      actualSales: 1420,
       currentStock: 450,
       safetyStock: 350
     }
@@ -331,11 +368,22 @@ class AppStateManager {
           }
         };
 
+        const rawMachines = parsed.machines || [];
+        const mergedMachines = DEFAULT_SETTINGS.machines.map(defM => {
+          const found = rawMachines.find(m => m.id === defM.id);
+          return found ? { ...defM, ...found, paybackYears: found.paybackYears || defM.paybackYears, discountAfter3Years: found.discountAfter3Years || defM.discountAfter3Years } : defM;
+        });
+        rawMachines.forEach(m => {
+          if (!mergedMachines.some(dm => dm.id === m.id)) {
+            mergedMachines.push(m);
+          }
+        });
+
         return {
           ...DEFAULT_SETTINGS,
           ...parsed,
           hr: migratedHr,
-          machines: parsed.machines || DEFAULT_SETTINGS.machines || []
+          machines: mergedMachines
         };
       } catch (e) { 
         console.error("Error parsing settings", e); 
@@ -362,9 +410,17 @@ class AppStateManager {
           p.labor = { designer: 0.03, laser: 0.01, production: 0.2, qc: 0.06 };
         }
       }
+      if (!p.paybackMachineId) {
+        const mockMatch = MOCK_PRODUCTS.find(mp => mp.id === p.id || mp.code === p.code);
+        if (mockMatch && mockMatch.paybackMachineId) {
+          p.paybackMachineId = mockMatch.paybackMachineId;
+          p.paybackMachineQty = mockMatch.paybackMachineQty || 1;
+        }
+      }
       if (p.forecast) {
         if (p.forecast.actualSales === undefined) {
-          p.forecast.actualSales = Math.round((p.forecast.salesForecast || 0) / 1.1);
+          const mockMatch = MOCK_PRODUCTS.find(mp => mp.id === p.id || mp.code === p.code);
+          p.forecast.actualSales = mockMatch?.forecast?.actualSales !== undefined ? mockMatch.forecast.actualSales : Math.round((p.forecast.salesForecast || 0) / 1.1);
         }
       }
       return p;
@@ -560,10 +616,10 @@ function getElectricityRateForFactory(factoryType, settings, products) {
  * Tính toán chi tiết giá vốn của một sản phẩm
  */
 function calculateProductCost(product, settings) {
-  // 1. Nguyên vật liệu
-  const materialsCost = product.materials.reduce((sum, item) => sum + (item.qty * item.price), 0);
+  // 1. Nguyên vật liệu trực tiếp (Direct Materials)
+  const materialsCost = (product.materials || []).reduce((sum, item) => sum + ((parseFloat(item.qty) || 0) * (parseFloat(item.price) || 0)), 0);
 
-  // 2. Nhân công trực tiếp
+  // 2. Nhân công trực tiếp (Direct Labor)
   let laborCost = 0;
   const stdHours = settings.standardHours || 208;
   const factoryType = product.factoryType;
@@ -578,9 +634,9 @@ function calculateProductCost(product, settings) {
     const prodHourly = getDepartmentHourlyRate(settings.hr.In.production, stdHours);
     const qcHourly = getDepartmentHourlyRate(settings.hr.In.qc, stdHours);
 
-    designerCost = (product.labor.designer || 0) * desHourly;
-    productionCost = (product.labor.production || 0) * prodHourly;
-    qcCost = (product.labor.qc || 0) * qcHourly;
+    designerCost = (product.labor?.designer || 0) * desHourly;
+    productionCost = (product.labor?.production || 0) * prodHourly;
+    qcCost = (product.labor?.qc || 0) * qcHourly;
 
     laborCost = designerCost + productionCost + qcCost;
   } else {
@@ -589,35 +645,33 @@ function calculateProductCost(product, settings) {
     const prodHourly = getDepartmentHourlyRate(settings.hr.Thêu.production, stdHours);
     const qcHourly = getDepartmentHourlyRate(settings.hr.Thêu.qc, stdHours);
 
-    designerCost = (product.labor.designer || 0) * desHourly;
-    laserCost = (product.labor.laser || 0) * laserHourly;
-    productionCost = (product.labor.production || 0) * prodHourly;
-    qcCost = (product.labor.qc || 0) * qcHourly;
+    designerCost = (product.labor?.designer || 0) * desHourly;
+    laserCost = (product.labor?.laser || 0) * laserHourly;
+    productionCost = (product.labor?.production || 0) * prodHourly;
+    qcCost = (product.labor?.qc || 0) * qcHourly;
 
     laborCost = designerCost + laserCost + productionCost + qcCost;
   }
 
-  // 3. Điện năng tiêu thụ (Sử dụng đơn giá điện phân bổ động)
-  const productsList = typeof state !== 'undefined' ? state.products : [];
-  const factoryElectricityPrice = getElectricityRateForFactory(factoryType, settings, productsList);
-  const electricityCost = (product.electricity.power || 0) * 
-                          (product.electricity.runTime || 0) * 
-                          factoryElectricityPrice;
+  // 3. Biến phí (Variable Cost = NVL + Nhân công)
+  // Điện năng trực tiếp trên từng sản phẩm được bỏ qua (0₫) vì chưa có công suất thực tế
+  const electricityCost = 0;
+  const variableCost = Math.round(materialsCost + laborCost);
 
-  // 4. Chi phí quản lý chung phân bổ
-  const overheadPercentage = product.overheadPercentage !== undefined ? product.overheadPercentage : settings.defaultOverhead;
-  const baseSubtotal = materialsCost + laborCost + electricityCost;
-  const overheadCost = baseSubtotal * (overheadPercentage / 100);
+  // 4. Chi phí quản lý chung phân bổ (Overheads - Định phí phân bổ theo % Biến phí)
+  const overheadPercentage = product.overheadPercentage !== undefined ? product.overheadPercentage : (settings.defaultOverhead || 10);
+  const overheadCost = Math.round(variableCost * (overheadPercentage / 100));
 
-  // 5. Tổng giá vốn cơ bản (sau khi hòa vốn - Tiêu chuẩn)
-  const baseCost = Math.round(baseSubtotal + overheadCost);
+  // 5. Giá vốn cơ bản (Base Cost tiêu chuẩn khi không trích khấu hao máy)
+  const baseCost = variableCost + overheadCost;
 
-  // 6. Giá bán đề xuất cho Seller sau khi hòa vốn
+  // 6. Biên lợi nhuận đề xuất cho Seller (%)
   const profitPercentage = product.profitPercentage !== undefined ? product.profitPercentage : (settings.defaultProfitMargin !== undefined ? settings.defaultProfitMargin : 20);
   const sellerPrice = Math.round(baseCost * (1 + profitPercentage / 100));
 
-  // 7. Tính toán phụ phí hòa vốn máy móc (nếu có)
-  let paybackSurcharge = 0;
+  // 7. Khấu hao máy móc 2 giai đoạn (3 năm đầu & Sau 3 năm)
+  let paybackSurchargeFirst3Years = 0;
+  let paybackSurchargeAfter3Years = 0;
   let machineName = "";
   let isMachineActive = false;
 
@@ -625,35 +679,59 @@ function calculateProductCost(product, settings) {
     const machine = settings.machines.find(m => m.id === product.paybackMachineId);
     if (machine) {
       machineName = machine.name;
-      const targetVolume = (machine.paybackYears || 0) * (machine.expectedVolumePerYear || 0);
+      const targetVolume = (machine.paybackYears || 3) * (machine.expectedVolumePerYear || 1);
+      const unitRate = machine.surchargePerUnit || (machine.investment / targetVolume);
+      const machineQty = product.paybackMachineQty !== undefined ? product.paybackMachineQty : 1;
+      
+      paybackSurchargeFirst3Years = Math.round(machineQty * unitRate);
+      
+      // Sau 3 năm (khi đã thu hồi vốn): khấu hao giảm 80% (chỉ còn 20% phụ phí bảo trì máy)
+      const discountPct = machine.discountAfter3Years !== undefined ? machine.discountAfter3Years : 80;
+      paybackSurchargeAfter3Years = Math.round(paybackSurchargeFirst3Years * (1 - discountPct / 100));
+
       if ((machine.currentVolume || 0) < targetVolume) {
         isMachineActive = true;
-        paybackSurcharge = (product.paybackMachineQty || 0) * (machine.surchargePerUnit || 0);
       }
     }
   }
 
-  const paybackBaseCost = baseCost + Math.round(paybackSurcharge);
+  // Giai đoạn 1 (3 năm đầu - khấu hao cao)
+  const paybackBaseCost = baseCost + paybackSurchargeFirst3Years;
   const paybackSellerPrice = Math.round(paybackBaseCost * (1 + profitPercentage / 100));
 
+  // Giai đoạn 2 (Sau 3 năm - khấu hao giảm 80%)
+  const postPaybackBaseCost = baseCost + paybackSurchargeAfter3Years;
+  const postPaybackSellerPrice = Math.round(postPaybackBaseCost * (1 + profitPercentage / 100));
+
+  // Số dư đảm phí (Contribution Margin = Giá bán - Biến phí)
+  const contributionMargin = paybackSellerPrice - variableCost;
+  const contributionMarginRatio = paybackSellerPrice > 0 ? Math.round((contributionMargin / paybackSellerPrice) * 100) : 0;
+
   return {
-    materialsCost,
-    laborCost,
-    electricityCost,
+    materialsCost: Math.round(materialsCost),
+    laborCost: Math.round(laborCost),
+    variableCost,
+    electricityCost: 0,
     overheadCost,
     baseCost,
     sellerPrice,
+    paybackSurcharge: paybackSurchargeFirst3Years,
+    paybackSurchargeFirst3Years,
+    paybackSurchargeAfter3Years,
     paybackBaseCost,
     paybackSellerPrice,
+    postPaybackBaseCost,
+    postPaybackSellerPrice,
+    contributionMargin,
+    contributionMarginRatio,
     isMachineActive,
     machineName,
-    paybackSurcharge,
     profitPercentage,
     breakdown: {
-      designerCost,
-      laserCost,
-      productionCost,
-      qcCost
+      designerCost: Math.round(designerCost),
+      laserCost: Math.round(laserCost),
+      productionCost: Math.round(productionCost),
+      qcCost: Math.round(qcCost)
     }
   };
 }
@@ -708,6 +786,10 @@ function switchTab(tabId) {
     pageTitle.textContent = "Dự Báo Mua Hàng";
     pageSubtitle.textContent = "Lên kế hoạch đặt hàng dự phòng dựa trên dữ liệu tồn kho";
     renderForecast();
+  } else if (tabId === "monthly-report") {
+    pageTitle.textContent = "Báo Cáo Chi Phí & Doanh Thu Từng Tháng";
+    pageSubtitle.textContent = "Phân tích Biến phí (VC), Số dư đảm phí, Định phí xưởng (FC) và Lợi nhuận ròng";
+    renderMonthlyReport();
   } else if (tabId === "settings") {
     pageTitle.textContent = "Cấu Hình Hệ Thống";
     pageSubtitle.textContent = "Quản lý đơn giá định mức, nhập xuất dữ liệu dự phòng";
@@ -1354,57 +1436,57 @@ function triggerLiveCalculation() {
     document.getElementById("calc-labor-embroid-cost").textContent = formatVND(laborCost);
   }
 
-  // 3. Điện năng
-  const power = parseFloat(document.getElementById("utility-machine-power").value) || 0;
-  const runTime = parseFloat(document.getElementById("utility-run-time").value) || 0;
-  const allocatedRate = getElectricityRateForFactory(factoryType, state.settings, state.products);
-  const customElectricityPrice = document.getElementById("utility-electricity-price").value;
-  const electricityPrice = customElectricityPrice ? parseCurrencyInput(customElectricityPrice) : allocatedRate;
-  const electricityCost = power * runTime * electricityPrice;
-  document.getElementById("calc-electricity-cost").textContent = formatVND(electricityCost);
-  document.getElementById("utility-electricity-price").placeholder = `Phân bổ: ${Math.round(allocatedRate).toLocaleString('vi-VN')} đ/kWh`;
+  // 3. Điện năng (Bỏ qua trực tiếp theo chỉ đạo, đưa vào định phí xưởng hàng tháng)
+  const electricityCost = 0;
+  const elElec = document.getElementById("calc-electricity-cost");
+  if (elElec) elElec.textContent = "₫0 (Định phí xưởng)";
 
-  // 4. Chi phí chung (Overheads)
+  // 4. Biến phí (Variable Cost = NVL + Nhân công)
+  const variableCost = Math.round(materialsCost + laborCost);
+
+  // 5. Chi phí quản lý chung phân bổ (Overheads - Định phí tính theo % Biến phí)
   const overheadPercentage = parseFloat(document.getElementById("overhead-rate-percentage").value) || 0;
-  const baseSubtotal = materialsCost + laborCost + electricityCost;
-  const overheadCost = baseSubtotal * (overheadPercentage / 100);
-  document.getElementById("calc-overhead-cost").textContent = formatVND(overheadCost);
+  const overheadCost = Math.round(variableCost * (overheadPercentage / 100));
+  const elOvh = document.getElementById("calc-overhead-cost");
+  if (elOvh) elOvh.textContent = formatVND(overheadCost);
 
-  // 5. Tổng Base Cost
-  const baseCost = Math.round(baseSubtotal + overheadCost);
-  document.getElementById("calculated-base-cost").textContent = baseCost.toLocaleString('vi-VN');
-  document.getElementById("sticky-base-cost").textContent = baseCost.toLocaleString('vi-VN');
+  // 6. Tổng Base Cost cơ bản
+  const baseCost = variableCost + overheadCost;
+  const elBaseCost = document.getElementById("calculated-base-cost");
+  if (elBaseCost) elBaseCost.textContent = baseCost.toLocaleString('vi-VN');
+  const elStickyBase = document.getElementById("sticky-base-cost");
+  if (elStickyBase) elStickyBase.textContent = baseCost.toLocaleString('vi-VN');
 
-  // 6. Tính giá bán cho seller
+  // 7. Giá bán đề xuất tiêu chuẩn
   const profitPercentage = parseFloat(document.getElementById("profit-margin-percentage").value) || 0;
   const sellerPrice = Math.round(baseCost * (1 + profitPercentage / 100));
-  document.getElementById("calculated-seller-price").textContent = sellerPrice.toLocaleString('vi-VN');
-  document.getElementById("sticky-seller-price").textContent = sellerPrice.toLocaleString('vi-VN');
-  document.getElementById("bottom-profit-percentage").textContent = profitPercentage;
+  const elSellerPrice = document.getElementById("calculated-seller-price");
+  if (elSellerPrice) elSellerPrice.textContent = sellerPrice.toLocaleString('vi-VN');
+  const elStickySeller = document.getElementById("sticky-seller-price");
+  if (elStickySeller) elStickySeller.textContent = sellerPrice.toLocaleString('vi-VN');
+  const elBottomProfit = document.getElementById("bottom-profit-percentage");
+  if (elBottomProfit) elBottomProfit.textContent = profitPercentage;
 
-  // 7. Tính khấu hao hoàn vốn máy móc live
+  // 8. Tính khấu hao máy móc 2 giai đoạn (3 năm đầu & Sau 3 năm)
   const paybackMachineSelect = document.getElementById("payback-machine-select");
   const paybackMachineQty = parseFloat(document.getElementById("payback-machine-qty").value) || 0;
   const paybackSurchargeEl = document.getElementById("calc-payback-surcharge");
   const paybackInfoEl = document.getElementById("calc-payback-info-banner");
-  
-  const costStandardContainer = document.getElementById("cost-standard-container");
-  const costPaybackContainer = document.getElementById("cost-payback-container");
-  const sellerPriceStandard = document.getElementById("seller-price-standard-container");
-  const sellerPricePayback = document.getElementById("seller-price-payback-container");
-  
-  const stickyPaybackBaseCostBadge = document.getElementById("sticky-payback-base-cost-badge");
-  const stickyPaybackSellerPriceBadge = document.getElementById("sticky-payback-seller-price-badge");
 
-  let paybackSurcharge = 0;
+  let paybackSurchargeFirst3Years = 0;
+  let paybackSurchargeAfter3Years = 0;
   let isMachineActive = false;
 
   if (paybackMachineSelect && paybackMachineSelect.value && state.settings.machines) {
     const machine = state.settings.machines.find(m => m.id === paybackMachineSelect.value);
     if (machine) {
-      const targetVolume = (machine.paybackYears || 0) * (machine.expectedVolumePerYear || 0);
-      paybackSurcharge = paybackMachineQty * (machine.surchargePerUnit || 0);
+      const targetVolume = (machine.paybackYears || 3) * (machine.expectedVolumePerYear || 1);
+      const unitRate = machine.surchargePerUnit || (machine.investment / targetVolume);
+      paybackSurchargeFirst3Years = Math.round(paybackMachineQty * unitRate);
       
+      const discountPct = machine.discountAfter3Years !== undefined ? machine.discountAfter3Years : 80;
+      paybackSurchargeAfter3Years = Math.round(paybackSurchargeFirst3Years * (1 - discountPct / 100));
+
       const helpTextEl = document.getElementById("payback-machine-unit-help");
       if (helpTextEl) helpTextEl.textContent = `Quy đổi theo đơn vị ${machine.unitType} của máy`;
       
@@ -1435,16 +1517,16 @@ function triggerLiveCalculation() {
           
           if (remainingYearsActual < remainingYearsTarget) {
             const monthsActual = Math.round(remainingYearsActual * 12);
-            speedHtml = `<span style="display:block; margin-top: 0.2rem; color: #10b981; font-weight: 600;">🚀 Tốc độ bán thực tế: ${Math.round(annualRunRate).toLocaleString('vi-VN')} ${machine.unitType}/năm. Dự kiến hòa vốn sau ${monthsActual} tháng (Nhanh hơn dự kiến mục tiêu ${remainingYearsTarget.toFixed(1)} năm)!</span>`;
+            speedHtml = `<span style="display:block; margin-top: 0.2rem; color: #10b981; font-weight: 600;">🚀 Tốc độ bán thực tế: ${Math.round(annualRunRate).toLocaleString('vi-VN')} ${machine.unitType}/năm. Dự kiến hòa vốn sau ${monthsActual} tháng (Nhanh hơn kế hoạch ${remainingYearsTarget.toFixed(1)} năm)!</span>`;
           } else {
-            speedHtml = `<span style="display:block; margin-top: 0.2rem; color: #a5b4fc;">Tốc độ bán thực tế: ${Math.round(annualRunRate).toLocaleString('vi-VN')} ${machine.unitType}/năm. Dự kiến hòa vốn sau ${remainingYearsActual.toFixed(1)} năm.</span>`;
+            speedHtml = `<span style="display:block; margin-top: 0.2rem; color: #a5b4fc;">Tốc độ bán thực tế: ${Math.round(annualRunRate).toLocaleString('vi-VN')} ${machine.unitType}/năm. Dự kiến hoàn vốn sau ${remainingYearsActual.toFixed(1)} năm.</span>`;
           }
         } else {
-          speedHtml = `<span style="display:block; margin-top: 0.2rem; color: var(--text-secondary);">Nhập sản lượng bán ở Tab Dự Báo để dự phóng thời gian hòa vốn thực tế.</span>`;
+          speedHtml = `<span style="display:block; margin-top: 0.2rem; color: var(--text-secondary);">Nhập sản lượng bán ở Tab Dự Báo để dự phóng thời gian hoàn vốn thực tế.</span>`;
         }
 
         paybackInfoEl.innerHTML = `
-          <strong>${machine.name}</strong>: Đã hoàn vốn <strong>${progress}%</strong> (${(machine.currentVolume || 0).toLocaleString('vi-VN')} / ${targetVolume.toLocaleString('vi-VN')} ${machine.unitType}).
+          <strong>${machine.name}</strong>: Đã thu hồi vốn <strong>${progress}%</strong> (${(machine.currentVolume || 0).toLocaleString('vi-VN')} / ${targetVolume.toLocaleString('vi-VN')} ${machine.unitType}).
           ${speedHtml}
         `;
       }
@@ -1456,51 +1538,76 @@ function triggerLiveCalculation() {
   }
 
   if (paybackSurchargeEl) {
-    paybackSurchargeEl.textContent = formatVND(paybackSurcharge);
+    paybackSurchargeEl.textContent = formatVND(paybackSurchargeFirst3Years);
   }
 
-  if (isMachineActive && paybackSurcharge > 0) {
-    const paybackBaseCost = baseCost + Math.round(paybackSurcharge);
-    const paybackSellerPrice = Math.round(paybackBaseCost * (1 + profitPercentage / 100));
+  // Giai đoạn 1 & Giai đoạn 2
+  const paybackBaseCost = baseCost + paybackSurchargeFirst3Years;
+  const paybackSellerPrice = Math.round(paybackBaseCost * (1 + profitPercentage / 100));
 
-    if (costStandardContainer) costStandardContainer.style.display = "none";
-    if (costPaybackContainer) costPaybackContainer.style.display = "block";
-    if (sellerPriceStandard) sellerPriceStandard.style.display = "none";
-    if (sellerPricePayback) sellerPricePayback.style.display = "flex";
-    
-    document.getElementById("calculated-payback-base-cost").textContent = paybackBaseCost.toLocaleString('vi-VN');
-    document.getElementById("calculated-standard-base-cost-label").textContent = baseCost.toLocaleString('vi-VN');
-    document.getElementById("calculated-payback-seller-price").textContent = paybackSellerPrice.toLocaleString('vi-VN');
-    document.getElementById("calculated-standard-seller-price-label").textContent = sellerPrice.toLocaleString('vi-VN');
-    
+  const postPaybackBaseCost = baseCost + paybackSurchargeAfter3Years;
+  const postPaybackSellerPrice = Math.round(postPaybackBaseCost * (1 + profitPercentage / 100));
+
+  const contributionMargin = paybackSellerPrice - variableCost;
+  const marginRatio = paybackSellerPrice > 0 ? Math.round((contributionMargin / paybackSellerPrice) * 100) : 0;
+
+  // 9. Cập nhật 3 Thẻ Phân Loại Chi Phí (Cost Classification Pillars)
+  const elSumVC = document.getElementById("calc-summary-variable-cost");
+  if (elSumVC) elSumVC.textContent = formatVND(variableCost);
+  const elSumVCDesc = document.getElementById("calc-summary-variable-desc");
+  if (elSumVCDesc) elSumVCDesc.textContent = `NVL: ${formatVND(materialsCost)} | Nhân công: ${formatVND(laborCost)}`;
+
+  const elSumFC = document.getElementById("calc-summary-fixed-cost");
+  if (elSumFC) elSumFC.textContent = formatVND(overheadCost);
+  const elSumFCDesc = document.getElementById("calc-summary-fixed-desc");
+  if (elSumFCDesc) elSumFCDesc.textContent = `Quản lý chung Overhead (${overheadPercentage}%)`;
+
+  const elSumCapEx = document.getElementById("calc-summary-capex-cost");
+  if (elSumCapEx) elSumCapEx.textContent = formatVND(paybackSurchargeFirst3Years);
+  const elSumCapExDesc = document.getElementById("calc-summary-capex-desc");
+  if (elSumCapExDesc) elSumCapExDesc.textContent = `3 năm đầu: ${formatVND(paybackSurchargeFirst3Years)} | Sau 3 năm: ${formatVND(paybackSurchargeAfter3Years)} (-80%)`;
+
+  // 10. Cập nhật Biểu Giá 2 Giai Đoạn (Two-stage Parallel Pricing Cards)
+  const elPbBase = document.getElementById("calculated-payback-base-cost");
+  if (elPbBase) elPbBase.textContent = paybackBaseCost.toLocaleString('vi-VN');
+  const elPbSeller = document.getElementById("calculated-payback-seller-price");
+  if (elPbSeller) elPbSeller.textContent = paybackSellerPrice.toLocaleString('vi-VN');
+
+  const elPostBase = document.getElementById("calculated-post-payback-base-cost");
+  if (elPostBase) elPostBase.textContent = postPaybackBaseCost.toLocaleString('vi-VN');
+  const elPostSeller = document.getElementById("calculated-post-payback-seller-price");
+  if (elPostSeller) elPostSeller.textContent = postPaybackSellerPrice.toLocaleString('vi-VN');
+
+  const elContrib = document.getElementById("calculated-contribution-margin");
+  if (elContrib) elContrib.textContent = `${formatVND(contributionMargin)} (Đảm phí: ${marginRatio}%)`;
+
+  // Sticky Bar Badges
+  const stickyPaybackBaseCostBadge = document.getElementById("sticky-payback-base-cost-badge");
+  const stickyPaybackSellerPriceBadge = document.getElementById("sticky-payback-seller-price-badge");
+  if (paybackSurchargeFirst3Years > 0) {
     if (stickyPaybackBaseCostBadge) {
       stickyPaybackBaseCostBadge.style.display = "inline";
-      stickyPaybackBaseCostBadge.textContent = `(Trước HV: ₫${paybackBaseCost.toLocaleString('vi-VN')})`;
+      stickyPaybackBaseCostBadge.textContent = `(3 năm đầu: ₫${paybackBaseCost.toLocaleString('vi-VN')})`;
     }
     if (stickyPaybackSellerPriceBadge) {
       stickyPaybackSellerPriceBadge.style.display = "inline";
-      stickyPaybackSellerPriceBadge.textContent = `(Trước HV: ₫${paybackSellerPrice.toLocaleString('vi-VN')})`;
+      stickyPaybackSellerPriceBadge.textContent = `(3 năm đầu: ₫${paybackSellerPrice.toLocaleString('vi-VN')})`;
     }
   } else {
-    if (costStandardContainer) costStandardContainer.style.display = "block";
-    if (costPaybackContainer) costPaybackContainer.style.display = "none";
-    if (sellerPriceStandard) sellerPriceStandard.style.display = "flex";
-    if (sellerPricePayback) sellerPricePayback.style.display = "none";
-
     if (stickyPaybackBaseCostBadge) stickyPaybackBaseCostBadge.style.display = "none";
     if (stickyPaybackSellerPriceBadge) stickyPaybackSellerPriceBadge.style.display = "none";
   }
 
   // Breakdown percentages
-  if (baseCost > 0) {
-    const matPct = Math.round((materialsCost / baseCost) * 100);
-    const labPct = Math.round((laborCost / baseCost) * 100);
-    const elePct = Math.round((electricityCost / baseCost) * 100);
-    const ovhPct = 100 - matPct - labPct - elePct; // Để tổng luôn bằng 100%
+  if (paybackBaseCost > 0) {
+    const matPct = Math.round((materialsCost / paybackBaseCost) * 100);
+    const labPct = Math.round((laborCost / paybackBaseCost) * 100);
+    const ovhPct = Math.round((overheadCost / paybackBaseCost) * 100);
+    const capexPct = 100 - matPct - labPct - ovhPct;
 
     document.getElementById("breakdown-materials").textContent = `${formatVND(materialsCost)} (${matPct}%)`;
     document.getElementById("breakdown-labor").textContent = `${formatVND(laborCost)} (${labPct}%)`;
-    document.getElementById("breakdown-electricity").textContent = `${formatVND(electricityCost)} (${elePct}%)`;
+    document.getElementById("breakdown-electricity").textContent = `₫0 (Đã tính vào Định phí xưởng)`;
     document.getElementById("breakdown-overhead").textContent = `${formatVND(overheadCost)} (${ovhPct}%)`;
   } else {
     document.getElementById("breakdown-materials").textContent = "₫0 (0%)";
@@ -2122,6 +2229,235 @@ function recalculateForecastTotals() {
   
   // Render material requirements list
   renderMaterialRequirements();
+}
+
+// ==========================================================================
+// 6.5. Tab: Monthly Financial Report (Báo Cáo Chi Phí & Doanh Thu Từng Tháng)
+// ==========================================================================
+
+function renderMonthlyReport() {
+  const monthSelect = document.getElementById("monthly-report-select");
+  const month = monthSelect ? monthSelect.value : "7";
+  const filterFactory = document.getElementById("monthly-report-filter-factory")?.value || "all";
+  const tbody = document.getElementById("monthly-report-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  // 1. Tính toán Định Phí Tháng (Fixed Costs)
+  const inHr = state.settings.hr?.In || {};
+  const embHr = state.settings.hr?.Thêu || {};
+
+  const sumSalary = (deptList) => (Array.isArray(deptList) ? deptList.reduce((acc, emp) => acc + (parseFloat(emp.salary) || 0), 0) : 0);
+  
+  const inSalaryTotal = sumSalary(inHr.designer) + sumSalary(inHr.production) + sumSalary(inHr.qc);
+  const embSalaryTotal = sumSalary(embHr.designer) + sumSalary(embHr.laser) + sumSalary(embHr.production) + sumSalary(embHr.qc);
+
+  const inElec = state.settings.monthlyElectricity?.In || 8000000;
+  const embElec = state.settings.monthlyElectricity?.Thêu || 11000000;
+
+  let totalMonthlySalary = 0;
+  let totalMonthlyElectricity = 0;
+
+  if (filterFactory === "In") {
+    totalMonthlySalary = inSalaryTotal;
+    totalMonthlyElectricity = inElec;
+  } else if (filterFactory === "Thêu") {
+    totalMonthlySalary = embSalaryTotal;
+    totalMonthlyElectricity = embElec;
+  } else {
+    totalMonthlySalary = inSalaryTotal + embSalaryTotal;
+    totalMonthlyElectricity = inElec + embElec;
+  }
+
+  const totalMonthlyFixedCost = totalMonthlySalary + totalMonthlyElectricity;
+
+  // 2. Lọc sản phẩm theo nhà máy
+  const filteredProducts = state.products.filter(p => filterFactory === "all" || p.factoryType === filterFactory);
+
+  let totalMonthQty = 0;
+  let totalMonthVC = 0;
+  let totalMonthRevenue = 0;
+  let totalMonthContribution = 0;
+  let totalMonthCapex = 0;
+  let totalMonthMat = 0;
+  let totalMonthLabor = 0;
+
+  if (filteredProducts.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" class="no-data" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Không có sản phẩm nào cho bộ lọc này.</td></tr>`;
+  } else {
+    filteredProducts.forEach(p => {
+      const costDetails = calculateProductCost(p, state.settings);
+      
+      // Sản lượng theo tháng: Tháng 7 lấy actualSales, Tháng 8 lấy salesForecast
+      const qty = (month === "7") 
+        ? (p.forecast.actualSales !== undefined ? p.forecast.actualSales : Math.round((p.forecast.salesForecast || 0) / 1.1))
+        : (p.forecast.salesForecast || Math.round((p.forecast.actualSales || 0) * 1.1));
+
+      const unitVC = costDetails.variableCost;
+      const totalVC = unitVC * qty;
+      const unitSellerPrice = costDetails.paybackSellerPrice || costDetails.sellerPrice;
+      const totalRevenue = unitSellerPrice * qty;
+      const productMargin = totalRevenue - totalVC;
+      const unitCapex = costDetails.paybackSurchargeFirst3Years || 0;
+      const totalCapex = unitCapex * qty;
+
+      totalMonthQty += qty;
+      totalMonthVC += totalVC;
+      totalMonthRevenue += totalRevenue;
+      totalMonthContribution += productMargin;
+      totalMonthCapex += totalCapex;
+      totalMonthMat += (costDetails.materialsCost * qty);
+      totalMonthLabor += (costDetails.laborCost * qty);
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong style="color: #60a5fa;">${p.code || 'SKU trống'}</strong></td>
+        <td>
+          <div style="font-weight: 600; color: #fff;">${p.name}</div>
+          <div style="font-size: 0.72rem; color: var(--text-secondary);">${p.category || 'Chưa phân loại'}</div>
+        </td>
+        <td style="text-align: center;">
+          <span class="table-row-factory type-${p.factoryType === 'In' ? 'print' : 'embroid'}">
+            ${p.factoryType === 'In' ? 'In ấn' : 'Thêu dệt'}
+          </span>
+        </td>
+        <td style="text-align: right; font-weight: 700; color: #fff;">${qty.toLocaleString('vi-VN')}</td>
+        <td style="text-align: right; color: #34d399;">${formatVND(unitVC)}</td>
+        <td style="text-align: right; font-weight: 600; color: #34d399;">${formatVND(totalVC)}</td>
+        <td style="text-align: right; color: #f59e0b;">${formatVND(unitSellerPrice)}</td>
+        <td style="text-align: right; font-weight: 700; color: #38bdf8;">${formatVND(totalRevenue)}</td>
+        <td style="text-align: right; font-weight: 700; color: #a78bfa;">${formatVND(productMargin)}</td>
+        <td style="text-align: right; color: #fbbf24;">${formatVND(totalCapex)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // 3. Tính toán tỷ lệ đảm phí & Lợi nhuận ròng hoạt động
+  const contributionMarginRatio = totalMonthRevenue > 0 ? Math.round((totalMonthContribution / totalMonthRevenue) * 100) : 0;
+  const netOperatingProfit = totalMonthContribution - totalMonthlyFixedCost - totalMonthCapex;
+
+  // 4. Cập nhật các thẻ KPI tài chính tháng
+  const elRev = document.getElementById("mr-total-revenue");
+  if (elRev) elRev.textContent = formatVND(totalMonthRevenue);
+
+  const elRevSub = document.getElementById("mr-revenue-sub");
+  if (elRevSub) elRevSub.textContent = month === "7" ? "Sản lượng bán thực tế Tháng 7" : "Kế hoạch & dự báo bán Tháng 8";
+
+  const elVc = document.getElementById("mr-total-variable-cost");
+  if (elVc) elVc.textContent = formatVND(totalMonthVC);
+
+  const elVcSub = document.getElementById("mr-variable-sub");
+  if (elVcSub) elVcSub.textContent = `NVL: ${formatVND(totalMonthMat)} | Nhân công: ${formatVND(totalMonthLabor)}`;
+
+  const elMargin = document.getElementById("mr-contribution-margin");
+  if (elMargin) elMargin.textContent = formatVND(totalMonthContribution);
+
+  const elMarginRatio = document.getElementById("mr-margin-ratio");
+  if (elMarginRatio) elMarginRatio.textContent = `Tỷ lệ đảm phí: ${contributionMarginRatio}% Doanh thu`;
+
+  const elFc = document.getElementById("mr-total-fixed-cost");
+  if (elFc) elFc.textContent = formatVND(totalMonthlyFixedCost);
+
+  const elFcSub = document.getElementById("mr-fixed-sub");
+  if (elFcSub) elFcSub.textContent = `Lương NV: ${formatVND(totalMonthlySalary)} + Tiền điện: ${formatVND(totalMonthlyElectricity)}`;
+
+  const elCapex = document.getElementById("mr-total-capex");
+  if (elCapex) elCapex.textContent = formatVND(totalMonthCapex);
+
+  const elCapexSub = document.getElementById("mr-capex-sub");
+  if (elCapexSub) elCapexSub.textContent = "Trích thu hồi vốn máy 3 năm đầu";
+
+  const elProfit = document.getElementById("mr-net-profit");
+  if (elProfit) {
+    elProfit.textContent = formatVND(netOperatingProfit);
+    elProfit.style.color = netOperatingProfit >= 0 ? "#10b981" : "#fb7185";
+  }
+
+  const elProfitSub = document.getElementById("mr-profit-sub");
+  if (elProfitSub) {
+    elProfitSub.textContent = netOperatingProfit >= 0 
+      ? "Lợi nhuận ròng sau khi bù đắp toàn bộ Biến phí, Định phí & Khấu hao máy"
+      : "Doanh thu chưa đủ bù đắp toàn bộ định phí tháng";
+  }
+
+  // 5. Cập nhật dòng chân bảng (Footer)
+  const footQty = document.getElementById("mr-foot-qty");
+  if (footQty) footQty.textContent = totalMonthQty.toLocaleString('vi-VN');
+
+  const footVc = document.getElementById("mr-foot-vc");
+  if (footVc) footVc.textContent = formatVND(totalMonthVC);
+
+  const footRev = document.getElementById("mr-foot-rev");
+  if (footRev) footRev.textContent = formatVND(totalMonthRevenue);
+
+  const footMargin = document.getElementById("mr-foot-margin");
+  if (footMargin) footMargin.textContent = formatVND(totalMonthContribution);
+
+  const footCapex = document.getElementById("mr-foot-capex");
+  if (footCapex) footCapex.textContent = formatVND(totalMonthCapex);
+}
+
+function exportMonthlyReportCSV() {
+  const month = document.getElementById("monthly-report-select")?.value || "7";
+  const filterFactory = document.getElementById("monthly-report-filter-factory")?.value || "all";
+  const filteredProducts = state.products.filter(p => filterFactory === "all" || p.factoryType === filterFactory);
+
+  const header = [
+    "Mã SKU",
+    "Tên Sản Phẩm",
+    "Nhà Máy",
+    "Tháng Báo Cáo",
+    "Số Lượng Bán",
+    "Đơn Giá Biến Phí (VNĐ)",
+    "Tổng Biến Phí (VNĐ)",
+    "Giá Bán Cho Seller (VNĐ)",
+    "Tổng Doanh Thu (VNĐ)",
+    "Lãi Gộp Đảm Phí (VNĐ)",
+    "Khấu Hao Máy (VNĐ)"
+  ];
+
+  const rows = [header];
+
+  filteredProducts.forEach(p => {
+    const costDetails = calculateProductCost(p, state.settings);
+    const qty = (month === "7") 
+      ? (p.forecast.actualSales !== undefined ? p.forecast.actualSales : Math.round((p.forecast.salesForecast || 0) / 1.1))
+      : (p.forecast.salesForecast || Math.round((p.forecast.actualSales || 0) * 1.1));
+
+    const unitVC = costDetails.variableCost;
+    const totalVC = unitVC * qty;
+    const unitPrice = costDetails.paybackSellerPrice || costDetails.sellerPrice;
+    const totalRev = unitPrice * qty;
+    const margin = totalRev - totalVC;
+    const unitCapex = costDetails.paybackSurchargeFirst3Years || 0;
+    const totalCapex = unitCapex * qty;
+
+    rows.push([
+      `"${p.code || ''}"`,
+      `"${(p.name || '').replace(/"/g, '""')}"`,
+      `"${p.factoryType === 'In' ? 'In ấn' : 'Thêu dệt'}"`,
+      `"Tháng ${month}/2026"`,
+      qty,
+      unitVC,
+      totalVC,
+      unitPrice,
+      totalRev,
+      margin,
+      totalCapex
+    ]);
+  });
+
+  const csvContent = "\uFEFF" + rows.map(r => r.join(",")).join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Bao_Cao_Tai_Chinh_Thang_${month}_2026.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ==========================================================================
@@ -3396,6 +3732,20 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
     }
   });
 
+  // 5. Monthly Report tab triggers
+  const mrSelect = document.getElementById("monthly-report-select");
+  if (mrSelect) {
+    mrSelect.addEventListener("change", renderMonthlyReport);
+  }
+  const mrFilter = document.getElementById("monthly-report-filter-factory");
+  if (mrFilter) {
+    mrFilter.addEventListener("change", renderMonthlyReport);
+  }
+  const mrExportBtn = document.getElementById("btn-export-monthly-report");
+  if (mrExportBtn) {
+    mrExportBtn.addEventListener("click", exportMonthlyReportCSV);
+  }
+
   // Cloud Database Sync on Startup
   if (state.googleSheetUrl) {
     state.syncFromCloud().then(success => {
@@ -3418,5 +3768,7 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
 // Export application instance globally for inline button onclick bindings if any
 window.app = {
   switchTab,
-  triggerLiveCalculation
+  triggerLiveCalculation,
+  renderMonthlyReport,
+  exportMonthlyReportCSV
 };
