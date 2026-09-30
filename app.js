@@ -1369,13 +1369,27 @@ function toggleFactoryInputs(factoryType) {
   }
 }
 
+function detectSheetUnit(sheetSize) {
+  const s = String(sheetSize || "").trim().toLowerCase();
+  if (s.includes("mét") || s.includes("met") || s.includes("cuộn") || s.includes("roll")) {
+    return "Mét";
+  }
+  if (s.includes("cm") || s.includes("mm") || s.includes("tờ") || s.includes("sheet") || s.includes("a3") || s.includes("a4")) {
+    return "Tờ";
+  }
+  if (/\b\d+(\.\d+)?\s*m\b/.test(s) || /x\s*\d+(\.\d+)?m/i.test(s) || /x\s*1m/i.test(s)) {
+    return "Mét";
+  }
+  return "Tờ";
+}
+
 function updateImpositionOrderCalc() {
   const itemsPerSheetInput = document.getElementById("layout-items-per-sheet");
   if (!itemsPerSheetInput) return;
   const itemsPerSheet = parseFloat(itemsPerSheetInput.value) || 1;
   const sheetSizeInput = document.getElementById("layout-sheet-size");
   const sheetSize = sheetSizeInput ? sheetSizeInput.value : "";
-  const unit = sheetSize.toLowerCase().includes("m") ? "Mét" : "Tờ";
+  const unit = detectSheetUnit(sheetSize);
 
   const yieldLabel = document.getElementById("layout-yield-label");
   if (yieldLabel) yieldLabel.textContent = itemsPerSheet.toLocaleString('vi-VN');
@@ -1452,7 +1466,7 @@ function syncYieldToBOM() {
   const itemsPerSheet = parseFloat(itemsPerSheetInput?.value) || 1;
   const consumption = parseFloat((1 / itemsPerSheet).toFixed(6));
   const sheetSize = document.getElementById("layout-sheet-size")?.value || "";
-  const unit = sheetSize.toLowerCase().includes("m") ? "Mét" : "Tờ";
+  const unit = detectSheetUnit(sheetSize);
 
   let synced = false;
   const rows = document.querySelectorAll("#materials-tbody tr:not(.empty-materials-row)");
@@ -1884,7 +1898,7 @@ function saveProductCostForm(e) {
       sheetSize: document.getElementById("layout-sheet-size")?.value || "",
       itemSize: document.getElementById("layout-item-size")?.value || "",
       itemsPerSheet: parseFloat(document.getElementById("layout-items-per-sheet")?.value) || 1,
-      unitType: (document.getElementById("layout-sheet-size")?.value || "").toLowerCase().includes("m") ? "Mét" : "Tờ"
+      unitType: detectSheetUnit(document.getElementById("layout-sheet-size")?.value || "")
     };
   }
 
