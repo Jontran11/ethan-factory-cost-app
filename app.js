@@ -127,6 +127,13 @@ const MOCK_PRODUCTS = [
     code: "PC-PAPER-01",
     category: "Bài in (Playing Cards)",
     factoryType: "In",
+    layout: {
+      preset: "playing-cards",
+      sheetSize: "A3 (29.7x42cm)",
+      itemSize: "Bài chuẩn 54 lá",
+      itemsPerSheet: 0.333333,
+      unitType: "Tờ"
+    },
     materials: [
       { name: "Giấy C300gsm A3", qty: 3, unit: "Tờ", price: 900 },
       { name: "In Konica (2 mặt) - Click", qty: 12, unit: "Click", price: 600 },
@@ -153,6 +160,13 @@ const MOCK_PRODUCTS = [
     code: "PC-PLASTIC-02",
     category: "Bài in (Playing Cards)",
     factoryType: "In",
+    layout: {
+      preset: "playing-cards",
+      sheetSize: "A3 (29.7x42cm)",
+      itemSize: "Bài chuẩn 54 lá",
+      itemsPerSheet: 0.333333,
+      unitType: "Tờ"
+    },
     materials: [
       { name: "Giấy C300gsm A3", qty: 3, unit: "Tờ", price: 900 },
       { name: "In Konica (2 mặt) - Click", qty: 12, unit: "Click", price: 600 },
@@ -179,6 +193,13 @@ const MOCK_PRODUCTS = [
     code: "UNO-PAPER-01",
     category: "Bài in (Uno Cards)",
     factoryType: "In",
+    layout: {
+      preset: "playing-cards",
+      sheetSize: "A3 (29.7x42cm)",
+      itemSize: "Bài Uno Cards",
+      itemsPerSheet: 0.142857,
+      unitType: "Tờ"
+    },
     materials: [
       { name: "Giấy C300gsm A3 (Thẻ + Hộp)", qty: 7, unit: "Tờ", price: 900 },
       { name: "In Konica (2 mặt) - Click", qty: 28, unit: "Click", price: 600 },
@@ -202,9 +223,16 @@ const MOCK_PRODUCTS = [
     code: "ST-AN-SUA-01",
     category: "Nhãn dán (Sticker)",
     factoryType: "In",
+    layout: {
+      preset: "decal-33x48",
+      sheetSize: "33x48cm",
+      itemSize: "2.0 inch",
+      itemsPerSheet: 40,
+      unitType: "Tờ"
+    },
     materials: [
-      { name: "Decal sữa mờ (An Nam) A3+", qty: 1, unit: "Tờ", price: 6000 },
-      { name: "In Konica (1 mặt) - Click", qty: 1, unit: "Tờ", price: 1200 }
+      { name: "Decal sữa mờ (An Nam) A3+", qty: 0.025, unit: "Tờ", price: 6000 },
+      { name: "In Konica (1 mặt) - Click", qty: 0.025, unit: "Click", price: 1200 }
     ],
     labor: { designer: 0.005, production: 0.03, qc: 0.01 },
     electricity: { power: 1.5, runTime: 0.05 },
@@ -224,10 +252,17 @@ const MOCK_PRODUCTS = [
     code: "ST-TK-SUA-03",
     category: "Nhãn dán (Sticker)",
     factoryType: "In",
+    layout: {
+      preset: "decal-33x48",
+      sheetSize: "33x48cm",
+      itemSize: "2.0 inch",
+      itemsPerSheet: 40,
+      unitType: "Tờ"
+    },
     materials: [
-      { name: "Decal sữa mờ (ThaiKK) A3+", qty: 1, unit: "Tờ", price: 3000 },
-      { name: "In Konica (1 mặt) - Click", qty: 1, unit: "Tờ", price: 1200 },
-      { name: "Màng Nguội Mờ OPAM", qty: 0.48, unit: "Mét", price: 2187 }
+      { name: "Decal sữa mờ (ThaiKK) A3+", qty: 0.025, unit: "Tờ", price: 3000 },
+      { name: "In Konica (1 mặt) - Click", qty: 0.025, unit: "Click", price: 1200 },
+      { name: "Màng Nguội Mờ OPAM", qty: 0.012, unit: "Mét", price: 2187 }
     ],
     labor: { designer: 0.005, production: 0.05, qc: 0.015 },
     electricity: { power: 1.8, runTime: 0.06 },
@@ -247,9 +282,17 @@ const MOCK_PRODUCTS = [
     code: "ST-UV-DTF-04",
     category: "Nhãn dán (Sticker)",
     factoryType: "In",
+    layout: {
+      preset: "uv-dtf-roll",
+      sheetSize: "0.62 x 1m",
+      itemSize: "2.0 inch",
+      itemsPerSheet: 84,
+      unitType: "Mét"
+    },
     materials: [
-      { name: "Màng A (pet in UV-DTF)", qty: 1, unit: "Mét", price: 16423 },
-      { name: "Màng B (cán định hình UV-DTF)", qty: 1, unit: "Mét", price: 16423 }
+      { name: "Màng A (pet in UV-DTF)", qty: 0.011905, unit: "Mét", price: 16423 },
+      { name: "Màng B (cán định hình UV-DTF)", qty: 0.011905, unit: "Mét", price: 16423 },
+      { name: "In UV-DTF - Click", qty: 0.011905, unit: "Mét", price: 15000 }
     ],
     labor: { designer: 0.01, production: 0.08, qc: 0.02 },
     electricity: { power: 3.0, runTime: 0.12 },
@@ -415,6 +458,20 @@ class AppStateManager {
         if (mockMatch && mockMatch.paybackMachineId) {
           p.paybackMachineId = mockMatch.paybackMachineId;
           p.paybackMachineQty = mockMatch.paybackMachineQty || 1;
+        }
+      }
+      if (!p.layout && p.factoryType === "In") {
+        const mockMatch = MOCK_PRODUCTS.find(mp => mp.id === p.id || mp.code === p.code);
+        if (mockMatch && mockMatch.layout) {
+          p.layout = { ...mockMatch.layout };
+        } else {
+          p.layout = {
+            preset: "decal-33x48",
+            sheetSize: "33x48cm",
+            itemSize: "2.0 inch",
+            itemsPerSheet: 40,
+            unitType: "Tờ"
+          };
         }
       }
       if (p.forecast) {
@@ -1257,6 +1314,31 @@ function renderCalculator() {
     paybackQtyInput.value = selectedProduct.paybackMachineQty !== undefined ? selectedProduct.paybackMachineQty : 1;
   }
 
+  // Populate Imposition Layout specs for printing products
+  const layout = selectedProduct.layout || {};
+  const layoutPreset = document.getElementById("layout-preset");
+  const layoutSheetSize = document.getElementById("layout-sheet-size");
+  const layoutItemSize = document.getElementById("layout-item-size");
+  const layoutItemSizeSelect = document.getElementById("layout-item-size-select");
+  const layoutItemsPerSheet = document.getElementById("layout-items-per-sheet");
+
+  if (layoutPreset) layoutPreset.value = layout.preset || "";
+  if (layoutSheetSize) layoutSheetSize.value = layout.sheetSize || (selectedProduct.name.includes("UV") ? "0.62 x 1m" : "33x48cm");
+  if (layoutItemSize) layoutItemSize.value = layout.itemSize || "2.0 inch";
+  if (layoutItemSizeSelect) {
+    layoutItemSizeSelect.value = ["1.5 inch", "2.0 inch", "3.0 inch", "4.0 inch", "5.0 inch"].includes(layout.itemSize) ? layout.itemSize : "custom";
+  }
+  if (layoutItemsPerSheet) {
+    layoutItemsPerSheet.value = layout.itemsPerSheet !== undefined ? layout.itemsPerSheet : 40;
+  }
+
+  const orderCalcQty = document.getElementById("order-calc-qty");
+  if (orderCalcQty) {
+    orderCalcQty.value = selectedProduct.forecast?.actualSales || 1000;
+  }
+
+  updateImpositionOrderCalc();
+
   // Run calculation & update displays
   triggerLiveCalculation();
 }
@@ -1270,17 +1352,132 @@ function toggleFactoryInputs(factoryType) {
   const printBlock = document.getElementById("labor-print-block");
   const embroidBlock = document.getElementById("labor-embroid-block");
   const badgeResult = document.getElementById("form-result-factory-badge");
+  const impositionSection = document.getElementById("imposition-layout-section");
 
   if (factoryType === "In") {
     printBlock.style.display = "block";
     embroidBlock.style.display = "none";
+    if (impositionSection) impositionSection.style.display = "block";
     badgeResult.textContent = "Nhà máy In";
     badgeResult.className = "badge-factory-type";
   } else {
     printBlock.style.display = "none";
     embroidBlock.style.display = "block";
+    if (impositionSection) impositionSection.style.display = "none";
     badgeResult.textContent = "Nhà máy Thêu";
     badgeResult.className = "badge-factory-type type-embroid";
+  }
+}
+
+function updateImpositionOrderCalc() {
+  const itemsPerSheetInput = document.getElementById("layout-items-per-sheet");
+  if (!itemsPerSheetInput) return;
+  const itemsPerSheet = parseFloat(itemsPerSheetInput.value) || 1;
+  const sheetSizeInput = document.getElementById("layout-sheet-size");
+  const sheetSize = sheetSizeInput ? sheetSizeInput.value : "";
+  const unit = sheetSize.toLowerCase().includes("m") ? "Mét" : "Tờ";
+
+  const yieldLabel = document.getElementById("layout-yield-label");
+  if (yieldLabel) yieldLabel.textContent = itemsPerSheet.toLocaleString('vi-VN');
+
+  const unitLabel = document.getElementById("layout-unit-label");
+  if (unitLabel) unitLabel.textContent = unit;
+
+  const unitBadge = document.getElementById("imposition-unit-badge");
+  if (unitBadge) unitBadge.textContent = `Khổ ${unit}`;
+
+  const consumption = itemsPerSheet > 0 ? (1 / itemsPerSheet) : 0;
+  const unitConsumptionEl = document.getElementById("layout-unit-consumption");
+  if (unitConsumptionEl) unitConsumptionEl.textContent = consumption.toFixed(6).replace(/\.?0+$/, '');
+
+  // Order Calculation
+  const orderQtyInput = document.getElementById("order-calc-qty");
+  const orderQty = parseFloat(orderQtyInput?.value) || 0;
+  const sheetsNeeded = itemsPerSheet > 0 ? Math.ceil(orderQty / itemsPerSheet) : 0;
+
+  const elSheets = document.getElementById("order-calc-sheets");
+  if (elSheets) elSheets.textContent = `${sheetsNeeded.toLocaleString('vi-VN')} ${unit}`;
+
+  const elSheetsSub = document.getElementById("order-calc-sheets-sub");
+  if (elSheetsSub) elSheetsSub.textContent = `(${orderQty.toLocaleString('vi-VN')} con ÷ ${itemsPerSheet} con/${unit})`;
+
+  // Clicks calculation
+  const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+  let clicksPerSheet = 1;
+  if (selectedProduct && (selectedProduct.name.toLowerCase().includes("bài") || selectedProduct.code?.includes("PC-") || selectedProduct.code?.includes("UNO-"))) {
+    clicksPerSheet = 2; // 2 mặt
+  }
+  const totalClicks = sheetsNeeded * clicksPerSheet;
+  const elClicks = document.getElementById("order-calc-clicks");
+  if (elClicks) elClicks.textContent = `${totalClicks.toLocaleString('vi-VN')} Clicks`;
+  const elClicksSub = document.getElementById("order-calc-clicks-sub");
+  if (elClicksSub) elClicksSub.textContent = clicksPerSheet === 2 ? `In 2 mặt Konica (${sheetsNeeded.toLocaleString('vi-VN')} x 2)` : `In 1 mặt (${unit})`;
+
+  // Order Financials
+  let unitVC = 0;
+  let unitSellerPrice = 0;
+
+  const elPbSeller = document.getElementById("calculated-payback-seller-price");
+  const elSumVC = document.getElementById("calc-summary-variable-cost");
+  if (elPbSeller && elSumVC) {
+    unitSellerPrice = parseCurrencyInput(elPbSeller.textContent);
+    unitVC = parseCurrencyInput(elSumVC.textContent);
+  }
+
+  if (unitVC === 0 && selectedProduct) {
+    const costDetails = calculateProductCost(selectedProduct, state.settings);
+    unitVC = costDetails.variableCost;
+    unitSellerPrice = costDetails.paybackSellerPrice || costDetails.sellerPrice;
+  }
+
+  if (unitVC > 0 || unitSellerPrice > 0 || selectedProduct) {
+    const totalVC = Math.round(orderQty * unitVC);
+    const totalRevenue = Math.round(orderQty * unitSellerPrice);
+    const totalMargin = totalRevenue - totalVC;
+    const marginRatio = totalRevenue > 0 ? Math.round((totalMargin / totalRevenue) * 100) : 0;
+
+    const elVC = document.getElementById("order-calc-vc");
+    if (elVC) elVC.textContent = formatVND(totalVC);
+
+    const elRev = document.getElementById("order-calc-revenue");
+    if (elRev) elRev.textContent = formatVND(totalRevenue);
+
+    const elMargin = document.getElementById("order-calc-margin");
+    if (elMargin) elMargin.textContent = `Lãi gộp: ${formatVND(totalMargin)} (${marginRatio}%)`;
+  }
+}
+
+function syncYieldToBOM() {
+  const itemsPerSheetInput = document.getElementById("layout-items-per-sheet");
+  const itemsPerSheet = parseFloat(itemsPerSheetInput?.value) || 1;
+  const consumption = parseFloat((1 / itemsPerSheet).toFixed(6));
+  const sheetSize = document.getElementById("layout-sheet-size")?.value || "";
+  const unit = sheetSize.toLowerCase().includes("m") ? "Mét" : "Tờ";
+
+  let synced = false;
+  const rows = document.querySelectorAll("#materials-tbody tr:not(.empty-materials-row)");
+  rows.forEach((row, idx) => {
+    const nameInput = row.querySelector(".row-mat-name");
+    const name = (nameInput?.value || "").toLowerCase();
+    const qtyInput = row.querySelector(".row-mat-qty");
+    const unitInput = row.querySelector(".row-mat-unit");
+
+    // Match primary sheet/meter materials (Decal, Giấy, Màng, Click) or first row
+    if (name.includes("decal") || name.includes("màng") || name.includes("giấy") || name.includes("click") || idx === 0) {
+      if (qtyInput) qtyInput.value = consumption;
+      if (unitInput && (name.includes("decal") || name.includes("màng") || name.includes("giấy"))) {
+        unitInput.value = unit;
+      }
+      synced = true;
+    }
+  });
+
+  if (synced) {
+    triggerLiveCalculation();
+    updateImpositionOrderCalc();
+    alert(`Đã cập nhật hệ số định mức ${consumption} ${unit}/sản phẩm (1 ÷ ${itemsPerSheet} con) vào bảng nguyên vật liệu!`);
+  } else {
+    alert("Chưa tìm thấy dòng vật tư phù hợp để đồng bộ. Vui lòng thêm vật tư vào bảng trước!");
   }
 }
 
@@ -1615,6 +1812,9 @@ function triggerLiveCalculation() {
     document.getElementById("breakdown-electricity").textContent = "₫0 (0%)";
     document.getElementById("breakdown-overhead").textContent = "₫0 (0%)";
   }
+
+  // Đồng bộ khối tính toán đơn hàng theo quy cách xếp khổ
+  updateImpositionOrderCalc();
 }
 
 /**
@@ -1676,6 +1876,17 @@ function saveProductCostForm(e) {
   // Cập nhật cấu hình hoàn vốn máy móc
   product.paybackMachineId = document.getElementById("payback-machine-select").value || null;
   product.paybackMachineQty = parseFloat(document.getElementById("payback-machine-qty").value) || 0;
+
+  // Cập nhật quy cách xếp khổ in nếu là Nhà máy In
+  if (product.factoryType === "In") {
+    product.layout = {
+      preset: document.getElementById("layout-preset")?.value || "",
+      sheetSize: document.getElementById("layout-sheet-size")?.value || "",
+      itemSize: document.getElementById("layout-item-size")?.value || "",
+      itemsPerSheet: parseFloat(document.getElementById("layout-items-per-sheet")?.value) || 1,
+      unitType: (document.getElementById("layout-sheet-size")?.value || "").toLowerCase().includes("m") ? "Mét" : "Tờ"
+    };
+  }
 
   // Lưu vào localStorage
   state.saveProducts();
@@ -3509,144 +3720,93 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
   document.getElementById("modal-btn-cancel").addEventListener("click", closeCreateProductModal);
   document.getElementById("modal-product-form").addEventListener("submit", handleCreateProductSubmit);
 
-  // Spreadsheet Template Selector Event Listeners
-  const templateSelect = document.getElementById("template-select");
-  const templateSizeContainer = document.getElementById("template-size-container");
-  const templateSizeSelect = document.getElementById("template-size");
-  const btnApplyTemplate = document.getElementById("btn-apply-template");
+  // Imposition Layout Event Listeners
+  const layoutPreset = document.getElementById("layout-preset");
+  const layoutSheetSize = document.getElementById("layout-sheet-size");
+  const layoutItemSize = document.getElementById("layout-item-size");
+  const layoutItemSizeSelect = document.getElementById("layout-item-size-select");
+  const layoutItemsPerSheet = document.getElementById("layout-items-per-sheet");
+  const orderCalcQty = document.getElementById("order-calc-qty");
+  const btnSyncYieldToBOM = document.getElementById("btn-sync-yield-to-bom");
 
-  if (templateSelect) {
-    templateSelect.addEventListener("change", (e) => {
+  if (layoutPreset) {
+    layoutPreset.addEventListener("change", (e) => {
       const val = e.target.value;
-      if (val.startsWith("sticker-") || val === "uv-dtf") {
-        templateSizeContainer.style.display = "flex";
-      } else {
-        templateSizeContainer.style.display = "none";
+      if (val === "decal-33x48") {
+        layoutSheetSize.value = "33x48cm";
+        layoutItemSizeSelect.value = "2.0 inch";
+        layoutItemSize.value = "2.0 inch";
+        layoutItemsPerSheet.value = 40;
+      } else if (val === "decal-33x35") {
+        layoutSheetSize.value = "33x35.4cm";
+        layoutItemSizeSelect.value = "2.0 inch";
+        layoutItemSize.value = "2.0 inch";
+        layoutItemsPerSheet.value = 30;
+      } else if (val === "uv-dtf-roll") {
+        layoutSheetSize.value = "0.62 x 1m";
+        layoutItemSizeSelect.value = "2.0 inch";
+        layoutItemSize.value = "2.0 inch";
+        layoutItemsPerSheet.value = 84;
+      } else if (val === "skin-card") {
+        layoutSheetSize.value = "33x48cm";
+        layoutItemSizeSelect.value = "custom";
+        layoutItemSize.value = "3.35 x 2.12 inch";
+        layoutItemsPerSheet.value = 21;
+      } else if (val === "playing-cards") {
+        layoutSheetSize.value = "A3 (29.7x42cm)";
+        layoutItemSizeSelect.value = "custom";
+        layoutItemSize.value = "Bộ bài 54 lá";
+        layoutItemsPerSheet.value = 0.333333;
+      } else if (val === "hop-giay") {
+        layoutSheetSize.value = "33x48cm";
+        layoutItemSizeSelect.value = "custom";
+        layoutItemSize.value = "Hộp Ivory 15.8x18cm";
+        layoutItemsPerSheet.value = 4;
       }
+      updateImpositionOrderCalc();
     });
+  }
 
-    btnApplyTemplate.addEventListener("click", () => {
-      const template = templateSelect.value;
-      if (!template) {
-        alert("Vui lòng chọn một mẫu sản phẩm!");
-        return;
-      }
-      
-      const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
-      if (!selectedProduct) {
-        alert("Vui lòng chọn một sản phẩm ở cột bên trái trước khi áp dụng mẫu!");
-        return;
-      }
+  if (layoutItemSizeSelect) {
+    layoutItemSizeSelect.addEventListener("change", (e) => {
+      const sizeVal = e.target.value;
+      if (sizeVal !== "custom") {
+        layoutItemSize.value = sizeVal;
+        const sheetSize = (layoutSheetSize.value || "").toLowerCase();
+        const sizeNum = parseFloat(sizeVal);
 
-      const size = parseFloat(templateSizeSelect.value) || 2.0;
-      let materials = [];
-
-      if (template.startsWith("sticker-")) {
-        let matKey = "";
-        let matPrice = 0;
-        if (template === "sticker-sua-mo") {
-          matKey = "Decal Sữa Mờ ThaiKK";
-          matPrice = 2826;
-        } else if (template === "sticker-trong") {
-          matKey = "Decal Trong ThaiKK";
-          matPrice = 2709;
-        } else if (template === "sticker-bac-bong") {
-          matKey = "Decal Bạc Bóng ThaiKK";
-          matPrice = 2313;
-        } else if (template === "sticker-kraft") {
-          matKey = "Decal Kraft ThaiKK";
-          matPrice = 1145;
-        }
-
-        let itemsPerSheet = 40;
-        if (template === "sticker-sua-mo" || template === "sticker-trong") {
-          const yields = { 1.5: 70, 2: 40, 3: 20, 4: 12, 5: 6 };
-          itemsPerSheet = yields[size] || 40;
-        } else {
+        if (sheetSize.includes("0.62") || sheetSize.includes("1m") || sheetSize.includes("uv")) {
+          // UV-DTF yield table
+          const yields = { 1.5: 135, 2: 84, 3: 45, 4: 28, 5: 18 };
+          layoutItemsPerSheet.value = yields[sizeNum] || 84;
+        } else if (sheetSize.includes("35.4") || sheetSize.includes("35")) {
+          // Decal bạc/kraft 33x35.4cm
           const yields = { 1.5: 56, 2: 30, 3: 16, 4: 9, 5: 4 };
-          itemsPerSheet = yields[size] || 30;
+          layoutItemsPerSheet.value = yields[sizeNum] || 30;
+        } else {
+          // Decal 33x48cm
+          const yields = { 1.5: 70, 2: 40, 3: 20, 4: 12, 5: 6 };
+          layoutItemsPerSheet.value = yields[sizeNum] || 40;
         }
-
-        const qty = 1 / itemsPerSheet;
-
-        materials = [
-          { name: matKey, qty: parseFloat(qty.toFixed(6)), unit: "Tờ", price: matPrice },
-          { name: "In Konica (1 mặt) - Click", qty: parseFloat(qty.toFixed(6)), unit: "Click", price: 1200 }
-        ];
-
-        selectedProduct.factoryType = "In";
-        const printRadio = document.getElementById("factory-print");
-        if (printRadio) printRadio.checked = true;
-        toggleFactoryInputs("In");
-
-      } else if (template === "skin-card") {
-        const qty = 1 / 21;
-        materials = [
-          { name: "Decal Sữa Mờ ThaiKK", qty: parseFloat(qty.toFixed(6)), unit: "Tờ", price: 2826 },
-          { name: "In Konica (1 mặt) - Click", qty: parseFloat(qty.toFixed(6)), unit: "Click", price: 1200 }
-        ];
-        selectedProduct.factoryType = "In";
-        const printRadio = document.getElementById("factory-print");
-        if (printRadio) printRadio.checked = true;
-        toggleFactoryInputs("In");
-
-      } else if (template === "uv-dtf") {
-        const yields = { 1.5: 135, 2: 84, 3: 45, 4: 28, 5: 18 };
-        const itemsPerMeter = yields[size] || 84;
-        const qty = 1 / itemsPerMeter;
-
-        materials = [
-          { name: "Màng A (pet in UV-DTF)", qty: parseFloat(qty.toFixed(6)), unit: "Mét", price: 14446 },
-          { name: "Màng B (cán định hình UV-DTF)", qty: parseFloat(qty.toFixed(6)), unit: "Mét", price: 14446 },
-          { name: "In UV-DTF - Click", qty: parseFloat(qty.toFixed(6)), unit: "Mét", price: 15000 }
-        ];
-        selectedProduct.factoryType = "In";
-        const printRadio = document.getElementById("factory-print");
-        if (printRadio) printRadio.checked = true;
-        toggleFactoryInputs("In");
-
-      } else if (template === "calendar") {
-        materials = [
-          { name: "Giấy Coucher A4 300gsm", qty: 13, unit: "Tờ", price: 460 },
-          { name: "In Konica (1 mặt) - Click", qty: 13, unit: "Click", price: 1200 }
-        ];
-        selectedProduct.factoryType = "In";
-        const printRadio = document.getElementById("factory-print");
-        if (printRadio) printRadio.checked = true;
-        toggleFactoryInputs("In");
-
-      } else if (template === "playing-cards") {
-        materials = [
-          { name: "Giấy Coucher A3 300gsm", qty: 3, unit: "Tờ", price: 900 },
-          { name: "In Konica (2 mặt) - Click", qty: 6, unit: "Click", price: 600 }
-        ];
-        selectedProduct.factoryType = "In";
-        const printRadio = document.getElementById("factory-print");
-        if (printRadio) printRadio.checked = true;
-        toggleFactoryInputs("In");
-
-      } else if (template === "hop-giay") {
-        materials = [
-          { name: "Giấy Irovy 33x48cm 300gsm", qty: 0.25, unit: "Tờ", price: 940 },
-          { name: "In hộp (Konica) - Click", qty: 0.25, unit: "Click", price: 1200 }
-        ];
-        selectedProduct.factoryType = "In";
-        const printRadio = document.getElementById("factory-print");
-        if (printRadio) printRadio.checked = true;
-        toggleFactoryInputs("In");
       }
-
-      selectedProduct.materials = materials;
-      if (template.startsWith("sticker-") || template === "uv-dtf") {
-        selectedProduct.sizeVariation = size;
-      } else {
-        selectedProduct.sizeVariation = null;
-      }
-      state.saveProducts();
-      
-      renderCalculator();
-      alert(`Đã áp dụng mẫu định mức "${templateSelect.options[templateSelect.selectedIndex].text}" (${template.startsWith("sticker-") || template === "uv-dtf" ? size + " inch" : "Mặc định"}) thành công!`);
+      updateImpositionOrderCalc();
     });
+  }
+
+  if (layoutItemsPerSheet) {
+    layoutItemsPerSheet.addEventListener("input", updateImpositionOrderCalc);
+  }
+  if (layoutSheetSize) {
+    layoutSheetSize.addEventListener("input", updateImpositionOrderCalc);
+  }
+  if (layoutItemSize) {
+    layoutItemSize.addEventListener("input", updateImpositionOrderCalc);
+  }
+  if (orderCalcQty) {
+    orderCalcQty.addEventListener("input", updateImpositionOrderCalc);
+  }
+  if (btnSyncYieldToBOM) {
+    btnSyncYieldToBOM.addEventListener("click", syncYieldToBOM);
   }
 
   // Google Sheets Database Event Listeners
