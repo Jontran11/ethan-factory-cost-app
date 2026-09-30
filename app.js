@@ -117,6 +117,39 @@ const DEFAULT_SETTINGS = {
       discountAfter3Years: 80,
       unitType: "Cái"
     }
+  ],
+  materialsCatalog: [
+    // Giấy & Decal
+    { id: "mat-decal-sua-33x48", name: "Decal sữa mờ Fasson 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1571, factoryType: "In", sheetSize: "33×48cm", notes: "Decal sữa mờ đế trắng Fasson" },
+    { id: "mat-decal-trong-33x48", name: "Decal trong suốt Fasson 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1600, factoryType: "In", sheetSize: "33×48cm", notes: "Decal trong dán ly cốc, bao bì kính" },
+    { id: "mat-decal-bac-33x35", name: "Decal bạc xé không rách 33×35.4cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 2200, factoryType: "In", sheetSize: "33×35.4cm", notes: "Decal xi bạc dán tem thiết bị, máy móc" },
+    { id: "mat-decal-kraft-33x35", name: "Decal Kraft nâu da bò 33×35.4cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1800, factoryType: "In", sheetSize: "33×35.4cm", notes: "Decal giấy Kraft vintage dán chai lọ" },
+    { id: "mat-giay-couche-300", name: "Giấy Couche 300gsm (C300) 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1200, factoryType: "In", sheetSize: "33×48cm", notes: "In danh thiếp, bìa sách, thẻ bài card" },
+    { id: "mat-giay-couche-250", name: "Giấy Couche 250gsm (C250) 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1050, factoryType: "In", sheetSize: "33×48cm", notes: "In brochure, catalogue, kẹp file" },
+    { id: "mat-giay-couche-150", name: "Giấy Couche 150gsm (C150) 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 750, factoryType: "In", sheetSize: "33×48cm", notes: "In tờ rơi flyer, ruột tạp chí" },
+    { id: "mat-giay-ivory-350", name: "Giấy Ivory 350gsm làm hộp 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1800, factoryType: "In", sheetSize: "33×48cm", notes: "In vỏ hộp bài, hộp quà tặng cứng cáp" },
+    { id: "mat-giay-kraft-250", name: "Giấy Kraft Nhật 250gsm 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1300, factoryType: "In", sheetSize: "33×48cm", notes: "In tag mác quần áo, thiệp handmade" },
+    { id: "mat-giay-ford-100", name: "Giấy Ford trắng 100gsm A4", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 250, factoryType: "In", sheetSize: "A4", notes: "In tài liệu văn phòng, tiêu đề thư" },
+    { id: "mat-decal-skin-atm", name: "Phôi Decal Skin Card ATM 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 2000, factoryType: "In", sheetSize: "33×48cm", notes: "21 con/tờ phôi dán thẻ ngân hàng" },
+
+    // Màng & Phủ
+    { id: "mat-mang-mo-nhiet", name: "Màng cán mờ nhiệt BOPP 33cm", category: "Màng & Phủ", unit: "Tờ", defaultPrice: 429, factoryType: "In", notes: "Cán mờ bảo vệ bề mặt chống trầy" },
+    { id: "mat-mang-bong-nhiet", name: "Màng cán bóng nhiệt BOPP 33cm", category: "Màng & Phủ", unit: "Tờ", defaultPrice: 380, factoryType: "In", notes: "Cán bóng tăng độ tươi màu" },
+    { id: "mat-mang-a-uvdtf", name: "Màng A in UV-DTF (Cuộn khổ 0.62m)", category: "Màng & Phủ", unit: "Mét", defaultPrice: 40000, factoryType: "In", sheetSize: "0.62 x 1m", notes: "Màng A có keo phủ nền in phun UV" },
+    { id: "mat-mang-b-uvdtf", name: "Màng B định hình UV-DTF (Cuộn 0.62m)", category: "Màng & Phủ", unit: "Mét", defaultPrice: 15000, factoryType: "In", sheetSize: "0.62 x 1m", notes: "Màng B cán ép lột dán chuyển nhiệt lạnh" },
+
+    // Lượt In & Mực
+    { id: "mat-click-konica", name: "Click in màu máy Konica C4000", category: "Lượt In & Mực", unit: "Click", defaultPrice: 1000, factoryType: "In", notes: "Đơn giá 1 lượt in màu A3 chuẩn" },
+    { id: "mat-muc-uvdtf", name: "Mực in UV cuộn (CMYK + W + Varnish)", category: "Lượt In & Mực", unit: "Mét", defaultPrice: 25000, factoryType: "In", notes: "Mực in UV cao cấp bóng nổi 3D" },
+
+    // Vật Tư Thêu
+    { id: "mat-chi-theu-polyester", name: "Chỉ thêu Polyester bóng cao cấp", category: "Vật Tư Thêu", unit: "Cuộn", defaultPrice: 18000, factoryType: "Thêu", notes: "Cuộn 1.000m màu chuẩn sắc nét" },
+    { id: "mat-keo-theu-mech", name: "Keo thêu xé / Mếch giấy lót thêu", category: "Vật Tư Thêu", unit: "Mét", defaultPrice: 5000, factoryType: "Thêu", notes: "Lót cố định form vải khi thêu" },
+    { id: "mat-keo-tan", name: "Keo tan nước lót thêu vi tính", category: "Vật Tư Thêu", unit: "Mét", defaultPrice: 9000, factoryType: "Thêu", notes: "Dùng cho vải xù, len, khăn bông" },
+
+    // Bao Bì & Đóng Gói
+    { id: "mat-tui-opp", name: "Túi OPP dán miệng bọc sản phẩm", category: "Bao Bì & Đóng Gói", unit: "Cái", defaultPrice: 150, factoryType: "Chung", notes: "Túi kiếng trong suốt bảo vệ thành phẩm" },
+    { id: "mat-hop-giay-ivory", name: "Hộp giấy Ivory in offset nắp gài", category: "Bao Bì & Đóng Gói", unit: "Cái", defaultPrice: 1200, factoryType: "In", notes: "Hộp chứa bộ bài hoặc quà tặng" }
   ]
 };
 
@@ -422,11 +455,20 @@ class AppStateManager {
           }
         });
 
+        const rawCatalog = parsed.materialsCatalog || [];
+        const mergedCatalog = [...rawCatalog];
+        DEFAULT_SETTINGS.materialsCatalog.forEach(defMat => {
+          if (!mergedCatalog.some(m => m.id === defMat.id || m.name.toLowerCase() === defMat.name.toLowerCase())) {
+            mergedCatalog.push(defMat);
+          }
+        });
+
         return {
           ...DEFAULT_SETTINGS,
           ...parsed,
           hr: migratedHr,
-          machines: mergedMachines
+          machines: mergedMachines,
+          materialsCatalog: mergedCatalog
         };
       } catch (e) { 
         console.error("Error parsing settings", e); 
@@ -1514,7 +1556,7 @@ function renderMaterialsRows(materials) {
     
     tr.innerHTML = `
       <td>
-        <input type="text" value="${mat.name}" placeholder="Tên vật tư" class="form-input row-mat-name" required style="min-height:38px;">
+        <input type="text" value="${mat.name}" list="materials-catalog-datalist" placeholder="Tên vật tư (hoặc chọn từ Thư viện)..." class="form-input row-mat-name" required style="min-height:38px;">
       </td>
       <td>
         <input type="number" step="any" min="0" value="${mat.qty}" placeholder="0" class="form-input text-center row-mat-qty calc-trigger" required style="min-height:38px;">
@@ -1533,6 +1575,27 @@ function renderMaterialsRows(materials) {
       </td>
     `;
     
+    // Autocomplete lookup from materials catalog
+    const nameInput = tr.querySelector(".row-mat-name");
+    const unitInput = tr.querySelector(".row-mat-unit");
+    const priceInput = tr.querySelector(".row-mat-price");
+
+    if (nameInput) {
+      const handleCatalogLookup = (e) => {
+        const val = (e.target.value || "").trim().toLowerCase();
+        if (!val) return;
+        const catalog = state.settings.materialsCatalog || [];
+        const match = catalog.find(item => item.name.toLowerCase() === val);
+        if (match) {
+          if (unitInput) unitInput.value = match.unit;
+          if (priceInput) priceInput.value = match.defaultPrice.toLocaleString('vi-VN');
+          triggerLiveCalculation();
+        }
+      };
+      nameInput.addEventListener("input", handleCatalogLookup);
+      nameInput.addEventListener("change", handleCatalogLookup);
+    }
+
     // Add remove handler
     tr.querySelector(".btn-remove-material").addEventListener("click", () => {
       materials.splice(idx, 1);
@@ -2740,6 +2803,8 @@ function renderSettings() {
   updateFactoryTotalPayrollBadge("In");
   updateFactoryTotalPayrollBadge("Thêu");
   renderSettingsPaybackList();
+  renderMaterialsCatalog();
+  updateMaterialsCatalogDatalist();
 }
 
 function renderSettingsPaybackList() {
@@ -3098,6 +3163,401 @@ function importBackupData(e) {
     }
   };
   fileReader.readAsText(e.target.files[0]);
+}
+
+// ==========================================================================
+// 8B. Materials Catalog (Thư Viện Vật Tư & Giấy Chuẩn) Management
+// ==========================================================================
+
+let currentCatalogFilter = "all";
+let currentCatalogSearch = "";
+
+function updateMaterialsCatalogDatalist() {
+  const datalist = document.getElementById("materials-catalog-datalist");
+  if (!datalist) return;
+  datalist.innerHTML = "";
+  const catalog = state.settings.materialsCatalog || [];
+  catalog.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item.name;
+    opt.dataset.unit = item.unit;
+    opt.dataset.price = item.defaultPrice;
+    opt.dataset.category = item.category;
+    opt.textContent = `${item.name} (${formatVND(item.defaultPrice)} / ${item.unit})`;
+    datalist.appendChild(opt);
+  });
+}
+
+function renderMaterialsCatalog(filterCategory = currentCatalogFilter, searchQuery = currentCatalogSearch) {
+  currentCatalogFilter = filterCategory;
+  currentCatalogSearch = searchQuery;
+
+  const tbody = document.getElementById("catalog-table-body");
+  const countBadge = document.getElementById("catalog-total-count");
+  if (!tbody) return;
+
+  const catalog = state.settings.materialsCatalog || [];
+  if (countBadge) {
+    countBadge.textContent = `${catalog.length} vật tư`;
+  }
+
+  // Update active pill UI
+  document.querySelectorAll(".catalog-filter-pill").forEach(pill => {
+    if (pill.dataset.category === filterCategory) {
+      pill.classList.add("active");
+    } else {
+      pill.classList.remove("active");
+    }
+  });
+
+  const query = searchQuery.trim().toLowerCase();
+  const filtered = catalog.filter(item => {
+    const matchesCat = filterCategory === "all" || item.category === filterCategory;
+    const matchesSearch = !query || 
+      item.name.toLowerCase().includes(query) || 
+      (item.category && item.category.toLowerCase().includes(query)) ||
+      (item.sheetSize && item.sheetSize.toLowerCase().includes(query)) ||
+      (item.notes && item.notes.toLowerCase().includes(query));
+    return matchesCat && matchesSearch;
+  });
+
+  tbody.innerHTML = "";
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="no-data" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">
+          Không tìm thấy vật tư nào phù hợp với bộ lọc.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  filtered.forEach(item => {
+    const tr = document.createElement("tr");
+
+    let badgeClass = "badge-cat-paper";
+    if (item.category === "Màng & Phủ") badgeClass = "badge-cat-film";
+    else if (item.category === "Lượt In & Mực") badgeClass = "badge-cat-click";
+    else if (item.category === "Vật Tư Thêu") badgeClass = "badge-cat-emb";
+    else if (item.category === "Bao Bì & Đóng Gói") badgeClass = "badge-cat-pack";
+
+    let factoryBadge = `<span style="font-size:0.75rem; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:2px 6px; border-radius:4px;">In</span>`;
+    if (item.factoryType === "Thêu") {
+      factoryBadge = `<span style="font-size:0.75rem; color:#f472b6; background:rgba(236,72,153,0.15); padding:2px 6px; border-radius:4px;">Thêu</span>`;
+    } else if (item.factoryType === "Chung") {
+      factoryBadge = `<span style="font-size:0.75rem; color:#34d399; background:rgba(16,185,129,0.15); padding:2px 6px; border-radius:4px;">Chung</span>`;
+    }
+
+    const sheetSizeText = item.sheetSize ? `<span style="font-size:0.78rem; color:#38bdf8; margin-left:6px; font-weight:normal;">[${item.sheetSize}]</span>` : "";
+    const notesText = item.notes ? `<div style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">${item.notes}</div>` : "";
+
+    tr.innerHTML = `
+      <td>
+        <strong style="color: #ffffff; font-size: 0.88rem;">${item.name}</strong> ${sheetSizeText}
+        ${notesText}
+      </td>
+      <td>
+        <span class="badge-cat ${badgeClass}">${item.category}</span>
+      </td>
+      <td>
+        ${factoryBadge}
+      </td>
+      <td class="text-center font-semibold" style="color: #cbd5e1;">
+        ${item.unit}
+      </td>
+      <td class="text-right font-semibold" style="color: #38bdf8; font-size: 0.95rem;">
+        ${formatVND(item.defaultPrice)}
+      </td>
+      <td class="text-center" style="white-space: nowrap;">
+        <button type="button" class="btn btn-xs btn-outline btn-edit-catalog" data-id="${item.id}" title="Chỉnh sửa vật tư" style="padding: 2px 7px; margin-right: 4px;">
+          ✏️
+        </button>
+        <button type="button" class="btn btn-xs btn-outline btn-delete-catalog" data-id="${item.id}" title="Xóa vật tư" style="padding: 2px 7px; border-color: rgba(239,68,68,0.4); color: #f87171;">
+          🗑️
+        </button>
+      </td>
+    `;
+
+    tr.querySelector(".btn-edit-catalog")?.addEventListener("click", () => openCatalogItemModal(item.id));
+    tr.querySelector(".btn-delete-catalog")?.addEventListener("click", () => deleteCatalogItem(item.id));
+
+    tbody.appendChild(tr);
+  });
+}
+
+function openCatalogItemModal(itemId = null) {
+  const modal = document.getElementById("modal-catalog-item");
+  const form = document.getElementById("modal-catalog-form");
+  const title = document.getElementById("modal-catalog-title");
+  if (!modal || !form) return;
+
+  form.reset();
+  document.getElementById("modal-catalog-id").value = "";
+
+  if (itemId) {
+    const item = (state.settings.materialsCatalog || []).find(m => m.id === itemId);
+    if (item) {
+      title.textContent = "Chỉnh sửa vật tư chuẩn";
+      document.getElementById("modal-catalog-id").value = item.id;
+      document.getElementById("modal-catalog-name").value = item.name;
+      document.getElementById("modal-catalog-category").value = item.category;
+      document.getElementById("modal-catalog-factory").value = item.factoryType || "In";
+      document.getElementById("modal-catalog-unit").value = item.unit;
+      document.getElementById("modal-catalog-price").value = item.defaultPrice.toLocaleString('vi-VN');
+      document.getElementById("modal-catalog-sheetsize").value = item.sheetSize || "";
+      document.getElementById("modal-catalog-notes").value = item.notes || "";
+    }
+  } else {
+    title.textContent = "Thêm vật tư chuẩn mới";
+    document.getElementById("modal-catalog-price").value = "";
+  }
+
+  modal.showModal();
+}
+
+function handleSaveCatalogItem(e) {
+  e.preventDefault();
+  const id = document.getElementById("modal-catalog-id").value;
+  const name = document.getElementById("modal-catalog-name").value.trim();
+  const category = document.getElementById("modal-catalog-category").value;
+  const factoryType = document.getElementById("modal-catalog-factory").value;
+  const unit = document.getElementById("modal-catalog-unit").value.trim();
+  const price = parseCurrencyInput(document.getElementById("modal-catalog-price").value);
+  const sheetSize = document.getElementById("modal-catalog-sheetsize").value.trim();
+  const notes = document.getElementById("modal-catalog-notes").value.trim();
+
+  if (!name || !unit) {
+    alert("Vui lòng nhập tên vật tư và đơn vị tính!");
+    return;
+  }
+
+  if (!state.settings.materialsCatalog) {
+    state.settings.materialsCatalog = [];
+  }
+
+  if (id) {
+    // Edit existing
+    const item = state.settings.materialsCatalog.find(m => m.id === id);
+    if (item) {
+      item.name = name;
+      item.category = category;
+      item.factoryType = factoryType;
+      item.unit = unit;
+      item.defaultPrice = price;
+      item.sheetSize = sheetSize;
+      item.notes = notes;
+    }
+  } else {
+    // Create new
+    const newId = `mat-${Date.now()}`;
+    state.settings.materialsCatalog.push({
+      id: newId,
+      name,
+      category,
+      factoryType,
+      unit,
+      defaultPrice: price,
+      sheetSize,
+      notes
+    });
+  }
+
+  state.saveSettings(state.settings);
+  renderMaterialsCatalog();
+  updateMaterialsCatalogDatalist();
+
+  const modal = document.getElementById("modal-catalog-item");
+  if (modal) modal.close();
+}
+
+function deleteCatalogItem(itemId) {
+  const item = (state.settings.materialsCatalog || []).find(m => m.id === itemId);
+  if (!item) return;
+
+  if (confirm(`Bạn có chắc chắn muốn xóa vật tư "${item.name}" khỏi Thư viện không?`)) {
+    state.settings.materialsCatalog = state.settings.materialsCatalog.filter(m => m.id !== itemId);
+    state.saveSettings(state.settings);
+    renderMaterialsCatalog();
+    updateMaterialsCatalogDatalist();
+  }
+}
+
+function syncCatalogPricesToProducts() {
+  const catalog = state.settings.materialsCatalog || [];
+  if (catalog.length === 0) {
+    alert("Thư viện vật tư đang trống!");
+    return;
+  }
+
+  if (!confirm("Hệ thống sẽ quét tất cả sản phẩm: nếu tên vật tư trùng khớp với Thư viện chuẩn, đơn giá sẽ được tự động cập nhật lại theo giá mới nhất và tính lại Base Cost. Bạn có muốn tiếp tục?")) {
+    return;
+  }
+
+  let updatedCount = 0;
+  state.products.forEach(prod => {
+    let prodUpdated = false;
+    (prod.materials || []).forEach(mat => {
+      const match = catalog.find(c => c.name.toLowerCase() === mat.name.trim().toLowerCase());
+      if (match && match.defaultPrice !== mat.price) {
+        mat.price = match.defaultPrice;
+        prodUpdated = true;
+      }
+    });
+    if (prodUpdated) {
+      updatedCount++;
+    }
+  });
+
+  if (updatedCount > 0) {
+    state.saveProducts();
+    renderCalculator();
+    alert(`Đã đồng bộ đơn giá mới thành công cho ${updatedCount} sản phẩm!`);
+  } else {
+    alert("Tất cả sản phẩm đã khớp đơn giá mới nhất với Thư viện, không có thay đổi nào cần cập nhật.");
+  }
+}
+
+// ==========================================================================
+// BOM Material Catalog Picker Modal
+// ==========================================================================
+
+let selectedCatalogItemIds = new Set();
+let bomPickerCatFilter = "all";
+let bomPickerSearchQuery = "";
+
+function openBOMCatalogPickerModal() {
+  const modal = document.getElementById("modal-bom-catalog-picker");
+  if (!modal) return;
+
+  selectedCatalogItemIds.clear();
+  bomPickerCatFilter = "all";
+  bomPickerSearchQuery = "";
+
+  const searchInput = document.getElementById("bom-picker-search");
+  const catSelect = document.getElementById("bom-picker-cat-filter");
+  if (searchInput) searchInput.value = "";
+  if (catSelect) catSelect.value = "all";
+
+  renderBOMPickerList();
+  modal.showModal();
+}
+
+function renderBOMPickerList() {
+  const container = document.getElementById("bom-picker-items-container");
+  const countEl = document.getElementById("bom-picker-selected-count");
+  if (!container) return;
+
+  if (countEl) {
+    countEl.textContent = `Đã chọn: ${selectedCatalogItemIds.size} vật tư`;
+  }
+
+  const catalog = state.settings.materialsCatalog || [];
+  const query = bomPickerSearchQuery.trim().toLowerCase();
+
+  const filtered = catalog.filter(item => {
+    const matchesCat = bomPickerCatFilter === "all" || item.category === bomPickerCatFilter;
+    const matchesSearch = !query || 
+      item.name.toLowerCase().includes(query) || 
+      (item.category && item.category.toLowerCase().includes(query)) ||
+      (item.sheetSize && item.sheetSize.toLowerCase().includes(query));
+    return matchesCat && matchesSearch;
+  });
+
+  container.innerHTML = "";
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1.5rem; font-size: 0.85rem;">Không tìm thấy vật tư nào.</div>`;
+    return;
+  }
+
+  filtered.forEach(item => {
+    const isSelected = selectedCatalogItemIds.has(item.id);
+    const row = document.createElement("div");
+    row.className = `picker-item-row ${isSelected ? "selected" : ""}`;
+
+    let badgeClass = "badge-cat-paper";
+    if (item.category === "Màng & Phủ") badgeClass = "badge-cat-film";
+    else if (item.category === "Lượt In & Mực") badgeClass = "badge-cat-click";
+    else if (item.category === "Vật Tư Thêu") badgeClass = "badge-cat-emb";
+    else if (item.category === "Bao Bì & Đóng Gói") badgeClass = "badge-cat-pack";
+
+    row.innerHTML = `
+      <input type="checkbox" class="picker-item-checkbox" ${isSelected ? "checked" : ""}>
+      <div style="flex: 1;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <strong style="color: #ffffff; font-size: 0.88rem;">${item.name}</strong>
+          <span class="badge-cat ${badgeClass}">${item.category}</span>
+        </div>
+        ${item.notes ? `<div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${item.notes}</div>` : ""}
+      </div>
+      <div style="text-align: right; min-width: 100px;">
+        <div style="font-weight: 600; color: #38bdf8; font-size: 0.9rem;">${formatVND(item.defaultPrice)}</div>
+        <div style="font-size: 0.75rem; color: var(--text-secondary);">/ ${item.unit}</div>
+      </div>
+    `;
+
+    const checkbox = row.querySelector(".picker-item-checkbox");
+    const toggleSelect = () => {
+      if (selectedCatalogItemIds.has(item.id)) {
+        selectedCatalogItemIds.delete(item.id);
+        row.classList.remove("selected");
+        checkbox.checked = false;
+      } else {
+        selectedCatalogItemIds.add(item.id);
+        row.classList.add("selected");
+        checkbox.checked = true;
+      }
+      if (countEl) countEl.textContent = `Đã chọn: ${selectedCatalogItemIds.size} vật tư`;
+    };
+
+    row.addEventListener("click", (e) => {
+      if (e.target !== checkbox) toggleSelect();
+    });
+    checkbox.addEventListener("change", toggleSelect);
+
+    container.appendChild(row);
+  });
+}
+
+function handleSelectCatalogItemsToBOM() {
+  if (selectedCatalogItemIds.size === 0) {
+    alert("Vui lòng tích chọn ít nhất 1 vật tư!");
+    return;
+  }
+
+  const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+  if (!selectedProduct) return;
+
+  if (!selectedProduct.materials) {
+    selectedProduct.materials = [];
+  }
+
+  const catalog = state.settings.materialsCatalog || [];
+  let addedCount = 0;
+
+  selectedCatalogItemIds.forEach(id => {
+    const item = catalog.find(c => c.id === id);
+    if (item) {
+      selectedProduct.materials.push({
+        name: item.name,
+        qty: 1,
+        unit: item.unit,
+        price: item.defaultPrice
+      });
+      addedCount++;
+    }
+  });
+
+  renderMaterialsRows(selectedProduct.materials);
+  bindDynamicRowEvents();
+  triggerLiveCalculation();
+
+  const modal = document.getElementById("modal-bom-catalog-picker");
+  if (modal) modal.close();
+
+  alert(`Đã thêm thành công ${addedCount} vật tư vào Bảng BOM! Bạn hãy nhập số lượng (Qty) định mức cho từng vật tư.`);
 }
 
 // ==========================================================================
@@ -3935,7 +4395,84 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
     updateCloudStatus("local");
   }
 
+  // 6. Materials Catalog & BOM Picker Listeners
+  const catalogPills = document.querySelectorAll(".catalog-filter-pill");
+  catalogPills.forEach(pill => {
+    pill.addEventListener("click", () => {
+      renderMaterialsCatalog(pill.dataset.category, currentCatalogSearch);
+    });
+  });
+
+  const catalogSearchInput = document.getElementById("catalog-search-input");
+  if (catalogSearchInput) {
+    catalogSearchInput.addEventListener("input", (e) => {
+      renderMaterialsCatalog(currentCatalogFilter, e.target.value);
+    });
+  }
+
+  const btnAddCatalog = document.getElementById("btn-add-catalog-item");
+  if (btnAddCatalog) {
+    btnAddCatalog.addEventListener("click", () => openCatalogItemModal());
+  }
+
+  const btnSyncCatalog = document.getElementById("btn-sync-catalog-to-products");
+  if (btnSyncCatalog) {
+    btnSyncCatalog.addEventListener("click", syncCatalogPricesToProducts);
+  }
+
+  // Catalog Item Modal triggers
+  const modalCatalogItem = document.getElementById("modal-catalog-item");
+  const modalCatalogCloseBtn = document.getElementById("modal-catalog-close-btn");
+  const modalCatalogCancelBtn = document.getElementById("modal-catalog-cancel-btn");
+  const modalCatalogForm = document.getElementById("modal-catalog-form");
+
+  if (modalCatalogCloseBtn && modalCatalogItem) {
+    modalCatalogCloseBtn.addEventListener("click", () => modalCatalogItem.close());
+  }
+  if (modalCatalogCancelBtn && modalCatalogItem) {
+    modalCatalogCancelBtn.addEventListener("click", () => modalCatalogItem.close());
+  }
+  if (modalCatalogForm) {
+    modalCatalogForm.addEventListener("submit", handleSaveCatalogItem);
+  }
+
+  // BOM Material Catalog Picker triggers
+  const btnOpenBOMPicker = document.getElementById("btn-open-material-catalog");
+  if (btnOpenBOMPicker) {
+    btnOpenBOMPicker.addEventListener("click", openBOMCatalogPickerModal);
+  }
+
+  const modalBomPicker = document.getElementById("modal-bom-catalog-picker");
+  const modalBomPickerClose = document.getElementById("modal-bom-picker-close-btn");
+  const modalBomPickerCancel = document.getElementById("modal-bom-picker-cancel-btn");
+  const modalBomPickerAdd = document.getElementById("modal-bom-picker-add-btn");
+  const bomPickerSearch = document.getElementById("bom-picker-search");
+  const bomPickerCat = document.getElementById("bom-picker-cat-filter");
+
+  if (modalBomPickerClose && modalBomPicker) {
+    modalBomPickerClose.addEventListener("click", () => modalBomPicker.close());
+  }
+  if (modalBomPickerCancel && modalBomPicker) {
+    modalBomPickerCancel.addEventListener("click", () => modalBomPicker.close());
+  }
+  if (modalBomPickerAdd) {
+    modalBomPickerAdd.addEventListener("click", handleSelectCatalogItemsToBOM);
+  }
+  if (bomPickerSearch) {
+    bomPickerSearch.addEventListener("input", (e) => {
+      bomPickerSearchQuery = e.target.value;
+      renderBOMPickerList();
+    });
+  }
+  if (bomPickerCat) {
+    bomPickerCat.addEventListener("change", (e) => {
+      bomPickerCatFilter = e.target.value;
+      renderBOMPickerList();
+    });
+  }
+
   // Initialize
+  updateMaterialsCatalogDatalist();
   switchTab("dashboard");
 });
 

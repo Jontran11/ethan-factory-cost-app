@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=19.0">
+  <link rel="stylesheet" href="style.css?v=20.0">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -462,9 +462,14 @@
                 <div class="cost-section">
                   <div class="section-title-bar">
                     <h4>1. Nguyên Vật Liệu Trực Tiếp (Direct Materials)</h4>
-                    <button type="button" class="btn btn-xs btn-outline" id="btn-add-material-row">
-                      + Thêm vật tư
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                      <button type="button" class="btn btn-xs btn-outline" id="btn-open-material-catalog" style="border-color: #6366f1; color: #a5b4fc; background: rgba(99, 102, 241, 0.1);">
+                        📚 Chọn từ Thư viện
+                      </button>
+                      <button type="button" class="btn btn-xs btn-outline" id="btn-add-material-row">
+                        + Thêm dòng trống
+                      </button>
+                    </div>
                   </div>
                   <div class="table-responsive">
                     <table class="inputs-table" id="materials-table">
@@ -1324,6 +1329,64 @@ function doPost(e) {
               </div>
             </div>
 
+            <!-- Full-width Materials & Paper Catalog (Thư Viện Vật Tư & Giấy Chuẩn) -->
+            <div class="dashboard-card glass" style="margin-top: 1.5rem; grid-column: 1 / -1;" id="settings-materials-catalog-card">
+              <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                  <h3 style="display: flex; align-items: center; gap: 0.6rem;">
+                    <span>📚 Thư Viện Vật Tư &amp; Giấy In Chuẩn (Materials Catalog)</span>
+                    <span class="badge-count" id="catalog-total-count" style="font-size: 0.8rem; background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); padding: 2px 8px; border-radius: 12px;">0 vật tư</span>
+                  </h3>
+                  <span class="text-secondary">Quản lý tập trung đơn giá thị trường của Giấy, Decal, Màng, Click in, Mực và Chỉ thêu dùng chung cho toàn xưởng</span>
+                </div>
+                <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                  <button type="button" class="btn btn-sm btn-outline" id="btn-sync-catalog-to-products" style="border-color: #38bdf8; color: #38bdf8;">
+                    🔄 Cập nhật đơn giá vào các sản phẩm
+                  </button>
+                  <button type="button" class="btn btn-sm btn-primary" id="btn-add-catalog-item" style="background: var(--color-primary);">
+                    + Thêm Vật Tư Chuẩn
+                  </button>
+                </div>
+              </div>
+
+              <!-- Catalog Filter Bar -->
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin: 1.25rem 0 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                <!-- Category Pills -->
+                <div class="catalog-category-pills" id="catalog-category-filters" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                  <button type="button" class="catalog-filter-pill active" data-category="all">Tất cả</button>
+                  <button type="button" class="catalog-filter-pill" data-category="Giấy &amp; Decal">Giấy &amp; Decal</button>
+                  <button type="button" class="catalog-filter-pill" data-category="Màng &amp; Phủ">Màng &amp; Phủ</button>
+                  <button type="button" class="catalog-filter-pill" data-category="Lượt In &amp; Mực">Lượt In &amp; Mực</button>
+                  <button type="button" class="catalog-filter-pill" data-category="Vật Tư Thêu">Vật Tư Thêu</button>
+                  <button type="button" class="catalog-filter-pill" data-category="Bao Bì &amp; Đóng Gói">Bao Bì &amp; Đóng Gói</button>
+                </div>
+
+                <!-- Search Box -->
+                <div style="min-width: 240px; flex: 0.4;">
+                  <input type="text" id="catalog-search-input" class="form-input" placeholder="🔍 Tìm theo tên vật tư..." style="min-height: 36px; font-size: 0.85rem;">
+                </div>
+              </div>
+
+              <!-- Catalog Table -->
+              <div class="table-responsive">
+                <table class="inputs-table" style="width: 100%;">
+                  <thead>
+                    <tr>
+                      <th>Tên Vật Tư &amp; Quy Cách</th>
+                      <th width="150">Phân Loại</th>
+                      <th width="100">Áp Dụng</th>
+                      <th width="100" class="text-center">Đơn Vị</th>
+                      <th width="140" class="text-right">Đơn Giá Chuẩn</th>
+                      <th width="120" class="text-center">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="catalog-table-body">
+                    <!-- Rendered by renderMaterialsCatalog() -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -1429,6 +1492,112 @@ function doPost(e) {
     </div>
   </dialog>
 
+  <!-- Autocomplete Datalist for Material Names in BOM -->
+  <datalist id="materials-catalog-datalist"></datalist>
+
+  <!-- Modal for Adding / Editing Material in Catalog -->
+  <dialog id="modal-catalog-item" class="glass-modal">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 id="modal-catalog-title">Thêm vật tư chuẩn</h3>
+        <button class="btn-close" id="modal-catalog-close-btn">&times;</button>
+      </div>
+      <form id="modal-catalog-form">
+        <input type="hidden" id="modal-catalog-id">
+        <div class="form-group">
+          <label for="modal-catalog-name">Tên vật tư / Quy cách <span class="required">*</span></label>
+          <input type="text" id="modal-catalog-name" required placeholder="Ví dụ: Giấy Couche 300gsm (C300) 33×48cm" class="form-input">
+        </div>
+        <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="modal-catalog-category">Nhóm phân loại <span class="required">*</span></label>
+            <select id="modal-catalog-category" class="form-input" required style="background: var(--bg-input);">
+              <option value="Giấy & Decal">Giấy &amp; Decal</option>
+              <option value="Màng & Phủ">Màng &amp; Phủ</option>
+              <option value="Lượt In & Mực">Lượt In &amp; Mực</option>
+              <option value="Vật Tư Thêu">Vật Tư Thêu</option>
+              <option value="Bao Bì & Đóng Gói">Bao Bì &amp; Đóng Gói</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="modal-catalog-factory">Áp dụng cho xưởng</label>
+            <select id="modal-catalog-factory" class="form-input" style="background: var(--bg-input);">
+              <option value="In">Nhà máy In</option>
+              <option value="Thêu">Nhà máy Thêu</option>
+              <option value="Chung">Cả 2 xưởng</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
+          <div class="form-group">
+            <label for="modal-catalog-unit">Đơn vị tính <span class="required">*</span></label>
+            <input type="text" id="modal-catalog-unit" required placeholder="Tờ, Mét, Click, Cuộn..." class="form-input">
+          </div>
+          <div class="form-group">
+            <label for="modal-catalog-price">Đơn giá chuẩn (VND) <span class="required">*</span></label>
+            <input type="text" id="modal-catalog-price" required placeholder="0" class="form-input currency-input">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 0.5rem;">
+          <label for="modal-catalog-sheetsize">Khổ quy cách phôi (nếu có)</label>
+          <input type="text" id="modal-catalog-sheetsize" placeholder="Ví dụ: 33×48cm, 0.62×1m, A3..." class="form-input">
+        </div>
+        <div class="form-group" style="margin-top: 0.5rem;">
+          <label for="modal-catalog-notes">Ghi chú / Đặc tính</label>
+          <input type="text" id="modal-catalog-notes" placeholder="Ví dụ: Giấy dày in bìa, danh thiếp" class="form-input">
+        </div>
+        <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-outline" id="modal-catalog-cancel-btn">Hủy</button>
+          <button type="submit" class="btn btn-primary" id="modal-catalog-submit-btn">Lưu vật tư</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Modal for BOM Material Picker from Catalog -->
+  <dialog id="modal-bom-catalog-picker" class="glass-modal">
+    <div class="modal-content" style="max-width: 620px; max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <div>
+          <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+            <span>📚 Chọn Vật Tư Từ Thư Viện</span>
+          </h3>
+          <span style="font-size: 0.8rem; color: var(--text-secondary);">Tích chọn các vật tư chuẩn để thêm nhanh vào bảng BOM của sản phẩm</span>
+        </div>
+        <button class="btn-close" id="modal-bom-picker-close-btn">&times;</button>
+      </div>
+
+      <!-- Search & Category filter inside picker -->
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <input type="text" id="bom-picker-search" class="form-input" placeholder="🔍 Tìm vật tư (Couche, Decal, Click, Màng...)" style="min-height: 36px; font-size: 0.85rem; flex: 1;">
+        <select id="bom-picker-cat-filter" class="form-input" style="width: 170px; min-height: 36px; font-size: 0.82rem; background: var(--bg-input);">
+          <option value="all">Tất cả nhóm</option>
+          <option value="Giấy & Decal">Giấy &amp; Decal</option>
+          <option value="Màng & Phủ">Màng &amp; Phủ</option>
+          <option value="Lượt In & Mực">Lượt In &amp; Mực</option>
+          <option value="Vật Tư Thêu">Vật Tư Thêu</option>
+          <option value="Bao Bì & Đóng Gói">Bao Bì &amp; Đóng Gói</option>
+        </select>
+      </div>
+
+      <!-- Items Checklist Container -->
+      <div id="bom-picker-items-container" style="flex: 1; overflow-y: auto; max-height: 360px; display: flex; flex-direction: column; gap: 0.4rem; padding-right: 4px; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.5rem;">
+        <!-- Dynamically rendered checklist items -->
+      </div>
+
+      <div class="modal-actions" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.75rem;">
+        <span style="font-size: 0.82rem; color: #a5b4fc;" id="bom-picker-selected-count">Đã chọn: 0 vật tư</span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-outline" id="modal-bom-picker-cancel-btn">Đóng</button>
+          <button type="button" class="btn btn-primary" id="modal-bom-picker-add-btn">
+            + Thêm vào bảng BOM
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <!-- LaTeX rendering via MathJax -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -1437,6 +1606,6 @@ function doPost(e) {
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=19.0" type="module"></script>
+  <script src="app.js?v=20.0" type="module"></script>
 </body>
 </html>
