@@ -874,6 +874,23 @@ class AppStateManager {
       return p;
     };
 
+    const CURRENT_VERSION = "v22.2_playing_cards_fix";
+    const migratedVer = localStorage.getItem("factory_version_migrated");
+    if (migratedVer !== CURRENT_VERSION) {
+      localStorage.setItem("factory_version_migrated", CURRENT_VERSION);
+      let customProducts = [];
+      const saved = localStorage.getItem("factory_products_v2");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          customProducts = parsed.filter(p => !MOCK_PRODUCTS.some(mp => mp.id === p.id || mp.code === p.code));
+        } catch (e) {}
+      }
+      const freshProducts = [...JSON.parse(JSON.stringify(MOCK_PRODUCTS)), ...customProducts];
+      localStorage.setItem("factory_products_v2", JSON.stringify(freshProducts));
+      return freshProducts.map(processProduct);
+    }
+
     const saved = localStorage.getItem("factory_products_v2");
     if (saved) {
       try {
