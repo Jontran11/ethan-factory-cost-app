@@ -915,7 +915,7 @@ class AppStateManager {
     this.syncToCloud();
   }
 
-  async syncFromCloud() {
+  async syncFromCloud(force = false) {
     if (!this.googleSheetUrl) return false;
     try {
       updateCloudStatus("syncing");
@@ -924,6 +924,13 @@ class AppStateManager {
       const data = await res.json();
       
       if (data && data.products && data.settings) {
+        // Nếu không ép buộc (force = false) và máy hiện tại đã có dữ liệu hợp lệ: KHÔNG tự ý ghi đè
+        if (!force && this.products && this.products.length > 0) {
+          console.log("Dữ liệu trên máy đang sẵn sàng, không tự động ghi đè từ Google Sheets khi khởi động.");
+          updateCloudStatus("synced");
+          return true;
+        }
+
         this.products = data.products;
         this.settings = data.settings;
         localStorage.setItem("factory_settings_v2", JSON.stringify(this.settings));
@@ -939,7 +946,7 @@ class AppStateManager {
     }
   }
 
-  async syncToCloud() {
+  async syncToCloud(showToast = false) {
     if (!this.googleSheetUrl) {
       updateCloudStatus("local");
       return false;
@@ -949,20 +956,30 @@ class AppStateManager {
       const stateData = {
         products: this.products,
         settings: this.settings,
-        saved: new Date().toLocaleString('vi-VN')
+        saved: new Date().toISOString(),
+        savedFormatted: new Date().toLocaleString('vi-VN')
       };
       
       await fetch(this.googleSheetUrl, {
         method: "POST",
         mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
         body: JSON.stringify(stateData)
       });
       
       updateCloudStatus("synced");
+      if (showToast) {
+        alert("✅ Đã đẩy toàn bộ dữ liệu từ Web App lên Google Sheets thành công!");
+      }
       return true;
     } catch (e) {
       console.error("Failed to sync to cloud:", e);
       updateCloudStatus("error");
+      if (showToast) {
+        alert("❌ Lỗi: Không thể kết nối để đẩy dữ liệu lên Google Sheets. Vui lòng kiểm tra lại URL hoặc quyền Deploy!");
+      }
       return false;
     }
   }
@@ -3316,18 +3333,27 @@ function renderSettings() {
 
   const sheetUrlInput = document.getElementById("settings-sheet-url");
   const testBtn = document.getElementById("btn-test-sheet");
+  const pushBtn = document.getElementById("btn-push-to-sheet");
+  const pullBtn = document.getElementById("btn-pull-from-sheet");
   const disconnectBtn = document.getElementById("btn-disconnect-sheet");
 
   if (sheetUrlInput) {
     sheetUrlInput.value = state.googleSheetUrl;
     if (state.googleSheetUrl) {
       sheetUrlInput.disabled = true;
-      testBtn.textContent = "Đồng bộ ngay";
-      disconnectBtn.style.display = "block";
+      if (testBtn) testBtn.style.display = "none";
+      if (pushBtn) pushBtn.style.display = "inline-flex";
+      if (pullBtn) pullBtn.style.display = "inline-flex";
+      if (disconnectBtn) disconnectBtn.style.display = "inline-flex";
     } else {
       sheetUrlInput.disabled = false;
-      testBtn.textContent = "Kết nối & Đồng bộ";
-      disconnectBtn.style.display = "none";
+      if (testBtn) {
+        testBtn.style.display = "inline-flex";
+        testBtn.textContent = "Kết nối & Đồng bộ lần đầu";
+      }
+      if (pushBtn) pushBtn.style.display = "none";
+      if (pullBtn) pullBtn.style.display = "none";
+      if (disconnectBtn) disconnectBtn.style.display = "none";
     }
   }
 
@@ -4962,6 +4988,34 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
     }
   });
 
+  // Push to Google Sheets (Upload)
+  const pushBtn = document.getElementById("btn-push-to-sheet");
+  if (pushBtn) {
+    pushBtn.addEventListener("click", async () => {
+      await state.syncToCloud(true);
+    });
+  }
+
+  // Pull from Google Sheets (Download)
+  const pullBtn = document.getElementById("btn-pull-from-sheet");
+  if (pullBtn) {
+    pullBtn.addEventListener("click", async () => {
+      if (confirm("⚠️ CẢNH BÁO GHI ĐÈ:\n\nBạn có chắc chắn muốn nạp dữ liệu từ Google Sheets về máy này không?\n\nDữ liệu trên trang tính sẽ ghi đè lên toàn bộ sản phẩm và cài đặt hiện tại trên máy này.")) {
+        const success = await state.syncFromCloud(true);
+        if (success) {
+          renderCalculator();
+          renderForecast();
+          renderSettings();
+          recalculateForecastTotals();
+          updateDashboard();
+          alert("✅ Đã nạp dữ liệu mới nhất từ Google Sheets về máy thành công!");
+        } else {
+          alert("❌ Không thể nạp dữ liệu từ Google Sheets. Vui lòng kiểm tra lại URL hoặc kết nối mạng!");
+        }
+      }
+    });
+  }
+
   document.getElementById("btn-disconnect-sheet").addEventListener("click", () => {
     if (confirm("Bạn có muốn ngắt kết nối với Google Sheets? Dữ liệu của bạn sẽ quay về lưu trữ cục bộ trên máy này.")) {
       state.googleSheetUrl = "";
@@ -4971,23 +5025,28 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
     }
   });
 
-  document.getElementById("cloud-sync-status").addEventListener("click", () => {
+  document.getElementById("cloud-sync-status").addEventListener("click", async () => {
     if (!state.googleSheetUrl) {
       switchTab("settings");
-      document.getElementById("settings-sheet-url").focus();
+      document.getElementById("settings-sheet-url")?.focus();
     } else {
-      state.syncFromCloud().then(success => {
-        if (success) {
-          renderCalculator();
-          renderForecast();
-          renderSettings();
-          recalculateForecastTotals();
-          updateDashboard();
-          alert("Đã tải dữ liệu mới nhất từ Google Sheets!");
-        } else {
-          alert("Đồng bộ thất bại. Vui lòng kiểm tra kết nối mạng!");
+      const choice = confirm("ĐỒNG BỘ GOOGLE SHEETS:\n\n- Bấm [OK] để ⬆️ ĐẨY DỮ LIỆU từ web này lên Google Sheets.\n- Bấm [Cancel] để ⬇️ NẠP DỮ LIỆU từ Google Sheets về máy này.");
+      if (choice) {
+        await state.syncToCloud(true);
+      } else {
+        const pullConfirm = confirm("Bạn có chắc chắn muốn nạp dữ liệu từ Google Sheets về ghi đè lên máy này?");
+        if (pullConfirm) {
+          const success = await state.syncFromCloud(true);
+          if (success) {
+            renderCalculator();
+            renderForecast();
+            renderSettings();
+            recalculateForecastTotals();
+            updateDashboard();
+            alert("✅ Đã nạp dữ liệu từ Google Sheets về máy thành công!");
+          }
         }
-      });
+      }
     }
   });
 
@@ -5009,9 +5068,9 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
     mrExportBtn.addEventListener("click", exportMonthlyReportCSV);
   }
 
-  // Cloud Database Sync on Startup
+  // Cloud Database Sync on Startup (An toàn: force = false, không tự ý ghi đè dữ liệu trên máy)
   if (state.googleSheetUrl) {
-    state.syncFromCloud().then(success => {
+    state.syncFromCloud(false).then(success => {
       if (success) {
         renderCalculator();
         renderForecast();
