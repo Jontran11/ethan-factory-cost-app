@@ -22,64 +22,78 @@ const DEFAULT_SETTINGS = {
   hr: {
     In: {
       designer: [
-        { name: "Nhân viên In - Designer A", salary: 12000000 },
-        { name: "Nhân viên In - Designer B", salary: 12000000 },
-        { name: "Nhân viên In - Designer C", salary: 12000000 },
-        { name: "Nhân viên In - Designer D", salary: 12000000 },
-        { name: "Nhân viên In - Designer E", salary: 12000000 },
-        { name: "Nhân viên In - Designer F", salary: 12000000 },
-        { name: "Nhân viên In - Designer G", salary: 12000000 }
+        { name: "Nguyễn Hữu Chiến (NV132 - Lead)", salary: 13621385 },
+        { name: "TRẦN VŨ QUỲNH MAI (NV016)", salary: 14493545 },
+        { name: "Đặng Thanh Uyên Nhi (NV85)", salary: 14161288 },
+        { name: "Vũ Quang Hoà (NV82)", salary: 13460808 },
+        { name: "TRẦN HỒ HỒNG HÂN (NV12)", salary: 13289045 },
+        { name: "Ngụy Bùi Phước Sang (NV81)", salary: 12562965 },
+        { name: "NGUYỄN THI HẰNG NGA (NV09)", salary: 10252237 }
       ],
       production: [
-        { name: "Nhân viên In - Sản xuất A", salary: 9000000 },
-        { name: "Nhân viên In - Sản xuất B", salary: 9000000 },
-        { name: "Nhân viên In - Sản xuất C", salary: 9000000 }
+        { name: "Đỗ Cường Quý (NV113 - Vận hành in)", salary: 12365865 },
+        { name: "Trần Thị Bích Ngọc (NV83 - Vận hành in)", salary: 11992587 },
+        { name: "Vũ Đình Quân (NV133 - Vận hành in)", salary: 10312462 },
+        { name: "Nguyễn Hữu Anh Tú (NV90 - Vận hành in)", salary: 10138365 },
+        { name: "Phạm Ngọc Thạch (NV131 - Vận hành in)", salary: 9811202 },
+        { name: "Phạm Anh Phúc (NV126 - Vận hành in)", salary: 8698538 }
       ],
       qc: [
-        { name: "Nhân viên In - QC A", salary: 8500000 },
-        { name: "Nhân viên In - QC B", salary: 8500000 }
+        { name: "Đoàn Thị Thiên Lý (NV101 - QC/Đóng gói)", salary: 11200649 },
+        { name: "Phạm Thị Minh Thư (NV108 - QC/Đóng gói)", salary: 10840718 },
+        { name: "Nguyễn Ngọc Quỳnh Hương (NV119 - QC/Đóng gói)", salary: 9793279 },
+        { name: "THÂN KIM TRANG (NV121 - QC/Đóng gói)", salary: 7893604 },
+        { name: "Nguyễn Hoàng Minh Nhật (TT01 - QC/Đóng gói)", salary: 5073000 },
+        { name: "Bảo Phương (NV118 - QC/Đóng gói)", salary: 3730833 },
+        { name: "Đỗ Thành Trung (NV138 - QC/Đóng gói)", salary: 923000 },
+        { name: "Phạm Cao Kỳ Duyên (NV120 - QC/Đóng gói)", salary: 838000 }
       ]
     },
     Thêu: {
       designer: [
-        { name: "Nhân viên Thêu - Designer A", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer B", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer C", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer D", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer E", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer F", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer G", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer H", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer I", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer J", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer K", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer L", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer M", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer N", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer O", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer P", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer Q", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer R", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer S", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer T", salary: 13000000 },
-        { name: "Nhân viên Thêu - Designer U", salary: 13000000 }
+        { name: "Phạm Xuân Thạch (NV27 - Quản lý xưởng)", salary: 19120231 },
+        { name: "Nguyễn Hồng Thương (NV62 - Kỹ thuật Punching)", salary: 15327506 },
+        { name: "HOÀNG THANH DŨNG (NV03 - Kỹ thuật Punching)", salary: 14832827 },
+        { name: "Tô Thị Thuỳ Trang (NV66 - Kỹ thuật Punching)", salary: 14223869 },
+        { name: "TRẦN TRÚC THƯ (NV33 - Kỹ thuật Punching)", salary: 11565295 },
+        { name: "Vũ Phạm Quốc Tiến (NV51 - Kỹ thuật Punching)", salary: 8197077 }
       ],
       laser: [
-        { name: "Nhân viên Thêu - Laser A", salary: 9500000 }
+        { name: "Vũ Thị Xuân Hồng (NV95 - Laser cắt vải)", salary: 14022817 },
+        { name: "Phạm Phát Đạt (NV134 - Laser cắt vải)", salary: 10020433 }
       ],
       production: [
-        { name: "Nhân viên Thêu - Vận hành A", salary: 9000000 },
-        { name: "Nhân viên Thêu - Vận hành B", salary: 9000000 },
-        { name: "Nhân viên Thêu - Vận hành C", salary: 9000000 },
-        { name: "Nhân viên Thêu - Vận hành D", salary: 9000000 },
-        { name: "Nhân viên Thêu - Vận hành E", salary: 9000000 },
-        { name: "Nhân viên Thêu - Vận hành F", salary: 9000000 }
+        { name: "Nguyễn Kiều Trinh (NV91 - Vận hành thêu)", salary: 14253889 },
+        { name: "Vũ Ngọc Phương Uyên (NV68 - Vận hành thêu)", salary: 11238356 },
+        { name: "Vũ Minh Hoàng (NV80 - Vận hành thêu)", salary: 11228202 },
+        { name: "Phạm Thị Thuý Hằng (NV93 - Vận hành thêu)", salary: 11010731 },
+        { name: "Đinh Thị Kim Hồng (NV123 - Vận hành thêu)", salary: 9439385 },
+        { name: "Vũ Ngọc Thiện (NV69 - Vận hành thêu)", salary: 9356399 },
+        { name: "Nguyễn Vinh Hiền (NV127 - Vận hành thêu)", salary: 8832385 },
+        { name: "Vũ Đức Huy (NV106 - Vận hành thêu)", salary: 8759487 },
+        { name: "Nguyễn Ngọc Ánh (NV107 - Vận hành thêu)", salary: 8701433 },
+        { name: "VŨ THANH LIÊM (NV71 - Vận hành thêu)", salary: 8676423 },
+        { name: "Nguyễn Thị Lệ Quyên (NV109 - Vận hành thêu)", salary: 8596216 },
+        { name: "Nguyễn Minh Nhật (NV128 - Vận hành thêu)", salary: 8101385 }
       ],
       qc: [
-        { name: "Nhân viên Thêu - QC A", salary: 8500000 },
-        { name: "Nhân viên Thêu - QC B", salary: 8500000 },
-        { name: "Nhân viên Thêu - QC C", salary: 8500000 },
-        { name: "Nhân viên Thêu - QC D", salary: 8500000 }
+        { name: "Nguyễn Kim Điền (HV12 - QC/Hoàn thiện)", salary: 11983564 },
+        { name: "Trần Nguyễn Hoàng Quân (HV07 - QC/Hoàn thiện)", salary: 11806462 },
+        { name: "Phạm Ngọc Minh Quyên (HV16 - QC/Hoàn thiện)", salary: 11307410 },
+        { name: "Đinh Thùy Diễm Hằng (HV15 - QC/Hoàn thiện)", salary: 11047128 },
+        { name: "Trần Thị Kim Ngân (HV10 - QC/Hoàn thiện)", salary: 10987256 },
+        { name: "Vũ Thị Hoàng Thu Thảo (HV17 - QC/Hoàn thiện)", salary: 10588513 },
+        { name: "Trần Hoàng Hải (NV63 - QC/Hoàn thiện)", salary: 10408487 },
+        { name: "Phạm Ý Diệu Ngân (HV14 - QC/Hoàn thiện)", salary: 10029910 },
+        { name: "Trần Tiến Đạt (HV11 - QC/Hoàn thiện)", salary: 10001500 },
+        { name: "Đoàn Như Quỳnh (HV03 - QC/Hoàn thiện)", salary: 9885782 },
+        { name: "Nguyễn Triệu Huy (HV08 - QC/Hoàn thiện)", salary: 9109923 },
+        { name: "Trần Võ Trâm Anh (HV02 - QC/Hoàn thiện)", salary: 8328026 },
+        { name: "Trần Ngọc Phương Oanh (NV114 - QC/Hoàn thiện)", salary: 7347338 },
+        { name: "Đinh Trần Trúc Loan (NV115 - QC/Hoàn thiện)", salary: 6307365 },
+        { name: "Ngô Thị Mỹ Hạnh (NV137 - QC/Hoàn thiện)", salary: 2454000 },
+        { name: "Nguyễn Quỳnh Như (HV04 - QC/Hoàn thiện)", salary: 2315577 },
+        { name: "Lâm Thuỳ Vi (NV96 - QC/Hoàn thiện)", salary: 915000 }
       ]
     }
   },
@@ -120,11 +134,14 @@ const DEFAULT_SETTINGS = {
   ],
   materialsCatalog: [
     // Giấy & Decal
+    { id: "mat-giay-c300-a4", name: "Giấy Couche 300gsm (C300) A4", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 477, factoryType: "In", sheetSize: "A4", notes: "Khổ A4 in lịch để bàn" },
+    { id: "mat-giay-c300-33x48", name: "Giấy Couche 300gsm (C300) 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1084, factoryType: "In", sheetSize: "33×48cm", notes: "In bài cards, ruột sổ gift card" },
+    { id: "mat-giay-ivory-300-33x48", name: "Giấy Ivory 300gsm 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1264, factoryType: "In", sheetSize: "33×48cm", notes: "Làm bìa sổ thẻ, hộp bài Ivory" },
     { id: "mat-decal-sua-33x48", name: "Decal sữa mờ Fasson 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1571, factoryType: "In", sheetSize: "33×48cm", notes: "Decal sữa mờ đế trắng Fasson" },
     { id: "mat-decal-trong-33x48", name: "Decal trong suốt Fasson 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1600, factoryType: "In", sheetSize: "33×48cm", notes: "Decal trong dán ly cốc, bao bì kính" },
     { id: "mat-decal-bac-33x35", name: "Decal bạc xé không rách 33×35.4cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 2200, factoryType: "In", sheetSize: "33×35.4cm", notes: "Decal xi bạc dán tem thiết bị, máy móc" },
     { id: "mat-decal-kraft-33x35", name: "Decal Kraft nâu da bò 33×35.4cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1800, factoryType: "In", sheetSize: "33×35.4cm", notes: "Decal giấy Kraft vintage dán chai lọ" },
-    { id: "mat-giay-couche-300", name: "Giấy Couche 300gsm (C300) 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1200, factoryType: "In", sheetSize: "33×48cm", notes: "In danh thiếp, bìa sách, thẻ bài card" },
+    { id: "mat-decal-dai-cuon", name: "Decal sữa dải cuốn hộp bài 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 6000, factoryType: "In", sheetSize: "33×48cm", notes: "Cắt 9 dải cuộn dán nắp hộp bài" },
     { id: "mat-giay-couche-250", name: "Giấy Couche 250gsm (C250) 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1050, factoryType: "In", sheetSize: "33×48cm", notes: "In brochure, catalogue, kẹp file" },
     { id: "mat-giay-couche-150", name: "Giấy Couche 150gsm (C150) 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 750, factoryType: "In", sheetSize: "33×48cm", notes: "In tờ rơi flyer, ruột tạp chí" },
     { id: "mat-giay-ivory-350", name: "Giấy Ivory 350gsm làm hộp 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 1800, factoryType: "In", sheetSize: "33×48cm", notes: "In vỏ hộp bài, hộp quà tặng cứng cáp" },
@@ -133,12 +150,16 @@ const DEFAULT_SETTINGS = {
     { id: "mat-decal-skin-atm", name: "Phôi Decal Skin Card ATM 33×48cm", category: "Giấy & Decal", unit: "Tờ", defaultPrice: 2000, factoryType: "In", sheetSize: "33×48cm", notes: "21 con/tờ phôi dán thẻ ngân hàng" },
 
     // Màng & Phủ
+    { id: "mat-mang-hologram", name: "Màng cán 7 màu Hologram 33×48cm", category: "Màng & Phủ", unit: "Tờ", defaultPrice: 21975, factoryType: "In", sheetSize: "33×48cm", notes: "Cán bìa sổ thẻ cao cấp lấp lánh" },
+    { id: "mat-mang-mo-28mic", name: "Màng cán mờ nhiệt 28mic 33×48cm", category: "Màng & Phủ", unit: "Tờ", defaultPrice: 859, factoryType: "In", sheetSize: "33×48cm", notes: "Cán thẻ bài, bìa sổ bảo vệ chống xước" },
     { id: "mat-mang-mo-nhiet", name: "Màng cán mờ nhiệt BOPP 33cm", category: "Màng & Phủ", unit: "Tờ", defaultPrice: 429, factoryType: "In", notes: "Cán mờ bảo vệ bề mặt chống trầy" },
     { id: "mat-mang-bong-nhiet", name: "Màng cán bóng nhiệt BOPP 33cm", category: "Màng & Phủ", unit: "Tờ", defaultPrice: 380, factoryType: "In", notes: "Cán bóng tăng độ tươi màu" },
     { id: "mat-mang-a-uvdtf", name: "Màng A in UV-DTF (Cuộn khổ 0.62m)", category: "Màng & Phủ", unit: "Mét", defaultPrice: 40000, factoryType: "In", sheetSize: "0.62 x 1m", notes: "Màng A có keo phủ nền in phun UV" },
     { id: "mat-mang-b-uvdtf", name: "Màng B định hình UV-DTF (Cuộn 0.62m)", category: "Màng & Phủ", unit: "Mét", defaultPrice: 15000, factoryType: "In", sheetSize: "0.62 x 1m", notes: "Màng B cán ép lột dán chuyển nhiệt lạnh" },
 
     // Lượt In & Mực
+    { id: "mat-click-konica-700", name: "Click in màu Konica Minolta (A3/33×48)", category: "Lượt In & Mực", unit: "Click", defaultPrice: 700, factoryType: "In", notes: "Lượt in màu chuẩn 700đ/click" },
+    { id: "mat-click-konica-1400", name: "Click in hộp / bìa Konica (1.400đ)", category: "Lượt In & Mực", unit: "Click", defaultPrice: 1400, factoryType: "In", notes: "Lượt in bìa/hộp chuẩn 1.400đ/click" },
     { id: "mat-click-konica", name: "Click in màu máy Konica C4000", category: "Lượt In & Mực", unit: "Click", defaultPrice: 1000, factoryType: "In", notes: "Đơn giá 1 lượt in màu A3 chuẩn" },
     { id: "mat-muc-uvdtf", name: "Mực in UV cuộn (CMYK + W + Varnish)", category: "Lượt In & Mực", unit: "Mét", defaultPrice: 25000, factoryType: "In", notes: "Mực in UV cao cấp bóng nổi 3D" },
 
@@ -148,6 +169,10 @@ const DEFAULT_SETTINGS = {
     { id: "mat-keo-tan", name: "Keo tan nước lót thêu vi tính", category: "Vật Tư Thêu", unit: "Mét", defaultPrice: 9000, factoryType: "Thêu", notes: "Dùng cho vải xù, len, khăn bông" },
 
     // Bao Bì & Đóng Gói
+    { id: "mat-lo-xo-lich-a4", name: "Lò xo kẽm đóng lịch A4", category: "Bao Bì & Đóng Gói", unit: "Cái", defaultPrice: 1600, factoryType: "In", notes: "Lò xo xỏ lịch bàn 13 tờ" },
+    { id: "mat-lo-xo-gift-book", name: "Lò xo kẽm đóng sổ Gift Card Book", category: "Bao Bì & Đóng Gói", unit: "Cái", defaultPrice: 2300, factoryType: "In", notes: "Lò xo gáy xoắn sổ thẻ quà tặng" },
+    { id: "mat-bang-keo-cham", name: "Băng keo chấm tròn 2 mặt", category: "Bao Bì & Đóng Gói", unit: "Dải", defaultPrice: 2000, factoryType: "In", notes: "Dán cố định gift card trong sổ" },
+    { id: "mat-hop-nhua-card", name: "Hộp nhựa đựng bài Poker / Card (50g)", category: "Bao Bì & Đóng Gói", unit: "Hộp", defaultPrice: 25000, factoryType: "In", notes: "Hộp nhựa cứng trong suốt cao cấp" },
     { id: "mat-tui-opp", name: "Túi OPP dán miệng bọc sản phẩm", category: "Bao Bì & Đóng Gói", unit: "Cái", defaultPrice: 150, factoryType: "Chung", notes: "Túi kiếng trong suốt bảo vệ thành phẩm" },
     { id: "mat-hop-giay-ivory", name: "Hộp giấy Ivory in offset nắp gài", category: "Bao Bì & Đóng Gói", unit: "Cái", defaultPrice: 1200, factoryType: "In", notes: "Hộp chứa bộ bài hoặc quà tặng" }
   ]
@@ -160,20 +185,21 @@ const MOCK_PRODUCTS = [
     code: "PC-PAPER-01",
     category: "Bài in (Playing Cards)",
     factoryType: "In",
+    profitPercentage: 20,
     layout: {
       preset: "playing-cards",
-      sheetSize: "A3 (29.7x42cm)",
+      sheetSize: "33x48cm",
       itemSize: "Bài chuẩn 54 lá",
       itemsPerSheet: 0.333333,
       unitType: "Tờ"
     },
     materials: [
-      { name: "Giấy C300gsm A3", qty: 3, unit: "Tờ", price: 900 },
-      { name: "In Konica (2 mặt) - Click", qty: 12, unit: "Click", price: 600 },
-      { name: "Cán màng MỜ (OPAM)", qty: 6, unit: "Lần", price: 1008 },
-      { name: "Giấy Irovy 300gsm (Hộp Ivory)", qty: 0.25, unit: "Tờ", price: 940 },
-      { name: "In hộp (Konica) - Click", qty: 0.5, unit: "Click", price: 600 },
-      { name: "Cán màng MỜ hộp (OPAM)", qty: 0.25, unit: "Lần", price: 1008 }
+      { name: "Giấy Couche 300gsm (C300) 33×48cm", qty: 3, unit: "Tờ", price: 1084 },
+      { name: "In Konica (2 mặt) - Click", qty: 12, unit: "Click", price: 700 },
+      { name: "Màng cán mờ nhiệt 28mic 33×48cm", qty: 6, unit: "Lần", price: 859 },
+      { name: "Giấy Ivory 300gsm 33×48cm (Bìa/Hộp)", qty: 0.25, unit: "Tờ", price: 1264 },
+      { name: "In hộp (Konica) - Click", qty: 0.25, unit: "Click", price: 1400 },
+      { name: "Cán màng mờ 28mic hộp", qty: 0.25, unit: "Lần", price: 859 }
     ],
     labor: { designer: 0.02, production: 0.15, qc: 0.05 },
     electricity: { power: 2.5, runTime: 0.2 },
@@ -193,20 +219,21 @@ const MOCK_PRODUCTS = [
     code: "PC-PLASTIC-02",
     category: "Bài in (Playing Cards)",
     factoryType: "In",
+    profitPercentage: 20,
     layout: {
       preset: "playing-cards",
-      sheetSize: "A3 (29.7x42cm)",
+      sheetSize: "33x48cm",
       itemSize: "Bài chuẩn 54 lá",
       itemsPerSheet: 0.333333,
       unitType: "Tờ"
     },
     materials: [
-      { name: "Giấy C300gsm A3", qty: 3, unit: "Tờ", price: 900 },
-      { name: "In Konica (2 mặt) - Click", qty: 12, unit: "Click", price: 600 },
-      { name: "Cán màng MỜ (OPAM)", qty: 6, unit: "Lần", price: 1008 },
-      { name: "Hộp nhựa cứng bảo vệ", qty: 1, unit: "Hộp", price: 25000 },
-      { name: "Decal sữa (dải cuốn ngoài hộp)", qty: 0.111, unit: "Tờ", price: 6000 },
-      { name: "In dải cuốn (Konica) - Click", qty: 0.222, unit: "Click", price: 600 }
+      { name: "Giấy Couche 300gsm (C300) 33×48cm", qty: 3, unit: "Tờ", price: 1084 },
+      { name: "In Konica (2 mặt) - Click", qty: 12, unit: "Click", price: 700 },
+      { name: "Màng cán mờ nhiệt 28mic 33×48cm", qty: 6, unit: "Lần", price: 859 },
+      { name: "Hộp nhựa đựng bài Poker / Card (50g)", qty: 1, unit: "Hộp", price: 25000 },
+      { name: "Decal sữa dải cuốn hộp bài 33×48cm", qty: 0.111, unit: "Tờ", price: 6000 },
+      { name: "In dải cuốn (Konica) - Click", qty: 0.222, unit: "Click", price: 700 }
     ],
     labor: { designer: 0.02, production: 0.12, qc: 0.04 },
     electricity: { power: 2.5, runTime: 0.15 },
@@ -218,6 +245,142 @@ const MOCK_PRODUCTS = [
       actualSales: 550,
       currentStock: 40,
       safetyStock: 120
+    }
+  },
+  {
+    id: "prod-calendar-a4",
+    name: "Lịch Để Bàn A4 (Lò xo 13 tờ)",
+    code: "CALENDAR-A4-01",
+    category: "Lịch để bàn (Calendar)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "calendar-a4",
+      sheetSize: "A4 (21x29.7cm)",
+      itemSize: "Lịch 13 tờ lò xo",
+      itemsPerSheet: 0.076923,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Giấy Couche 300gsm (C300) A4", qty: 13, unit: "Tờ", price: 477 },
+      { name: "In Konica (2 mặt) - Click", qty: 26, unit: "Click", price: 700 },
+      { name: "Lò xo kẽm đóng lịch A4", qty: 1, unit: "Cái", price: 1600 }
+    ],
+    labor: { designer: 0.02, production: 0.15, qc: 0.05 },
+    electricity: { power: 2.5, runTime: 0.2 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 800,
+      actualSales: 720,
+      currentStock: 80,
+      safetyStock: 150
+    }
+  },
+  {
+    id: "prod-giftcard-10p-matte",
+    name: "Sổ Thẻ Quà Tặng Gift Card Book (10 trang - Bìa Mờ)",
+    code: "GCB-10P-MATTE",
+    category: "Sổ thẻ (Gift Card Book)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "gift-card-book",
+      sheetSize: "33x48cm",
+      itemSize: "Sổ 10 trang + 2 bìa",
+      itemsPerSheet: 0.333333,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Giấy Couche 300gsm (C300) 33×48cm", qty: 2.5, unit: "Tờ", price: 1084 },
+      { name: "In Konica ruột (1 mặt) - Click", qty: 5, unit: "Click", price: 700 },
+      { name: "Giấy Ivory 300gsm 33×48cm (Bìa/Hộp)", qty: 0.5, unit: "Tờ", price: 1264 },
+      { name: "In Konica bìa (1 mặt) - Click", qty: 0.5, unit: "Click", price: 1400 },
+      { name: "Màng cán mờ nhiệt 28mic 33×48cm", qty: 0.5, unit: "Tờ", price: 859 },
+      { name: "Lò xo kẽm đóng sổ Gift Card Book", qty: 1, unit: "Cái", price: 2300 },
+      { name: "Băng keo chấm tròn 2 mặt", qty: 1, unit: "Dải", price: 2000 }
+    ],
+    labor: { designer: 0.03, production: 0.18, qc: 0.06 },
+    electricity: { power: 2.5, runTime: 0.22 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 500,
+      actualSales: 460,
+      currentStock: 50,
+      safetyStock: 100
+    }
+  },
+  {
+    id: "prod-giftcard-10p-holo",
+    name: "Sổ Thẻ Quà Tặng Gift Card Book (10 trang - Bìa Hologram)",
+    code: "GCB-10P-HOLO",
+    category: "Sổ thẻ (Gift Card Book)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "gift-card-book",
+      sheetSize: "33x48cm",
+      itemSize: "Sổ 10 trang + 2 bìa",
+      itemsPerSheet: 0.333333,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Giấy Couche 300gsm (C300) 33×48cm", qty: 2.5, unit: "Tờ", price: 1084 },
+      { name: "In Konica ruột (1 mặt) - Click", qty: 5, unit: "Click", price: 700 },
+      { name: "Giấy Ivory 300gsm 33×48cm (Bìa/Hộp)", qty: 0.5, unit: "Tờ", price: 1264 },
+      { name: "In Konica bìa (1 mặt) - Click", qty: 0.5, unit: "Click", price: 1400 },
+      { name: "Màng cán 7 màu Hologram 33×48cm", qty: 0.5, unit: "Tờ", price: 21975 },
+      { name: "Lò xo kẽm đóng sổ Gift Card Book", qty: 1, unit: "Cái", price: 2300 },
+      { name: "Băng keo chấm tròn 2 mặt", qty: 1, unit: "Dải", price: 2000 }
+    ],
+    labor: { designer: 0.03, production: 0.18, qc: 0.06 },
+    electricity: { power: 2.5, runTime: 0.22 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 600,
+      actualSales: 550,
+      currentStock: 60,
+      safetyStock: 120
+    }
+  },
+  {
+    id: "prod-giftcard-20p-holo",
+    name: "Sổ Thẻ Quà Tặng Gift Card Book (20 trang - Bìa Hologram)",
+    code: "GCB-20P-HOLO",
+    category: "Sổ thẻ (Gift Card Book)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "gift-card-book",
+      sheetSize: "33x48cm",
+      itemSize: "Sổ 20 trang + 2 bìa",
+      itemsPerSheet: 0.18,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Giấy Couche 300gsm (C300) 33×48cm", qty: 5, unit: "Tờ", price: 1084 },
+      { name: "In Konica ruột (1 mặt) - Click", qty: 10, unit: "Click", price: 700 },
+      { name: "Giấy Ivory 300gsm 33×48cm (Bìa/Hộp)", qty: 0.5, unit: "Tờ", price: 1264 },
+      { name: "In Konica bìa (1 mặt) - Click", qty: 0.5, unit: "Click", price: 1400 },
+      { name: "Màng cán 7 màu Hologram 33×48cm", qty: 0.5, unit: "Tờ", price: 21975 },
+      { name: "Lò xo kẽm đóng sổ Gift Card Book", qty: 1, unit: "Cái", price: 2300 },
+      { name: "Băng keo chấm tròn 2 mặt", qty: 1, unit: "Dải", price: 2000 }
+    ],
+    labor: { designer: 0.04, production: 0.22, qc: 0.07 },
+    electricity: { power: 2.5, runTime: 0.28 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 400,
+      actualSales: 380,
+      currentStock: 40,
+      safetyStock: 80
     }
   },
   {
@@ -408,11 +571,16 @@ class AppStateManager {
       try {
         const parsed = JSON.parse(saved);
         
-        // Migrate HR settings from old { count, salary } format to new array format if necessary
+        // Migrate HR settings from old { count, salary } format or old placeholder names to official T9 payroll
         const migrateHrDepartment = (dept, deptKey, defaultDeptList) => {
           if (!dept || !dept[deptKey]) return defaultDeptList;
           const data = dept[deptKey];
-          if (Array.isArray(data)) return data; // Already migrated
+          if (Array.isArray(data)) {
+            // Check if stored data contains old generic placeholder names
+            const isPlaceholder = data.length > 0 && data.some(emp => emp.name && (emp.name.startsWith("Nhân viên In -") || emp.name.startsWith("Nhân viên Thêu -")));
+            if (isPlaceholder) return defaultDeptList;
+            return data;
+          }
           
           // Old format: { count, salary }
           const count = parseInt(data.count, 10) || 0;
@@ -458,8 +626,14 @@ class AppStateManager {
         const rawCatalog = parsed.materialsCatalog || [];
         const mergedCatalog = [...rawCatalog];
         DEFAULT_SETTINGS.materialsCatalog.forEach(defMat => {
-          if (!mergedCatalog.some(m => m.id === defMat.id || m.name.toLowerCase() === defMat.name.toLowerCase())) {
+          const existingIdx = mergedCatalog.findIndex(m => m.id === defMat.id || m.name.toLowerCase() === defMat.name.toLowerCase());
+          if (existingIdx === -1) {
             mergedCatalog.push(defMat);
+          } else {
+            // Update to latest standard price if it was an older default
+            if (defMat.defaultPrice && !mergedCatalog[existingIdx].customized) {
+              mergedCatalog[existingIdx].defaultPrice = defMat.defaultPrice;
+            }
           }
         });
 
@@ -529,6 +703,19 @@ class AppStateManager {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        // Ensure new mock products are automatically merged if not present
+        MOCK_PRODUCTS.forEach(mp => {
+          const existingIdx = parsed.findIndex(p => p.id === mp.id || p.code === mp.code);
+          if (existingIdx === -1) {
+            parsed.push(JSON.parse(JSON.stringify(mp)));
+          } else if (mp.id === "prod-1" || mp.id === "prod-2") {
+            // If Playing Cards still has outdated mock materials, upgrade to official BOM
+            const oldP = parsed[existingIdx];
+            if (oldP.materials && oldP.materials.some(m => m.name.includes("Giấy C300gsm A3"))) {
+              parsed[existingIdx] = JSON.parse(JSON.stringify(mp));
+            }
+          }
+        });
         return parsed.map(processProduct);
       } catch (e) {
         console.error("Error parsing products", e);
@@ -4227,9 +4414,19 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
         layoutItemSize.value = "3.35 x 2.12 inch";
         layoutItemsPerSheet.value = 21;
       } else if (val === "playing-cards") {
-        layoutSheetSize.value = "A3 (29.7x42cm)";
+        layoutSheetSize.value = "33x48cm";
         layoutItemSizeSelect.value = "custom";
-        layoutItemSize.value = "Bộ bài 54 lá";
+        layoutItemSize.value = "Bộ bài 54 lá (3 tờ/bộ)";
+        layoutItemsPerSheet.value = 0.333333;
+      } else if (val === "calendar-a4") {
+        layoutSheetSize.value = "A4 (21x29.7cm)";
+        layoutItemSizeSelect.value = "custom";
+        layoutItemSize.value = "Lịch 13 tờ lò xo";
+        layoutItemsPerSheet.value = 0.076923;
+      } else if (val === "gift-card-book") {
+        layoutSheetSize.value = "33x48cm";
+        layoutItemSizeSelect.value = "custom";
+        layoutItemSize.value = "Sổ thẻ 10 trang";
         layoutItemsPerSheet.value = 0.333333;
       } else if (val === "hop-giay") {
         layoutSheetSize.value = "33x48cm";
