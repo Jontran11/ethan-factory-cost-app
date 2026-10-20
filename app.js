@@ -1588,12 +1588,35 @@ function renderBarChart() {
 }
 
 // ==========================================================================
+// Category Definitions & Grouping Helpers
+// ==========================================================================
+
+const PRODUCT_CATEGORIES = [
+  { id: "calendar", name: "Lịch để bàn (Calendar)", icon: "📅", match: (c) => /lịch|calendar/i.test(c || '') },
+  { id: "giftbook", name: "Sổ thẻ (Gift Card Book)", icon: "🎁", match: (c) => /sổ|gift.*card|book/i.test(c || '') },
+  { id: "cards", name: "Bài in & Cards (Playing / Uno)", icon: "🃏", match: (c) => /bài|card|uno|playing/i.test(c || '') },
+  { id: "sticker", name: "Nhãn dán & Decal (Sticker)", icon: "🏷️", match: (c) => /nhãn|sticker|decal|uv/i.test(c || '') },
+  { id: "embroidery", name: "Thêu vi tính & May mặc", icon: "🧵", match: (c) => /thêu|thời trang|phụ kiện|áo|mũ|hoodie/i.test(c || '') },
+];
+
+function getCategoryInfo(categoryStr) {
+  if (!categoryStr) return { id: "other", name: "Khác / Chưa phân loại", icon: "📁" };
+  const matched = PRODUCT_CATEGORIES.find(cat => cat.match(categoryStr));
+  if (matched) return matched;
+  const cleanId = String(categoryStr).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  return { id: cleanId || "other", name: categoryStr, icon: "📁" };
+}
+
+const collapsedCategoryMap = {};
+
+// ==========================================================================
 // 5. Tab 2: Cost Calculator View Rendering & Interactions
 // ==========================================================================
 
 function renderCalculator() {
   const searchVal = document.getElementById("calc-search").value.toLowerCase();
   const filterFactory = document.getElementById("calc-filter-factory").value;
+  const filterCategory = document.getElementById("calc-filter-category") ? document.getElementById("calc-filter-category").value : "all";
 
   // Filter products list
   const filteredProducts = state.products.filter(p => {
@@ -1601,40 +1624,142 @@ function renderCalculator() {
                           (p.code && p.code.toLowerCase().includes(searchVal)) ||
                           (p.category && p.category.toLowerCase().includes(searchVal));
     const matchesFactory = filterFactory === "all" || p.factoryType === filterFactory;
-    return matchesSearch && matchesFactory;
+    const catInfo = getCategoryInfo(p.category);
+    const matchesCategory = filterCategory === "all" || catInfo.id === filterCategory;
+    return matchesSearch && matchesFactory && matchesCategory;
   });
 
-  // Render Left Column Product Cards
+  // Render Category Filter Pills
+  const pillsContainer = document.getElementById("calc-category-pills");
+  if (pillsContainer) {
+    pillsContainer.innerHTML = "";
+    
+    // Total count under current factory & search
+    const baseListForPills = state.products.filter(p => {
+      const matchesSearch = !searchVal || p.name.toLowerCase().includes(searchVal) || 
+                            (p.code && p.code.toLowerCase().includes(searchVal)) ||
+                            (p.category && p.category.toLowerCase().includes(searchVal));
+      const matchesFactory = filterFactory === "all" || p.factoryType === filterFactory;
+      return matchesSearch && matchesFactory;
+    });
+
+    const allPill = document.createElement("button");
+    allPill.type = "button";
+    allPill.className = `category-pill-btn ${filterCategory === 'all' ? 'active' : ''}`;
+    allPill.innerHTML = `<span>Tất cả</span> <span class="category-pill-count">${baseListForPills.length}</span>`;
+    allPill.addEventListener("click", () => {
+      const sel = document.getElementById("calc-filter-category");
+      if (sel) sel.value = "all";
+      renderCalculator();
+    });
+    pillsContainer.appendChild(allPill);
+
+    PRODUCT_CATEGORIES.forEach(cat => {
+      const count = baseListForPills.filter(p => cat.match(p.category)).length;
+      if (count > 0) {
+        const pill = document.createElement("button");
+        pill.type = "button";
+        pill.className = `category-pill-btn ${filterCategory === cat.id ? 'active' : ''}`;
+        pill.innerHTML = `<span>${cat.icon} ${cat.name.split('(')[0].trim()}</span> <span class="category-pill-count">${count}</span>`;
+        pill.addEventListener("click", () => {
+          const sel = document.getElementById("calc-filter-category");
+          if (sel) sel.value = (filterCategory === cat.id ? 'all' : cat.id);
+          renderCalculator();
+        });
+        pillsContainer.appendChild(pill);
+      }
+    });
+  }
+
+  // Render Left Column Grouped Product Cards
   const cardsList = document.getElementById("product-cards-list");
   cardsList.innerHTML = "";
   
   document.getElementById("product-count-badge").textContent = `${filteredProducts.length} sản phẩm`;
 
   if (filteredProducts.length === 0) {
-    cardsList.innerHTML = `<div class="no-data">Không tìm thấy sản phẩm.</div>`;
+    cardsList.innerHTML = `<div class="no-data">Không tìm thấy sản phẩm nào.</div>`;
   } else {
+    // Group products by category
+    const groups = {};
     filteredProducts.forEach(p => {
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = `product-card-item ${state.selectedProductId === p.id ? 'selected' : ''}`;
-      
-      const { baseCost } = calculateProductCost(p, state.settings);
-      
-      card.innerHTML = `
-        <div class="product-card-item-header">
-          <div class="product-card-name">${p.name}</div>
-          <span class="table-row-factory type-${p.factoryType === "In" ? "print" : "embroid"}">
-            ${p.factoryType}
-          </span>
+      const catInfo = getCategoryInfo(p.category);
+      if (!groups[catInfo.id]) {
+        groups[catInfo.id] = { info: catInfo, products: [] };
+      }
+      groups[catInfo.id].products.push(p);
+    });
+
+    // Ensure category of selected product is not collapsed
+    if (state.selectedProductId) {
+      const selProd = state.products.find(x => x.id === state.selectedProductId);
+      if (selProd) {
+        const selCatInfo = getCategoryInfo(selProd.category);
+        collapsedCategoryMap[selCatInfo.id] = false;
+      }
+    }
+
+    Object.keys(groups).forEach(catId => {
+      const group = groups[catId];
+      const isCollapsed = !!collapsedCategoryMap[catId];
+
+      const section = document.createElement("div");
+      section.className = `category-group-section ${isCollapsed ? 'collapsed' : ''}`;
+      section.dataset.catId = catId;
+
+      const countLabel = catId === 'giftbook' ? `${group.products.length} biến thể` : `${group.products.length} SP`;
+
+      section.innerHTML = `
+        <div class="category-group-header">
+          <div class="category-group-header-left">
+            <span class="category-group-icon">${group.info.icon}</span>
+            <span class="category-group-title">${group.info.name}</span>
+            <span class="category-group-badge">${countLabel}</span>
+          </div>
+          <span class="category-group-chevron">▼</span>
         </div>
-        <div class="product-card-sku">${p.code || 'N/A'}</div>
-        <div class="product-card-footer">
-          <span class="text-secondary text-xs">${p.category || 'Không phân nhóm'}</span>
-          <div class="product-card-price">${formatVND(baseCost)}</div>
-        </div>
+        <div class="category-group-items"></div>
       `;
-      card.addEventListener("click", () => selectProduct(p.id));
-      cardsList.appendChild(card);
+
+      // Collapse toggle
+      const headerEl = section.querySelector(".category-group-header");
+      headerEl.addEventListener("click", () => {
+        const nowCollapsed = !section.classList.contains("collapsed");
+        if (nowCollapsed) {
+          section.classList.add("collapsed");
+          collapsedCategoryMap[catId] = true;
+        } else {
+          section.classList.remove("collapsed");
+          collapsedCategoryMap[catId] = false;
+        }
+      });
+
+      const itemsContainer = section.querySelector(".category-group-items");
+      group.products.forEach(p => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `product-card-item ${state.selectedProductId === p.id ? 'selected' : ''}`;
+        
+        const { baseCost, sellerPrice } = calculateProductCost(p, state.settings);
+        
+        card.innerHTML = `
+          <div class="product-card-item-header">
+            <div class="product-card-name">${p.name}</div>
+            <span class="table-row-factory type-${p.factoryType === "In" ? "print" : "embroid"}">
+              ${p.factoryType}
+            </span>
+          </div>
+          <div class="product-card-sku">${p.code || 'N/A'}</div>
+          <div class="product-card-footer">
+            <span class="text-secondary text-xs" style="color: #34d399; font-weight: 500;">Bán: ${formatVND(sellerPrice)}</span>
+            <div class="product-card-price" style="font-size: 0.85rem;">Vốn: ${formatVND(baseCost)}</div>
+          </div>
+        `;
+        card.addEventListener("click", () => selectProduct(p.id));
+        itemsContainer.appendChild(card);
+      });
+
+      cardsList.appendChild(section);
     });
   }
 
@@ -2666,6 +2791,7 @@ function renderActualMaterialConsumption() {
 function renderForecast() {
   const searchVal = document.getElementById("forecast-search").value.toLowerCase();
   const filterFactory = document.getElementById("forecast-filter-factory").value;
+  const filterCategory = document.getElementById("forecast-filter-category") ? document.getElementById("forecast-filter-category").value : "all";
 
   const tbody = document.getElementById("forecast-table-tbody");
   tbody.innerHTML = "";
@@ -2675,7 +2801,9 @@ function renderForecast() {
                           (p.code && p.code.toLowerCase().includes(searchVal)) ||
                           (p.category && p.category.toLowerCase().includes(searchVal));
     const matchesFactory = filterFactory === "all" || p.factoryType === filterFactory;
-    return matchesSearch && matchesFactory;
+    const catInfo = getCategoryInfo(p.category);
+    const matchesCategory = filterCategory === "all" || catInfo.id === filterCategory;
+    return matchesSearch && matchesFactory && matchesCategory;
   });
 
   if (filteredProducts.length === 0) {
@@ -2686,6 +2814,7 @@ function renderForecast() {
 
   filteredProducts.forEach(p => {
     const costDetails = calculateProductCost(p, state.settings);
+    const catInfo = getCategoryInfo(p.category);
     const actualSales = p.forecast.actualSales || 0;
     const salesForecast = Math.round(actualSales * 1.1); // Auto grow by 10%
     p.forecast.salesForecast = salesForecast; // Sync in memory
@@ -2699,7 +2828,10 @@ function renderForecast() {
     tr.innerHTML = `
       <td>
         <div class="font-semibold" style="color: #f8fafc;">${p.name}</div>
-        <div class="text-secondary text-xs">${p.code || 'SKU trống'}</div>
+        <div style="display: flex; align-items: center; gap: 0.4rem; margin-top: 0.15rem;">
+          <span class="text-secondary text-xs" style="font-family: monospace;">${p.code || 'SKU trống'}</span>
+          <span style="font-size: 0.65rem; padding: 0.05rem 0.35rem; border-radius: 4px; background: rgba(99,102,241,0.15); color: #a5b4fc;">${catInfo.icon} ${catInfo.name.split('(')[0].trim()}</span>
+        </div>
       </td>
       <td>
         <span class="table-row-factory type-${p.factoryType === "In" ? "print" : "embroid"}">
@@ -2921,8 +3053,14 @@ function renderMonthlyReport() {
 
   const totalMonthlyFixedCost = totalMonthlySalary + totalMonthlyElectricity;
 
-  // 2. Lọc sản phẩm theo nhà máy
-  const filteredProducts = state.products.filter(p => filterFactory === "all" || p.factoryType === filterFactory);
+  // 2. Lọc sản phẩm theo nhà máy & danh mục
+  const filterCategory = document.getElementById("monthly-report-filter-category")?.value || "all";
+  const filteredProducts = state.products.filter(p => {
+    const matchesFactory = filterFactory === "all" || p.factoryType === filterFactory;
+    const catInfo = getCategoryInfo(p.category);
+    const matchesCat = filterCategory === "all" || catInfo.id === filterCategory;
+    return matchesFactory && matchesCat;
+  });
 
   let totalMonthQty = 0;
   let totalMonthVC = 0;
@@ -2935,51 +3073,95 @@ function renderMonthlyReport() {
   if (filteredProducts.length === 0) {
     tbody.innerHTML = `<tr><td colspan="10" class="no-data" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Không có sản phẩm nào cho bộ lọc này.</td></tr>`;
   } else {
+    // Group products by category
+    const groups = {};
     filteredProducts.forEach(p => {
-      const costDetails = calculateProductCost(p, state.settings);
-      
-      // Sản lượng theo tháng: Tháng 7 lấy actualSales, Tháng 8 lấy salesForecast
-      const qty = (month === "7") 
-        ? (p.forecast.actualSales !== undefined ? p.forecast.actualSales : Math.round((p.forecast.salesForecast || 0) / 1.1))
-        : (p.forecast.salesForecast || Math.round((p.forecast.actualSales || 0) * 1.1));
+      const catInfo = getCategoryInfo(p.category);
+      if (!groups[catInfo.id]) {
+        groups[catInfo.id] = { info: catInfo, products: [] };
+      }
+      groups[catInfo.id].products.push(p);
+    });
 
-      const unitVC = costDetails.variableCost;
-      const totalVC = unitVC * qty;
-      const unitSellerPrice = costDetails.paybackSellerPrice || costDetails.sellerPrice;
-      const totalRevenue = unitSellerPrice * qty;
-      const productMargin = totalRevenue - totalVC;
-      const unitCapex = costDetails.paybackSurchargeFirst3Years || 0;
-      const totalCapex = unitCapex * qty;
+    Object.keys(groups).forEach(catId => {
+      const group = groups[catId];
+      let catQty = 0;
+      let catVC = 0;
+      let catRev = 0;
+      let catMargin = 0;
+      let catCapex = 0;
 
-      totalMonthQty += qty;
-      totalMonthVC += totalVC;
-      totalMonthRevenue += totalRevenue;
-      totalMonthContribution += productMargin;
-      totalMonthCapex += totalCapex;
-      totalMonthMat += (costDetails.materialsCost * qty);
-      totalMonthLabor += (costDetails.laborCost * qty);
+      const prodTrs = group.products.map(p => {
+        const costDetails = calculateProductCost(p, state.settings);
+        
+        // Sản lượng theo tháng: Tháng 7 lấy actualSales, Tháng 8 lấy salesForecast
+        const qty = (month === "7") 
+          ? (p.forecast.actualSales !== undefined ? p.forecast.actualSales : Math.round((p.forecast.salesForecast || 0) / 1.1))
+          : (p.forecast.salesForecast || Math.round((p.forecast.actualSales || 0) * 1.1));
 
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><strong style="color: #60a5fa;">${p.code || 'SKU trống'}</strong></td>
-        <td>
-          <div style="font-weight: 600; color: #fff;">${p.name}</div>
-          <div style="font-size: 0.72rem; color: var(--text-secondary);">${p.category || 'Chưa phân loại'}</div>
+        const unitVC = costDetails.variableCost;
+        const totalVC = unitVC * qty;
+        const unitSellerPrice = costDetails.paybackSellerPrice || costDetails.sellerPrice;
+        const totalRevenue = unitSellerPrice * qty;
+        const productMargin = totalRevenue - totalVC;
+        const unitCapex = costDetails.paybackSurchargeFirst3Years || 0;
+        const totalCapex = unitCapex * qty;
+
+        catQty += qty;
+        catVC += totalVC;
+        catRev += totalRevenue;
+        catMargin += productMargin;
+        catCapex += totalCapex;
+
+        totalMonthQty += qty;
+        totalMonthVC += totalVC;
+        totalMonthRevenue += totalRevenue;
+        totalMonthContribution += productMargin;
+        totalMonthCapex += totalCapex;
+        totalMonthMat += (costDetails.materialsCost * qty);
+        totalMonthLabor += (costDetails.laborCost * qty);
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong style="color: #60a5fa;">${p.code || 'SKU trống'}</strong></td>
+          <td>
+            <div style="font-weight: 600; color: #fff;">${p.name}</div>
+            <div style="font-size: 0.72rem; color: var(--text-secondary);">${p.category || 'Chưa phân loại'}</div>
+          </td>
+          <td style="text-align: center;">
+            <span class="table-row-factory type-${p.factoryType === 'In' ? 'print' : 'embroid'}">
+              ${p.factoryType === 'In' ? 'In ấn' : 'Thêu dệt'}
+            </span>
+          </td>
+          <td style="text-align: right; font-weight: 700; color: #fff;">${qty.toLocaleString('vi-VN')}</td>
+          <td style="text-align: right; color: #34d399;">${formatVND(unitVC)}</td>
+          <td style="text-align: right; font-weight: 600; color: #34d399;">${formatVND(totalVC)}</td>
+          <td style="text-align: right; color: #f59e0b;">${formatVND(unitSellerPrice)}</td>
+          <td style="text-align: right; font-weight: 700; color: #38bdf8;">${formatVND(totalRevenue)}</td>
+          <td style="text-align: right; font-weight: 700; color: #a78bfa;">${formatVND(productMargin)}</td>
+          <td style="text-align: right; color: #fbbf24;">${formatVND(totalCapex)}</td>
+        `;
+        return tr;
+      });
+
+      const countLabel = catId === 'giftbook' ? `${group.products.length} biến thể` : `${group.products.length} sản phẩm`;
+      const dividerTr = document.createElement("tr");
+      dividerTr.className = "category-table-row-divider";
+      dividerTr.innerHTML = `
+        <td colspan="10">
+          <div class="cat-divider-wrap">
+            <span>${group.info.icon} <strong>${group.info.name}</strong> (${countLabel})</span>
+            <span class="cat-divider-stats">
+              <span>SL: <strong>${catQty.toLocaleString('vi-VN')}</strong></span>
+              <span>Doanh thu: <strong>${formatVND(catRev)}</strong></span>
+              <span>Biến phí: <strong>${formatVND(catVC)}</strong></span>
+              <span>Lãi gộp: <strong style="color: #a78bfa;">${formatVND(catMargin)}</strong></span>
+            </span>
+          </div>
         </td>
-        <td style="text-align: center;">
-          <span class="table-row-factory type-${p.factoryType === 'In' ? 'print' : 'embroid'}">
-            ${p.factoryType === 'In' ? 'In ấn' : 'Thêu dệt'}
-          </span>
-        </td>
-        <td style="text-align: right; font-weight: 700; color: #fff;">${qty.toLocaleString('vi-VN')}</td>
-        <td style="text-align: right; color: #34d399;">${formatVND(unitVC)}</td>
-        <td style="text-align: right; font-weight: 600; color: #34d399;">${formatVND(totalVC)}</td>
-        <td style="text-align: right; color: #f59e0b;">${formatVND(unitSellerPrice)}</td>
-        <td style="text-align: right; font-weight: 700; color: #38bdf8;">${formatVND(totalRevenue)}</td>
-        <td style="text-align: right; font-weight: 700; color: #a78bfa;">${formatVND(productMargin)}</td>
-        <td style="text-align: right; color: #fbbf24;">${formatVND(totalCapex)}</td>
       `;
-      tbody.appendChild(tr);
+      tbody.appendChild(dividerTr);
+      prodTrs.forEach(tr => tbody.appendChild(tr));
     });
   }
 
@@ -3051,11 +3233,18 @@ function renderMonthlyReport() {
 function exportMonthlyReportCSV() {
   const month = document.getElementById("monthly-report-select")?.value || "7";
   const filterFactory = document.getElementById("monthly-report-filter-factory")?.value || "all";
-  const filteredProducts = state.products.filter(p => filterFactory === "all" || p.factoryType === filterFactory);
+  const filterCategory = document.getElementById("monthly-report-filter-category")?.value || "all";
+  const filteredProducts = state.products.filter(p => {
+    const matchesFactory = filterFactory === "all" || p.factoryType === filterFactory;
+    const catInfo = getCategoryInfo(p.category);
+    const matchesCat = filterCategory === "all" || catInfo.id === filterCategory;
+    return matchesFactory && matchesCat;
+  });
 
   const header = [
     "Mã SKU",
     "Tên Sản Phẩm",
+    "Danh Mục",
     "Nhà Máy",
     "Tháng Báo Cáo",
     "Số Lượng Bán",
@@ -3086,6 +3275,7 @@ function exportMonthlyReportCSV() {
     rows.push([
       `"${p.code || ''}"`,
       `"${(p.name || '').replace(/"/g, '""')}"`,
+      `"${(p.category || '').replace(/"/g, '""')}"`,
       `"${p.factoryType === 'In' ? 'In ấn' : 'Thêu dệt'}"`,
       `"Tháng ${month}/2026"`,
       qty,
@@ -4111,6 +4301,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-add-product").addEventListener("click", openCreateProductModal);
   document.getElementById("calc-search").addEventListener("input", renderCalculator);
   document.getElementById("calc-filter-factory").addEventListener("change", renderCalculator);
+  const calcCatFilter = document.getElementById("calc-filter-category");
+  if (calcCatFilter) {
+    calcCatFilter.addEventListener("change", renderCalculator);
+  }
 
   document.getElementById("btn-add-material-row").addEventListener("click", addNewMaterialRow);
   
@@ -4154,6 +4348,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // 3. Forecast tab triggers
   document.getElementById("forecast-search").addEventListener("input", renderForecast);
   document.getElementById("forecast-filter-factory").addEventListener("change", renderForecast);
+  const forecastCatFilter = document.getElementById("forecast-filter-category");
+  if (forecastCatFilter) {
+    forecastCatFilter.addEventListener("change", () => {
+      renderForecast();
+      recalculateForecastTotals();
+    });
+  }
 
   const downloadSampleBtn = document.getElementById("btn-download-sample-csv");
   if (downloadSampleBtn) {
@@ -4746,6 +4947,10 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
   const mrFilter = document.getElementById("monthly-report-filter-factory");
   if (mrFilter) {
     mrFilter.addEventListener("change", renderMonthlyReport);
+  }
+  const mrCatFilter = document.getElementById("monthly-report-filter-category");
+  if (mrCatFilter) {
+    mrCatFilter.addEventListener("change", renderMonthlyReport);
   }
   const mrExportBtn = document.getElementById("btn-export-monthly-report");
   if (mrExportBtn) {

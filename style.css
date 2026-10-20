@@ -928,9 +928,182 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 600px;
+  max-height: 620px;
   overflow-y: auto;
   padding-right: 0.25rem;
+}
+
+/* Category Pill Scroller */
+.category-pill-scroller {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.4rem;
+  padding: 0.2rem 0 0.65rem 0;
+  margin-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+.category-pill-scroller::-webkit-scrollbar {
+  height: 4px;
+}
+
+.category-pill-scroller::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.category-pill-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  padding: 0.3rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.category-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #ffffff;
+}
+
+.category-pill-btn.active {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: #818cf8;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+}
+
+.category-pill-count {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.05rem 0.35rem;
+  border-radius: 10px;
+  font-size: 0.65rem;
+}
+
+.category-pill-btn.active .category-pill-count {
+  background: #6366f1;
+  color: #ffffff;
+}
+
+/* Category Group Sections */
+.category-group-section {
+  margin-bottom: 0.65rem;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--border-radius-md);
+  background: rgba(255, 255, 255, 0.015);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.category-group-section:last-child {
+  margin-bottom: 0;
+}
+
+.category-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.category-group-header:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.category-group-section.collapsed .category-group-header {
+  border-bottom: 1px solid transparent;
+}
+
+.category-group-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.category-group-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.category-group-title {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: #f8fafc;
+}
+
+.category-group-badge {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  font-weight: 500;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.category-group-chevron {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.category-group-section.collapsed .category-group-chevron {
+  transform: rotate(-90deg);
+}
+
+.category-group-items {
+  padding: 0.45rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.category-group-section.collapsed .category-group-items {
+  display: none;
+}
+
+/* Category Table Divider (For Monthly Report Table) */
+.category-table-row-divider td {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border-top: 1px solid rgba(99, 102, 241, 0.25) !important;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.25) !important;
+  padding: 0.55rem 0.85rem !important;
+}
+
+.cat-divider-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: #c7d2fe;
+}
+
+.cat-divider-stats {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #94a3b8;
+  display: flex;
+  gap: 0.85rem;
+}
+
+.cat-divider-stats strong {
+  color: #fff;
 }
 
 .product-card-item {

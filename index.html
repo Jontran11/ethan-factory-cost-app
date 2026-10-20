@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=21.1">
+  <link rel="stylesheet" href="style.css?v=22.0">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -265,6 +265,14 @@
                 <option value="In">Nhà máy In</option>
                 <option value="Thêu">Nhà máy Thêu</option>
               </select>
+              <select id="calc-filter-category" class="form-input select-input">
+                <option value="all">Tất cả danh mục</option>
+                <option value="calendar">📅 Lịch để bàn (Calendar)</option>
+                <option value="giftbook">🎁 Sổ thẻ (Gift Card Book)</option>
+                <option value="cards">🃏 Bài in &amp; Cards</option>
+                <option value="sticker">🏷️ Nhãn dán &amp; Decal</option>
+                <option value="embroidery">🧵 Thêu vi tính &amp; May mặc</option>
+              </select>
             </div>
             <button id="btn-add-product" class="btn btn-primary">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -279,8 +287,12 @@
                 <h3>Danh Sách Sản Phẩm</h3>
                 <span class="badge-count" id="product-count-badge">0 sản phẩm</span>
               </div>
+              <!-- Category Filter Pills Bar -->
+              <div class="category-pill-scroller" id="calc-category-pills">
+                <!-- Dynamically rendered pill buttons -->
+              </div>
               <div class="product-cards-container" id="product-cards-list">
-                <!-- Dynamically populated product items -->
+                <!-- Dynamically populated product items grouped by category -->
               </div>
             </div>
 
@@ -804,6 +816,14 @@
                 <option value="In">Nhà máy In</option>
                 <option value="Thêu">Nhà máy Thêu</option>
               </select>
+              <select id="forecast-filter-category" class="form-input select-input">
+                <option value="all">Tất cả danh mục</option>
+                <option value="calendar">📅 Lịch để bàn (Calendar)</option>
+                <option value="giftbook">🎁 Sổ thẻ (Gift Card Book)</option>
+                <option value="cards">🃏 Bài in &amp; Cards</option>
+                <option value="sticker">🏷️ Nhãn dán &amp; Decal</option>
+                <option value="embroidery">🧵 Thêu vi tính &amp; May mặc</option>
+              </select>
             </div>
             <div>
               <button type="button" class="btn btn-secondary" id="btn-import-sales-csv" onclick="document.getElementById('sales-csv-file').click()" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; background: rgba(245, 158, 11, 0.05); padding: 0.45rem 0.85rem; border-radius: 6px;">
@@ -986,6 +1006,14 @@
                 <option value="all">Tất cả nhà máy</option>
                 <option value="In">Nhà máy In</option>
                 <option value="Thêu">Nhà máy Thêu</option>
+              </select>
+              <select id="monthly-report-filter-category" class="form-input select-input">
+                <option value="all">Tất cả danh mục</option>
+                <option value="calendar">📅 Lịch để bàn (Calendar)</option>
+                <option value="giftbook">🎁 Sổ thẻ (Gift Card Book)</option>
+                <option value="cards">🃏 Bài in &amp; Cards</option>
+                <option value="sticker">🏷️ Nhãn dán &amp; Decal</option>
+                <option value="embroidery">🧵 Thêu vi tính &amp; May mặc</option>
               </select>
             </div>
             <div>
@@ -1608,6 +1636,6 @@ function doPost(e) {
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=21.1" type="module"></script>
+  <script src="app.js?v=22.0" type="module"></script>
 </body>
 </html>
