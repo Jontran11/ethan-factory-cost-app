@@ -10,6 +10,7 @@
 const DEFAULT_GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwoheq43Jz30MQWTkDqzC6KJ7zdOKUJDlWAyk75oI39q8YNesK-NYzKqqVhyZP1oNqF/exec";
 
 const DEFAULT_SETTINGS = {
+  hrVersion: "2026-10-20-dept-v2",
   electricityPrice: 3000,   // đ/kWh
   defaultOverhead: 10,      // %
   standardHours: 208,       // Giờ công chuẩn/tháng
@@ -22,78 +23,76 @@ const DEFAULT_SETTINGS = {
   hr: {
     In: {
       designer: [
-        { name: "Nguyễn Hữu Chiến (NV132 - Lead)", salary: 13621385 },
-        { name: "TRẦN VŨ QUỲNH MAI (NV016)", salary: 14493545 },
-        { name: "Đặng Thanh Uyên Nhi (NV85)", salary: 14161288 },
+        { name: "Đỗ Thành Trung (NV138)", salary: 923000 },
+        { name: "Đỗ Cường Quý (NV113)", salary: 12365865 },
+        { name: "Đặng Thanh Uyên Nhi (NV85)", salary: 14161288 },
         { name: "Vũ Quang Hoà (NV82)", salary: 13460808 },
+        { name: "TRẦN VŨ QUỲNH MAI (NV016)", salary: 14493545 },
         { name: "TRẦN HỒ HỒNG HÂN (NV12)", salary: 13289045 },
-        { name: "Ngụy Bùi Phước Sang (NV81)", salary: 12562965 },
-        { name: "NGUYỄN THI HẰNG NGA (NV09)", salary: 10252237 }
+        { name: "NGUYỄN THỊ HẰNG NGA (NV09)", salary: 10252237 }
       ],
       production: [
-        { name: "Đỗ Cường Quý (NV113 - Vận hành in)", salary: 12365865 },
-        { name: "Trần Thị Bích Ngọc (NV83 - Vận hành in)", salary: 11992587 },
-        { name: "Vũ Đình Quân (NV133 - Vận hành in)", salary: 10312462 },
-        { name: "Nguyễn Hữu Anh Tú (NV90 - Vận hành in)", salary: 10138365 },
-        { name: "Phạm Ngọc Thạch (NV131 - Vận hành in)", salary: 9811202 },
-        { name: "Phạm Anh Phúc (NV126 - Vận hành in)", salary: 8698538 }
+        { name: "Nguyễn Hoàng Minh Nhật (TT01)", salary: 5073000 },
+        { name: "Vũ Đình Quân (NV133)", salary: 10312462 },
+        { name: "Nguyễn Hữu Chiến (NV132)", salary: 13621385 },
+        { name: "Phạm Ngọc Thạch (NV131)", salary: 9811202 },
+        { name: "Phạm Anh Phúc (NV126)", salary: 8698538 },
+        { name: "Nguyễn Hữu Anh Tú (NV90)", salary: 10138365 },
+        { name: "Trần Thị Bích Ngọc (NV83)", salary: 11992587 },
+        { name: "Ngụy Bùi Phước Sang (NV81)", salary: 12562965 }
       ],
       qc: [
-        { name: "Đoàn Thị Thiên Lý (NV101 - QC/Đóng gói)", salary: 11200649 },
-        { name: "Phạm Thị Minh Thư (NV108 - QC/Đóng gói)", salary: 10840718 },
-        { name: "Nguyễn Ngọc Quỳnh Hương (NV119 - QC/Đóng gói)", salary: 9793279 },
-        { name: "THÂN KIM TRANG (NV121 - QC/Đóng gói)", salary: 7893604 },
-        { name: "Nguyễn Hoàng Minh Nhật (TT01 - QC/Đóng gói)", salary: 5073000 },
-        { name: "Bảo Phương (NV118 - QC/Đóng gói)", salary: 3730833 },
-        { name: "Đỗ Thành Trung (NV138 - QC/Đóng gói)", salary: 923000 },
-        { name: "Phạm Cao Kỳ Duyên (NV120 - QC/Đóng gói)", salary: 838000 }
+        { name: "THÂN KIM TRANG (NV121)", salary: 7893604 },
+        { name: "Nguyễn Ngọc Quỳnh Hương (NV119)", salary: 9793279 },
+        { name: "Phạm Thị Minh Thư (NV108)", salary: 10840718 },
+        { name: "Đoàn Thị Thiên Lý (NV101)", salary: 11200649 }
       ]
     },
     Thêu: {
       designer: [
-        { name: "Phạm Xuân Thạch (NV27 - Quản lý xưởng)", salary: 19120231 },
-        { name: "Nguyễn Hồng Thương (NV62 - Kỹ thuật Punching)", salary: 15327506 },
-        { name: "HOÀNG THANH DŨNG (NV03 - Kỹ thuật Punching)", salary: 14832827 },
-        { name: "Tô Thị Thuỳ Trang (NV66 - Kỹ thuật Punching)", salary: 14223869 },
-        { name: "TRẦN TRÚC THƯ (NV33 - Kỹ thuật Punching)", salary: 11565295 },
-        { name: "Vũ Phạm Quốc Tiến (NV51 - Kỹ thuật Punching)", salary: 8197077 }
+        { name: "Lâm Thúy Vi (NV96)", salary: 915000 },
+        { name: "Vũ Thị Hoàng Thu Thảo (HV17)", salary: 10588513 },
+        { name: "Phạm Ngọc Minh Quyên (HV16)", salary: 11307410 },
+        { name: "Đinh Thùy Diễm Hằng (HV15)", salary: 11047128 },
+        { name: "Phạm Ý Diệu Ngân (HV14)", salary: 10029910 },
+        { name: "Nguyễn Kim Điền (HV12)", salary: 11983564 },
+        { name: "Trần Tiến Đạt (HV11)", salary: 10001500 },
+        { name: "Trần Thị Kim Ngân (HV10)", salary: 10987256 },
+        { name: "Nguyễn Quỳnh Như (HV04)", salary: 2315577 },
+        { name: "Đoàn Như Quỳnh (HV03)", salary: 9885782 },
+        { name: "Vũ Thị Xuân Hồng (NV95)", salary: 14022817 },
+        { name: "Phạm Thị Thuý Hằng (NV93)", salary: 11010731 },
+        { name: "Nguyễn Kiều Trinh (NV91)", salary: 14253889 },
+        { name: "Vũ Minh Hoàng (NV80)", salary: 11228202 },
+        { name: "Trần Hoàng Hải (NV63)", salary: 10408487 },
+        { name: "Nguyễn Hồng Thương (NV62)", salary: 15327506 },
+        { name: "Vũ Phạm Quốc Tiến (NV51)", salary: 8197077 }
       ],
       laser: [
-        { name: "Vũ Thị Xuân Hồng (NV95 - Laser cắt vải)", salary: 14022817 },
         { name: "Phạm Phát Đạt (NV134 - Laser cắt vải)", salary: 10020433 }
       ],
       production: [
-        { name: "Nguyễn Kiều Trinh (NV91 - Vận hành thêu)", salary: 14253889 },
-        { name: "Vũ Ngọc Phương Uyên (NV68 - Vận hành thêu)", salary: 11238356 },
-        { name: "Vũ Minh Hoàng (NV80 - Vận hành thêu)", salary: 11228202 },
-        { name: "Phạm Thị Thuý Hằng (NV93 - Vận hành thêu)", salary: 11010731 },
-        { name: "Đinh Thị Kim Hồng (NV123 - Vận hành thêu)", salary: 9439385 },
-        { name: "Vũ Ngọc Thiện (NV69 - Vận hành thêu)", salary: 9356399 },
-        { name: "Nguyễn Vinh Hiền (NV127 - Vận hành thêu)", salary: 8832385 },
-        { name: "Vũ Đức Huy (NV106 - Vận hành thêu)", salary: 8759487 },
-        { name: "Nguyễn Ngọc Ánh (NV107 - Vận hành thêu)", salary: 8701433 },
-        { name: "VŨ THANH LIÊM (NV71 - Vận hành thêu)", salary: 8676423 },
-        { name: "Nguyễn Thị Lệ Quyên (NV109 - Vận hành thêu)", salary: 8596216 },
-        { name: "Nguyễn Minh Nhật (NV128 - Vận hành thêu)", salary: 8101385 }
+        { name: "Nguyễn Vinh Hiền (NV127)", salary: 8832385 },
+        { name: "Nguyễn Ngọc Ánh (NV107)", salary: 8701433 },
+        { name: "Vũ Đức Huy (NV106)", salary: 8759487 },
+        { name: "Nguyễn Triệu Huy (HV08)", salary: 9109923 },
+        { name: "Trần Nguyễn Hoàng Quân (HV07)", salary: 11806462 },
+        { name: "VŨ THANH LIÊM (NV71)", salary: 8676423 },
+        { name: "Vũ Ngọc Thiện (NV69)", salary: 9356399 },
+        { name: "Vũ Ngọc Phương Uyên (NV68)", salary: 11238356 },
+        { name: "Tô Thị Thuỳ Trang (NV66)", salary: 14223869 },
+        { name: "Phạm Xuân Thạch (NV27 - Quản lý xưởng)", salary: 19120231 },
+        { name: "HOÀNG THANH DŨNG (NV03 - Quản lý kỹ thuật)", salary: 14832827 }
       ],
       qc: [
-        { name: "Nguyễn Kim Điền (HV12 - QC/Hoàn thiện)", salary: 11983564 },
-        { name: "Trần Nguyễn Hoàng Quân (HV07 - QC/Hoàn thiện)", salary: 11806462 },
-        { name: "Phạm Ngọc Minh Quyên (HV16 - QC/Hoàn thiện)", salary: 11307410 },
-        { name: "Đinh Thùy Diễm Hằng (HV15 - QC/Hoàn thiện)", salary: 11047128 },
-        { name: "Trần Thị Kim Ngân (HV10 - QC/Hoàn thiện)", salary: 10987256 },
-        { name: "Vũ Thị Hoàng Thu Thảo (HV17 - QC/Hoàn thiện)", salary: 10588513 },
-        { name: "Trần Hoàng Hải (NV63 - QC/Hoàn thiện)", salary: 10408487 },
-        { name: "Phạm Ý Diệu Ngân (HV14 - QC/Hoàn thiện)", salary: 10029910 },
-        { name: "Trần Tiến Đạt (HV11 - QC/Hoàn thiện)", salary: 10001500 },
-        { name: "Đoàn Như Quỳnh (HV03 - QC/Hoàn thiện)", salary: 9885782 },
-        { name: "Nguyễn Triệu Huy (HV08 - QC/Hoàn thiện)", salary: 9109923 },
-        { name: "Trần Võ Trâm Anh (HV02 - QC/Hoàn thiện)", salary: 8328026 },
-        { name: "Trần Ngọc Phương Oanh (NV114 - QC/Hoàn thiện)", salary: 7347338 },
-        { name: "Đinh Trần Trúc Loan (NV115 - QC/Hoàn thiện)", salary: 6307365 },
-        { name: "Ngô Thị Mỹ Hạnh (NV137 - QC/Hoàn thiện)", salary: 2454000 },
-        { name: "Nguyễn Quỳnh Như (HV04 - QC/Hoàn thiện)", salary: 2315577 },
-        { name: "Lâm Thuỳ Vi (NV96 - QC/Hoàn thiện)", salary: 915000 }
+        { name: "Ngô Thị Mỹ Hạnh (NV137)", salary: 2454000 },
+        { name: "Nguyễn Minh Nhật (NV128)", salary: 8101385 },
+        { name: "Đinh Thị Kim Hồng (NV123)", salary: 9439385 },
+        { name: "Đinh Trần Trúc Loan (NV115)", salary: 6307365 },
+        { name: "Trần Ngọc Phương Oanh (NV114)", salary: 7347338 },
+        { name: "Nguyễn Thị Lệ Quyên (NV109)", salary: 8596216 },
+        { name: "Trần Võ Trâm Anh (HV02)", salary: 8328026 },
+        { name: "TRẦN TRÚC THƯ (NV33)", salary: 11565295 }
       ]
     }
   },
@@ -746,46 +745,37 @@ class AppStateManager {
       try {
         const parsed = JSON.parse(saved);
         
-        // Migrate HR settings from old { count, salary } format or old placeholder names to official T9 payroll
-        const migrateHrDepartment = (dept, deptKey, defaultDeptList) => {
-          if (!dept || !dept[deptKey]) return defaultDeptList;
-          const data = dept[deptKey];
-          if (Array.isArray(data)) {
-            // Check if stored data contains old generic placeholder names
-            const isPlaceholder = data.length > 0 && data.some(emp => emp.name && (emp.name.startsWith("Nhân viên In -") || emp.name.startsWith("Nhân viên Thêu -")));
-            if (isPlaceholder) return defaultDeptList;
-            return data;
-          }
-          
-          // Old format: { count, salary }
-          const count = parseInt(data.count, 10) || 0;
-          const salary = parseFloat(data.salary) || 0;
-          
-          const employees = [];
-          for (let i = 0; i < count; i++) {
-            const letter = String.fromCharCode(65 + i); // A, B, C...
-            const deptLabel = deptKey === 'laser' ? 'Laser' : deptKey === 'designer' ? 'Designer' : deptKey === 'production' ? 'Sản xuất' : 'QC';
-            employees.push({
-              name: `Nhân viên ${deptLabel} ${letter}`,
-              salary: salary
-            });
-          }
-          return employees;
-        };
+        // Migrate HR settings: if hrVersion is outdated, overwrite with official T9 breakdown
+        let migratedHr;
+        if (!parsed.hrVersion || parsed.hrVersion !== DEFAULT_SETTINGS.hrVersion) {
+          migratedHr = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.hr));
+          parsed.hrVersion = DEFAULT_SETTINGS.hrVersion;
+        } else {
+          const migrateHrDepartment = (dept, deptKey, defaultDeptList) => {
+            if (!dept || !dept[deptKey]) return defaultDeptList;
+            const data = dept[deptKey];
+            if (Array.isArray(data)) {
+              const isPlaceholder = data.length > 0 && data.some(emp => emp.name && (emp.name.startsWith("Nhân viên In -") || emp.name.startsWith("Nhân viên Thêu -")));
+              if (isPlaceholder) return defaultDeptList;
+              return data;
+            }
+            return defaultDeptList;
+          };
 
-        const migratedHr = {
-          In: {
-            designer: migrateHrDepartment(parsed.hr?.In, 'designer', DEFAULT_SETTINGS.hr.In.designer),
-            production: migrateHrDepartment(parsed.hr?.In, 'production', DEFAULT_SETTINGS.hr.In.production),
-            qc: migrateHrDepartment(parsed.hr?.In, 'qc', DEFAULT_SETTINGS.hr.In.qc)
-          },
-          Thêu: {
-            designer: migrateHrDepartment(parsed.hr?.Thêu, 'designer', DEFAULT_SETTINGS.hr.Thêu.designer),
-            laser: migrateHrDepartment(parsed.hr?.Thêu, 'laser', DEFAULT_SETTINGS.hr.Thêu.laser),
-            production: migrateHrDepartment(parsed.hr?.Thêu, 'production', DEFAULT_SETTINGS.hr.Thêu.production),
-            qc: migrateHrDepartment(parsed.hr?.Thêu, 'qc', DEFAULT_SETTINGS.hr.Thêu.qc)
-          }
-        };
+          migratedHr = {
+            In: {
+              designer: migrateHrDepartment(parsed.hr?.In, 'designer', DEFAULT_SETTINGS.hr.In.designer),
+              production: migrateHrDepartment(parsed.hr?.In, 'production', DEFAULT_SETTINGS.hr.In.production),
+              qc: migrateHrDepartment(parsed.hr?.In, 'qc', DEFAULT_SETTINGS.hr.In.qc)
+            },
+            Thêu: {
+              designer: migrateHrDepartment(parsed.hr?.Thêu, 'designer', DEFAULT_SETTINGS.hr.Thêu.designer),
+              laser: migrateHrDepartment(parsed.hr?.Thêu, 'laser', DEFAULT_SETTINGS.hr.Thêu.laser),
+              production: migrateHrDepartment(parsed.hr?.Thêu, 'production', DEFAULT_SETTINGS.hr.Thêu.production),
+              qc: migrateHrDepartment(parsed.hr?.Thêu, 'qc', DEFAULT_SETTINGS.hr.Thêu.qc)
+            }
+          };
+        }
 
         const rawMachines = parsed.machines || [];
         const mergedMachines = DEFAULT_SETTINGS.machines.map(defM => {
