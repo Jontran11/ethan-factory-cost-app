@@ -181,7 +181,7 @@ const DEFAULT_SETTINGS = {
 const MOCK_PRODUCTS = [
   {
     id: "prod-1",
-    name: "Bộ bài Playing Cards (Hộp giấy)",
+    name: "Bộ bài Playing Cards (Hộp giấy Ivory)",
     code: "PC-PAPER-01",
     category: "Bài in (Playing Cards)",
     factoryType: "In",
@@ -215,7 +215,7 @@ const MOCK_PRODUCTS = [
   },
   {
     id: "prod-2",
-    name: "Bộ bài Playing Cards (Hộp nhựa)",
+    name: "Bộ bài Playing Cards (Hộp nhựa & Dải cuốn)",
     code: "PC-PLASTIC-02",
     category: "Bài in (Playing Cards)",
     factoryType: "In",
@@ -883,14 +883,18 @@ class AppStateManager {
           const existingIdx = parsed.findIndex(p => p.id === mp.id || p.code === mp.code);
           if (existingIdx === -1) {
             parsed.push(JSON.parse(JSON.stringify(mp)));
-          } else if (mp.id === "prod-1" || mp.id === "prod-2") {
-            // If Playing Cards still has outdated mock materials, upgrade to official BOM
-            const oldP = parsed[existingIdx];
-            if (oldP.materials && oldP.materials.some(m => m.name.includes("Giấy C300gsm A3"))) {
-              parsed[existingIdx] = JSON.parse(JSON.stringify(mp));
-            }
+          } else if (mp.code === "PC-PAPER-01" || mp.code === "PC-PLASTIC-02" || mp.id === "prod-1" || mp.id === "prod-2") {
+            // Always force synchronize the exact official BOM materials & 20% profit for Playing Cards
+            parsed[existingIdx].name = mp.name;
+            parsed[existingIdx].code = mp.code;
+            parsed[existingIdx].category = mp.category;
+            parsed[existingIdx].materials = JSON.parse(JSON.stringify(mp.materials));
+            parsed[existingIdx].profitPercentage = 20;
+            parsed[existingIdx].layout = JSON.parse(JSON.stringify(mp.layout));
+            parsed[existingIdx].factoryType = "In";
           }
         });
+        localStorage.setItem("factory_products_v2", JSON.stringify(parsed));
         return parsed.map(processProduct);
       } catch (e) {
         console.error("Error parsing products", e);
