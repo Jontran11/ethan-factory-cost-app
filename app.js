@@ -4900,8 +4900,24 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
       alert("Vui lòng nhập URL Web App của Google Apps Script!");
       return;
     }
+    // Smart URL validation
+    if (url.includes("docs.google.com/spreadsheets")) {
+      alert("⚠️ Bạn đang dán đường link của trang tính Google Sheet, không phải link Web App!\n\nCách lấy link đúng:\n1. Trong Google Sheet, vào menu 'Tiện ích mở rộng' (Extensions) ➔ 'Apps Script'.\n2. Bấm nút xanh 'Triển khai' (Deploy) ở góc trên bên phải ➔ chọn 'Triển khai mới' (New deployment).\n3. Copy đường link Web App có dạng: https://script.google.com/macros/s/.../exec");
+      return;
+    }
+
     if (!url.startsWith("https://script.google.com/")) {
-      alert("URL không đúng định dạng Google Apps Script (bắt đầu bằng https://script.google.com/)!");
+      alert("URL không đúng định dạng Google Apps Script!\n\nĐường link chuẩn phải bắt đầu bằng:\nhttps://script.google.com/macros/s/.../exec");
+      return;
+    }
+
+    if (url.includes("/edit")) {
+      alert("⚠️ Bạn đang copy link trang chỉnh sửa code Apps Script!\n\nVui lòng bấm nút 'Triển khai' (Deploy) ➔ 'Triển khai mới' (New deployment) để lấy link Web App chính thức có đuôi /exec.");
+      return;
+    }
+
+    if (url.endsWith("/dev")) {
+      alert("⚠️ Bạn đang dùng link thử nghiệm nội bộ (/dev) của Google Apps Script!\n\nVui lòng vào Triển khai (Deploy) ➔ Triển khai mới ➔ Chọn Web App để lấy link chính thức có đuôi /exec.");
       return;
     }
 
@@ -4911,7 +4927,7 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
     updateCloudStatus("syncing");
     try {
       const res = await fetch(url);
-      if (!res.ok) throw new Error("Connect failed");
+      if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
       const data = await res.json();
       
       if (data && data.products && data.settings) {
@@ -4940,7 +4956,7 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
       updateDashboard();
     } catch (e) {
       console.error(e);
-      alert("Không thể kết nối tới Google Apps Script URL. Vui lòng kiểm tra lại cấu hình Deploy Web App!");
+      alert("⚠️ Không thể kết nối tới Google Apps Script URL!\n\nNguyên nhân thường gặp nhất:\n1. CHƯA CẤU HÌNH QUYỀN TRUY CẬP LÀ 'ANYONE':\n   Trong Apps Script, bấm Deploy (Triển khai) ➔ Quản lý việc triển khai (Manage deployments) ➔ Bấm icon hình bút chì (Edit) ➔ Ở mục 'Who has access' (Ai có quyền truy cập), chọn bắt buộc là 'Anyone' (Bất kỳ ai).\n2. CHƯA CẤP QUYỀN (Authorize access):\n   Khi Deploy, Google sẽ hiện hộp thoại yêu cầu cấp quyền truy cập vào Sheet. Hãy bấm 'Advanced' ➔ 'Go to Untitled project' ➔ Bấm 'Allow'.\n3. Đảm bảo URL kết thúc bằng chữ /exec.");
       state.googleSheetUrl = oldUrl;
       updateCloudStatus(oldUrl ? "synced" : "local");
     }
