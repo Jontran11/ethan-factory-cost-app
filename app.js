@@ -279,6 +279,76 @@ const MOCK_PRODUCTS = [
     }
   },
   {
+    id: "prod-giftcard-5p-matte",
+    name: "Sổ Thẻ Gift Card Book (5 trang - Bìa Mờ)",
+    code: "GCB-05P-MATTE",
+    category: "Sổ thẻ (Gift Card Book)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "gift-card-book",
+      sheetSize: "33x48cm",
+      itemSize: "Sổ 5 trang + 2 bìa",
+      itemsPerSheet: 0.5,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Giấy Couche 300gsm (C300) 33×48cm", qty: 1.5, unit: "Tờ", price: 1084 },
+      { name: "In Konica ruột (1 mặt) - Click", qty: 3, unit: "Click", price: 700 },
+      { name: "Giấy Ivory 300gsm 33×48cm (Bìa/Hộp)", qty: 0.5, unit: "Tờ", price: 1264 },
+      { name: "In Konica bìa (1 mặt) - Click", qty: 0.5, unit: "Click", price: 1400 },
+      { name: "Màng cán mờ nhiệt 28mic 33×48cm", qty: 0.5, unit: "Tờ", price: 859 },
+      { name: "Lò xo kẽm đóng sổ Gift Card Book", qty: 1, unit: "Cái", price: 2300 },
+      { name: "Băng keo chấm tròn 2 mặt", qty: 1, unit: "Dải", price: 2000 }
+    ],
+    labor: { designer: 0.02, production: 0.15, qc: 0.05 },
+    electricity: { power: 2.5, runTime: 0.18 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 400,
+      actualSales: 350,
+      currentStock: 30,
+      safetyStock: 80
+    }
+  },
+  {
+    id: "prod-giftcard-5p-holo",
+    name: "Sổ Thẻ Gift Card Book (5 trang - Bìa Hologram)",
+    code: "GCB-05P-HOLO",
+    category: "Sổ thẻ (Gift Card Book)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "gift-card-book",
+      sheetSize: "33x48cm",
+      itemSize: "Sổ 5 trang + 2 bìa",
+      itemsPerSheet: 0.5,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Giấy Couche 300gsm (C300) 33×48cm", qty: 1.5, unit: "Tờ", price: 1084 },
+      { name: "In Konica ruột (1 mặt) - Click", qty: 3, unit: "Click", price: 700 },
+      { name: "Giấy Ivory 300gsm 33×48cm (Bìa/Hộp)", qty: 0.5, unit: "Tờ", price: 1264 },
+      { name: "In Konica bìa (1 mặt) - Click", qty: 0.5, unit: "Click", price: 1400 },
+      { name: "Màng cán 7 màu Hologram 33×48cm", qty: 0.5, unit: "Tờ", price: 21975 },
+      { name: "Lò xo kẽm đóng sổ Gift Card Book", qty: 1, unit: "Cái", price: 2300 },
+      { name: "Băng keo chấm tròn 2 mặt", qty: 1, unit: "Dải", price: 2000 }
+    ],
+    labor: { designer: 0.02, production: 0.15, qc: 0.05 },
+    electricity: { power: 2.5, runTime: 0.18 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 500,
+      actualSales: 450,
+      currentStock: 40,
+      safetyStock: 100
+    }
+  },
+  {
     id: "prod-giftcard-10p-matte",
     name: "Sổ Thẻ Quà Tặng Gift Card Book (10 trang - Bìa Mờ)",
     code: "GCB-10P-MATTE",
@@ -346,6 +416,111 @@ const MOCK_PRODUCTS = [
       actualSales: 550,
       currentStock: 60,
       safetyStock: 120
+    }
+  },
+  {
+    id: "prod-giftcard-15p-matte",
+    name: "Sổ Thẻ Gift Card Book (15 trang - Bìa Mờ)",
+    code: "GCB-15P-MATTE",
+    category: "Sổ thẻ (Gift Card Book)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "gift-card-book",
+      sheetSize: "33x48cm",
+      itemSize: "Sổ 15 trang + 2 bìa",
+      itemsPerSheet: 0.22,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Giấy Couche 300gsm (C300) 33×48cm", qty: 4, unit: "Tờ", price: 1084 },
+      { name: "In Konica ruột (1 mặt) - Click", qty: 8, unit: "Click", price: 700 },
+      { name: "Giấy Ivory 300gsm 33×48cm (Bìa/Hộp)", qty: 0.5, unit: "Tờ", price: 1264 },
+      { name: "In Konica bìa (1 mặt) - Click", qty: 0.5, unit: "Click", price: 1400 },
+      { name: "Màng cán mờ nhiệt 28mic 33×48cm", qty: 0.5, unit: "Tờ", price: 859 },
+      { name: "Lò xo kẽm đóng sổ Gift Card Book", qty: 1, unit: "Cái", price: 2300 },
+      { name: "Băng keo chấm tròn 2 mặt", qty: 1, unit: "Dải", price: 2000 }
+    ],
+    labor: { designer: 0.03, production: 0.2, qc: 0.06 },
+    electricity: { power: 2.5, runTime: 0.25 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 450,
+      actualSales: 400,
+      currentStock: 40,
+      safetyStock: 90
+    }
+  },
+  {
+    id: "prod-giftcard-15p-holo",
+    name: "Sổ Thẻ Gift Card Book (15 trang - Bìa Hologram)",
+    code: "GCB-15P-HOLO",
+    category: "Sổ thẻ (Gift Card Book)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "gift-card-book",
+      sheetSize: "33x48cm",
+      itemSize: "Sổ 15 trang + 2 bìa",
+      itemsPerSheet: 0.22,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Giấy Couche 300gsm (C300) 33×48cm", qty: 4, unit: "Tờ", price: 1084 },
+      { name: "In Konica ruột (1 mặt) - Click", qty: 8, unit: "Click", price: 700 },
+      { name: "Giấy Ivory 300gsm 33×48cm (Bìa/Hộp)", qty: 0.5, unit: "Tờ", price: 1264 },
+      { name: "In Konica bìa (1 mặt) - Click", qty: 0.5, unit: "Click", price: 1400 },
+      { name: "Màng cán 7 màu Hologram 33×48cm", qty: 0.5, unit: "Tờ", price: 21975 },
+      { name: "Lò xo kẽm đóng sổ Gift Card Book", qty: 1, unit: "Cái", price: 2300 },
+      { name: "Băng keo chấm tròn 2 mặt", qty: 1, unit: "Dải", price: 2000 }
+    ],
+    labor: { designer: 0.03, production: 0.2, qc: 0.06 },
+    electricity: { power: 2.5, runTime: 0.25 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 500,
+      actualSales: 460,
+      currentStock: 50,
+      safetyStock: 100
+    }
+  },
+  {
+    id: "prod-giftcard-20p-matte",
+    name: "Sổ Thẻ Gift Card Book (20 trang - Bìa Mờ)",
+    code: "GCB-20P-MATTE",
+    category: "Sổ thẻ (Gift Card Book)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "gift-card-book",
+      sheetSize: "33x48cm",
+      itemSize: "Sổ 20 trang + 2 bìa",
+      itemsPerSheet: 0.18,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Giấy Couche 300gsm (C300) 33×48cm", qty: 5, unit: "Tờ", price: 1084 },
+      { name: "In Konica ruột (1 mặt) - Click", qty: 10, unit: "Click", price: 700 },
+      { name: "Giấy Ivory 300gsm 33×48cm (Bìa/Hộp)", qty: 0.5, unit: "Tờ", price: 1264 },
+      { name: "In Konica bìa (1 mặt) - Click", qty: 0.5, unit: "Click", price: 1400 },
+      { name: "Màng cán mờ nhiệt 28mic 33×48cm", qty: 0.5, unit: "Tờ", price: 859 },
+      { name: "Lò xo kẽm đóng sổ Gift Card Book", qty: 1, unit: "Cái", price: 2300 },
+      { name: "Băng keo chấm tròn 2 mặt", qty: 1, unit: "Dải", price: 2000 }
+    ],
+    labor: { designer: 0.04, production: 0.22, qc: 0.07 },
+    electricity: { power: 2.5, runTime: 0.28 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 350,
+      actualSales: 320,
+      currentStock: 30,
+      safetyStock: 70
     }
   },
   {
