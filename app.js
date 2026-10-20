@@ -1865,6 +1865,33 @@ function renderCalculator() {
   }
 
   // Populate Imposition Layout specs for printing products
+  const hasLayout = !!(selectedProduct.hasLayout || (selectedProduct.layout && selectedProduct.layout.itemsPerSheet));
+  const productHasLayoutCheck = document.getElementById("product-has-layout");
+  const layoutDetails = document.getElementById("imposition-layout-details");
+  const layoutDisabledMsg = document.getElementById("imposition-layout-disabled-msg");
+  const layoutBadge = document.getElementById("product-layout-status-badge");
+
+  if (productHasLayoutCheck) {
+    productHasLayoutCheck.checked = hasLayout;
+  }
+  if (layoutDetails && layoutDisabledMsg && layoutBadge) {
+    if (hasLayout) {
+      layoutDetails.style.display = "block";
+      layoutDisabledMsg.style.display = "none";
+      layoutBadge.textContent = "Đang áp dụng";
+      layoutBadge.style.color = "#34d399";
+      layoutBadge.style.borderColor = "rgba(52, 211, 153, 0.4)";
+      layoutBadge.style.background = "rgba(52, 211, 153, 0.15)";
+    } else {
+      layoutDetails.style.display = "none";
+      layoutDisabledMsg.style.display = "block";
+      layoutBadge.textContent = "Không áp dụng";
+      layoutBadge.style.color = "var(--text-muted)";
+      layoutBadge.style.borderColor = "rgba(255, 255, 255, 0.1)";
+      layoutBadge.style.background = "rgba(255, 255, 255, 0.05)";
+    }
+  }
+
   const layout = selectedProduct.layout || {};
   const layoutPreset = document.getElementById("layout-preset");
   const layoutSheetSize = document.getElementById("layout-sheet-size");
@@ -1882,11 +1909,6 @@ function renderCalculator() {
     layoutItemsPerSheet.value = layout.itemsPerSheet !== undefined ? layout.itemsPerSheet : 40;
   }
 
-  const orderCalcQty = document.getElementById("order-calc-qty");
-  if (orderCalcQty) {
-    orderCalcQty.value = selectedProduct.forecast?.actualSales || 1000;
-  }
-
   updateImpositionOrderCalc();
 
   // Run calculation & update displays
@@ -1902,18 +1924,18 @@ function toggleFactoryInputs(factoryType) {
   const printBlock = document.getElementById("labor-print-block");
   const embroidBlock = document.getElementById("labor-embroid-block");
   const badgeResult = document.getElementById("form-result-factory-badge");
-  const impositionSection = document.getElementById("imposition-layout-section");
+  const layoutControlContainer = document.getElementById("layout-control-container");
 
   if (factoryType === "In") {
     printBlock.style.display = "block";
     embroidBlock.style.display = "none";
-    if (impositionSection) impositionSection.style.display = "block";
+    if (layoutControlContainer) layoutControlContainer.style.display = "block";
     badgeResult.textContent = "Nhà máy In";
     badgeResult.className = "badge-factory-type";
   } else {
     printBlock.style.display = "none";
     embroidBlock.style.display = "block";
-    if (impositionSection) impositionSection.style.display = "none";
+    if (layoutControlContainer) layoutControlContainer.style.display = "none";
     badgeResult.textContent = "Nhà máy Thêu";
     badgeResult.className = "badge-factory-type type-embroid";
   }
@@ -1953,62 +1975,6 @@ function updateImpositionOrderCalc() {
   const consumption = itemsPerSheet > 0 ? (1 / itemsPerSheet) : 0;
   const unitConsumptionEl = document.getElementById("layout-unit-consumption");
   if (unitConsumptionEl) unitConsumptionEl.textContent = consumption.toFixed(6).replace(/\.?0+$/, '');
-
-  // Order Calculation
-  const orderQtyInput = document.getElementById("order-calc-qty");
-  const orderQty = parseFloat(orderQtyInput?.value) || 0;
-  const sheetsNeeded = itemsPerSheet > 0 ? Math.ceil(orderQty / itemsPerSheet) : 0;
-
-  const elSheets = document.getElementById("order-calc-sheets");
-  if (elSheets) elSheets.textContent = `${sheetsNeeded.toLocaleString('vi-VN')} ${unit}`;
-
-  const elSheetsSub = document.getElementById("order-calc-sheets-sub");
-  if (elSheetsSub) elSheetsSub.textContent = `(${orderQty.toLocaleString('vi-VN')} con ÷ ${itemsPerSheet} con/${unit})`;
-
-  // Clicks calculation
-  const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
-  let clicksPerSheet = 1;
-  if (selectedProduct && (selectedProduct.name.toLowerCase().includes("bài") || selectedProduct.code?.includes("PC-") || selectedProduct.code?.includes("UNO-"))) {
-    clicksPerSheet = 2; // 2 mặt
-  }
-  const totalClicks = sheetsNeeded * clicksPerSheet;
-  const elClicks = document.getElementById("order-calc-clicks");
-  if (elClicks) elClicks.textContent = `${totalClicks.toLocaleString('vi-VN')} Clicks`;
-  const elClicksSub = document.getElementById("order-calc-clicks-sub");
-  if (elClicksSub) elClicksSub.textContent = clicksPerSheet === 2 ? `In 2 mặt Konica (${sheetsNeeded.toLocaleString('vi-VN')} x 2)` : `In 1 mặt (${unit})`;
-
-  // Order Financials
-  let unitVC = 0;
-  let unitSellerPrice = 0;
-
-  const elPbSeller = document.getElementById("calculated-payback-seller-price");
-  const elSumVC = document.getElementById("calc-summary-variable-cost");
-  if (elPbSeller && elSumVC) {
-    unitSellerPrice = parseCurrencyInput(elPbSeller.textContent);
-    unitVC = parseCurrencyInput(elSumVC.textContent);
-  }
-
-  if (unitVC === 0 && selectedProduct) {
-    const costDetails = calculateProductCost(selectedProduct, state.settings);
-    unitVC = costDetails.variableCost;
-    unitSellerPrice = costDetails.paybackSellerPrice || costDetails.sellerPrice;
-  }
-
-  if (unitVC > 0 || unitSellerPrice > 0 || selectedProduct) {
-    const totalVC = Math.round(orderQty * unitVC);
-    const totalRevenue = Math.round(orderQty * unitSellerPrice);
-    const totalMargin = totalRevenue - totalVC;
-    const marginRatio = totalRevenue > 0 ? Math.round((totalMargin / totalRevenue) * 100) : 0;
-
-    const elVC = document.getElementById("order-calc-vc");
-    if (elVC) elVC.textContent = formatVND(totalVC);
-
-    const elRev = document.getElementById("order-calc-revenue");
-    if (elRev) elRev.textContent = formatVND(totalRevenue);
-
-    const elMargin = document.getElementById("order-calc-margin");
-    if (elMargin) elMargin.textContent = `Lãi gộp: ${formatVND(totalMargin)} (${marginRatio}%)`;
-  }
 }
 
 function syncYieldToBOM() {
@@ -2462,8 +2428,10 @@ function saveProductCostForm(e) {
   product.paybackMachineId = document.getElementById("payback-machine-select").value || null;
   product.paybackMachineQty = parseFloat(document.getElementById("payback-machine-qty").value) || 0;
 
-  // Cập nhật quy cách xếp khổ in nếu là Nhà máy In
-  if (product.factoryType === "In") {
+  // Cập nhật quy cách xếp khổ in nếu là Nhà máy In và có bật tùy chọn xếp khổ
+  const hasLayoutChecked = document.getElementById("product-has-layout")?.checked;
+  if (product.factoryType === "In" && hasLayoutChecked) {
+    product.hasLayout = true;
     product.layout = {
       preset: document.getElementById("layout-preset")?.value || "",
       sheetSize: document.getElementById("layout-sheet-size")?.value || "",
@@ -2471,6 +2439,9 @@ function saveProductCostForm(e) {
       itemsPerSheet: parseFloat(document.getElementById("layout-items-per-sheet")?.value) || 1,
       unitType: detectSheetUnit(document.getElementById("layout-sheet-size")?.value || "")
     };
+  } else {
+    product.hasLayout = false;
+    product.layout = null;
   }
 
   // Lưu vào localStorage
@@ -4141,6 +4112,10 @@ const productModal = document.getElementById("product-modal");
 
 function openCreateProductModal() {
   document.getElementById("modal-product-form").reset();
+  const modalLayoutGroup = document.getElementById("modal-layout-toggle-group");
+  const modalLayoutCheck = document.getElementById("modal-product-has-layout");
+  if (modalLayoutGroup) modalLayoutGroup.style.display = "block";
+  if (modalLayoutCheck) modalLayoutCheck.checked = false; // Mặc định không thêm nếu sản phẩm không cần xếp khổ
   productModal.showModal();
 }
 
@@ -4155,6 +4130,7 @@ function handleCreateProductSubmit(e) {
   const factoryType = document.getElementById("modal-factory-type").value;
   const code = document.getElementById("modal-product-code").value;
   const category = document.getElementById("modal-product-category").value;
+  const hasLayout = factoryType === "In" && !!document.getElementById("modal-product-has-layout")?.checked;
 
   const newId = `prod-${Date.now()}`;
   
@@ -4165,6 +4141,14 @@ function handleCreateProductSubmit(e) {
     code,
     category,
     factoryType,
+    hasLayout: hasLayout,
+    layout: hasLayout ? {
+      preset: "",
+      sheetSize: "33x48cm",
+      itemSize: "2.0 inch",
+      itemsPerSheet: 40,
+      unitType: "Tờ"
+    } : null,
     materials: [],
     labor: factoryType === "In" 
       ? { designer: 0.01, production: 0.1, qc: 0.05 } 
@@ -4778,13 +4762,57 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
   document.getElementById("modal-btn-cancel").addEventListener("click", closeCreateProductModal);
   document.getElementById("modal-product-form").addEventListener("submit", handleCreateProductSubmit);
 
+  // Modal Factory Type change listener
+  const modalFactoryType = document.getElementById("modal-factory-type");
+  const modalLayoutToggleGroup = document.getElementById("modal-layout-toggle-group");
+  const modalProductHasLayout = document.getElementById("modal-product-has-layout");
+  if (modalFactoryType && modalLayoutToggleGroup) {
+    modalFactoryType.addEventListener("change", (e) => {
+      if (e.target.value === "In") {
+        modalLayoutToggleGroup.style.display = "block";
+      } else {
+        modalLayoutToggleGroup.style.display = "none";
+        if (modalProductHasLayout) modalProductHasLayout.checked = false;
+      }
+    });
+  }
+
   // Imposition Layout Event Listeners
+  const productHasLayout = document.getElementById("product-has-layout");
+  if (productHasLayout) {
+    productHasLayout.addEventListener("change", (e) => {
+      const checked = e.target.checked;
+      const layoutDetails = document.getElementById("imposition-layout-details");
+      const layoutDisabledMsg = document.getElementById("imposition-layout-disabled-msg");
+      const layoutBadge = document.getElementById("product-layout-status-badge");
+      if (checked) {
+        if (layoutDetails) layoutDetails.style.display = "block";
+        if (layoutDisabledMsg) layoutDisabledMsg.style.display = "none";
+        if (layoutBadge) {
+          layoutBadge.textContent = "Đang áp dụng";
+          layoutBadge.style.color = "#34d399";
+          layoutBadge.style.borderColor = "rgba(52, 211, 153, 0.4)";
+          layoutBadge.style.background = "rgba(52, 211, 153, 0.15)";
+        }
+        updateImpositionOrderCalc();
+      } else {
+        if (layoutDetails) layoutDetails.style.display = "none";
+        if (layoutDisabledMsg) layoutDisabledMsg.style.display = "block";
+        if (layoutBadge) {
+          layoutBadge.textContent = "Không áp dụng";
+          layoutBadge.style.color = "var(--text-muted)";
+          layoutBadge.style.borderColor = "rgba(255, 255, 255, 0.1)";
+          layoutBadge.style.background = "rgba(255, 255, 255, 0.05)";
+        }
+      }
+    });
+  }
+
   const layoutPreset = document.getElementById("layout-preset");
   const layoutSheetSize = document.getElementById("layout-sheet-size");
   const layoutItemSize = document.getElementById("layout-item-size");
   const layoutItemSizeSelect = document.getElementById("layout-item-size-select");
   const layoutItemsPerSheet = document.getElementById("layout-items-per-sheet");
-  const orderCalcQty = document.getElementById("order-calc-qty");
   const btnSyncYieldToBOM = document.getElementById("btn-sync-yield-to-bom");
 
   if (layoutPreset) {
@@ -4869,9 +4897,6 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
   }
   if (layoutItemSize) {
     layoutItemSize.addEventListener("input", updateImpositionOrderCalc);
-  }
-  if (orderCalcQty) {
-    orderCalcQty.addEventListener("input", updateImpositionOrderCalc);
   }
   if (btnSyncYieldToBOM) {
     btnSyncYieldToBOM.addEventListener("click", syncYieldToBOM);
