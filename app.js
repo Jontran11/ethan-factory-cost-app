@@ -197,7 +197,7 @@ const MOCK_PRODUCTS = [
   {
     id: "prod-1",
     name: "Bộ bài Playing Cards (Hộp giấy Ivory)",
-    code: "PC-PAPER-01",
+    code: "PLC-01",
     category: "Bài in (Playing Cards)",
     factoryType: "In",
     profitPercentage: 20,
@@ -231,7 +231,7 @@ const MOCK_PRODUCTS = [
   {
     id: "prod-2",
     name: "Bộ bài Playing Cards (Hộp nhựa & Dải cuốn)",
-    code: "PC-PLASTIC-02",
+    code: "PLC-02",
     category: "Bài in (Playing Cards)",
     factoryType: "In",
     profitPercentage: 20,
@@ -263,9 +263,36 @@ const MOCK_PRODUCTS = [
     }
   },
   {
+    id: "prod-plc2-01",
+    name: "Bộ bài Playing Cards V.2 (Chưa cấu hình chi phí)",
+    code: "PLC2-01",
+    category: "Bài in & Cards (Playing / Uno)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "playing-cards",
+      sheetSize: "33x48cm",
+      itemSize: "Bài chuẩn 54 lá V.2",
+      itemsPerSheet: 0.333333,
+      unitType: "Tờ"
+    },
+    materials: [],
+    labor: { designer: 0, production: 0, qc: 0 },
+    electricity: { power: 0, runTime: 0 },
+    overheadPercentage: 0,
+    paybackMachineId: null,
+    paybackMachineQty: 0,
+    forecast: {
+      salesForecast: 0,
+      actualSales: 0,
+      currentStock: 0,
+      safetyStock: 0
+    }
+  },
+  {
     id: "prod-calendar-a4",
     name: "Lịch Để Bàn A4 (Lò xo 13 tờ)",
-    code: "CALENDAR-A4-01",
+    code: "CAL-A4-01",
     category: "Lịch để bàn (Calendar)",
     factoryType: "In",
     profitPercentage: 20,
@@ -291,6 +318,33 @@ const MOCK_PRODUCTS = [
       actualSales: 720,
       currentStock: 80,
       safetyStock: 150
+    }
+  },
+  {
+    id: "prod-cal-02",
+    name: "Lịch Để Bàn A5 / Bàn Mini (Chưa cấu hình chi phí)",
+    code: "CAL-02",
+    category: "Lịch để bàn (Calendar)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "custom",
+      sheetSize: "A5",
+      itemSize: "Lịch 13 tờ",
+      itemsPerSheet: 1,
+      unitType: "Cuốn"
+    },
+    materials: [],
+    labor: { designer: 0, production: 0, qc: 0 },
+    electricity: { power: 0, runTime: 0 },
+    overheadPercentage: 0,
+    paybackMachineId: null,
+    paybackMachineQty: 0,
+    forecast: {
+      salesForecast: 0,
+      actualSales: 0,
+      currentStock: 0,
+      safetyStock: 0
     }
   },
   {
@@ -576,7 +630,7 @@ const MOCK_PRODUCTS = [
   {
     id: "prod-3",
     name: "Bộ bài Uno Cards (Hộp giấy gộp)",
-    code: "UNO-PAPER-01",
+    code: "PLC-UNO-01",
     category: "Bài in (Uno Cards)",
     factoryType: "In",
     layout: {
@@ -604,9 +658,63 @@ const MOCK_PRODUCTS = [
     }
   },
   {
+    id: "prod-scard-01",
+    name: "Skin Card (Miếng dán thẻ ATM / Ngân hàng - Chưa cấu hình chi phí)",
+    code: "SCARD-01",
+    category: "Bài in & Cards (Playing / Uno)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "custom",
+      sheetSize: "33x48cm",
+      itemSize: "8.5 x 5.4cm (Thẻ ATM)",
+      itemsPerSheet: 24,
+      unitType: "Tờ"
+    },
+    materials: [],
+    labor: { designer: 0, production: 0, qc: 0 },
+    electricity: { power: 0, runTime: 0 },
+    overheadPercentage: 0,
+    paybackMachineId: null,
+    paybackMachineQty: 0,
+    forecast: {
+      salesForecast: 0,
+      actualSales: 0,
+      currentStock: 0,
+      safetyStock: 0
+    }
+  },
+  {
+    id: "prod-sticker-01",
+    name: "Sticker Decal Tiêu Chuẩn (Chưa cấu hình chi phí)",
+    code: "STICKER-01",
+    category: "Nhãn dán (Sticker)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "custom",
+      sheetSize: "Tùy chỉnh",
+      itemSize: "Theo yêu cầu",
+      itemsPerSheet: 1,
+      unitType: "Cái"
+    },
+    materials: [],
+    labor: { designer: 0, production: 0, qc: 0 },
+    electricity: { power: 0, runTime: 0 },
+    overheadPercentage: 0,
+    paybackMachineId: null,
+    paybackMachineQty: 0,
+    forecast: {
+      salesForecast: 0,
+      actualSales: 0,
+      currentStock: 0,
+      safetyStock: 0
+    }
+  },
+  {
     id: "prod-st-sua-33x48",
     name: "Sticker Decal Sữa Mờ (Fasson 33×48cm)",
-    code: "ST-SUA-33x48",
+    code: "STICKER-SUA-33x48",
     category: "Nhãn dán (Sticker)",
     factoryType: "In",
     layout: {
@@ -633,154 +741,36 @@ const MOCK_PRODUCTS = [
     }
   },
   {
-    id: "prod-st-trong-33x48",
-    name: "Sticker Decal Trong (Clear) (Fasson 33×48cm)",
-    code: "ST-TRONG-33x48",
+    id: "prod-csticker-01",
+    name: "Custom Sticker (Nhãn dán theo yêu cầu - Chưa cấu hình chi phí)",
+    code: "CSTICKER-01",
     category: "Nhãn dán (Sticker)",
     factoryType: "In",
+    profitPercentage: 20,
     layout: {
-      preset: "decal-33x48",
-      sheetSize: "33x48cm",
-      itemSize: "2.0 inch",
-      itemsPerSheet: 40,
-      unitType: "Tờ"
+      preset: "custom",
+      sheetSize: "Tùy chỉnh",
+      itemSize: "Theo yêu cầu",
+      itemsPerSheet: 1,
+      unitType: "Cái"
     },
-    materials: [
-      { name: "Decal trong suốt Fasson 33×48cm", qty: 0.025, unit: "Tờ", price: 1600 },
-      { name: "Click in màu Konica Minolta (A3/33×48)", qty: 0.025, unit: "Click", price: 700 }
-    ],
-    labor: { designer: 0.005, production: 0.03, qc: 0.01 },
-    electricity: { power: 1.5, runTime: 0.05 },
-    overheadPercentage: 5,
-    paybackMachineId: "mach-konica",
-    paybackMachineQty: 0.025,
-    forecast: {
-      salesForecast: 3500,
-      actualSales: 3200,
-      currentStock: 600,
-      safetyStock: 1000
-    }
-  },
-  {
-    id: "prod-st-bac-33x35",
-    name: "Sticker Decal Bạc Bóng (ThaiKK 33×35.4cm)",
-    code: "ST-BAC-33x35",
-    category: "Nhãn dán (Sticker)",
-    factoryType: "In",
-    layout: {
-      preset: "decal-33x35",
-      sheetSize: "33x35.4cm",
-      itemSize: "2.0 inch",
-      itemsPerSheet: 30,
-      unitType: "Tờ"
-    },
-    materials: [
-      { name: "Decal bạc xé không rách 33×35.4cm", qty: 0.033333, unit: "Tờ", price: 2200 },
-      { name: "Click in màu Konica Minolta (A3/33×48)", qty: 0.033333, unit: "Click", price: 700 }
-    ],
-    labor: { designer: 0.005, production: 0.035, qc: 0.012 },
-    electricity: { power: 1.5, runTime: 0.05 },
-    overheadPercentage: 5,
-    paybackMachineId: "mach-konica",
-    paybackMachineQty: 0.033333,
-    forecast: {
-      salesForecast: 2500,
-      actualSales: 2300,
-      currentStock: 400,
-      safetyStock: 600
-    }
-  },
-  {
-    id: "prod-st-kraft-33x35",
-    name: "Sticker Decal Kraft (ThaiKK 33×35.4cm)",
-    code: "ST-KRAFT-33x35",
-    category: "Nhãn dán (Sticker)",
-    factoryType: "In",
-    layout: {
-      preset: "decal-33x35",
-      sheetSize: "33x35.4cm",
-      itemSize: "2.0 inch",
-      itemsPerSheet: 30,
-      unitType: "Tờ"
-    },
-    materials: [
-      { name: "Decal Kraft nâu da bò 33×35.4cm", qty: 0.033333, unit: "Tờ", price: 1800 },
-      { name: "Click in màu Konica Minolta (A3/33×48)", qty: 0.033333, unit: "Click", price: 700 }
-    ],
-    labor: { designer: 0.005, production: 0.03, qc: 0.01 },
-    electricity: { power: 1.5, runTime: 0.05 },
-    overheadPercentage: 5,
-    paybackMachineId: "mach-konica",
-    paybackMachineQty: 0.033333,
-    forecast: {
-      salesForecast: 2000,
-      actualSales: 1800,
-      currentStock: 300,
-      safetyStock: 500
-    }
-  },
-  {
-    id: "prod-st-cuon-trong-127",
-    name: "Sticker Decal Siêu Trong Suốt Mực Dầu (Cuộn 1.27×1m)",
-    code: "ST-CUON-TRONG-127",
-    category: "Nhãn dán (Sticker)",
-    factoryType: "In",
-    layout: {
-      preset: "decal-cuon-127",
-      sheetSize: "1.27 x 1m",
-      itemSize: "2.0 inch",
-      itemsPerSheet: 304,
-      unitType: "Mét"
-    },
-    materials: [
-      { name: "Decal siêu trong suốt mực dầu cuộn (1.27×1m)", qty: 0.003289, unit: "Mét", price: 37211 },
-      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.003289, unit: "Mét", price: 12000 }
-    ],
-    labor: { designer: 0.005, production: 0.04, qc: 0.015 },
-    electricity: { power: 2.2, runTime: 0.08 },
-    overheadPercentage: 6,
+    materials: [],
+    labor: { designer: 0, production: 0, qc: 0 },
+    electricity: { power: 0, runTime: 0 },
+    overheadPercentage: 0,
     paybackMachineId: null,
     paybackMachineQty: 0,
     forecast: {
-      salesForecast: 4000,
-      actualSales: 3700,
-      currentStock: 500,
-      safetyStock: 1000
-    }
-  },
-  {
-    id: "prod-st-cuon-bac-127",
-    name: "Sticker Decal Bạc Bóng (Cuộn 1.27×1m)",
-    code: "ST-CUON-BAC-127",
-    category: "Nhãn dán (Sticker)",
-    factoryType: "In",
-    layout: {
-      preset: "decal-cuon-127",
-      sheetSize: "1.27 x 1m",
-      itemSize: "2.0 inch",
-      itemsPerSheet: 304,
-      unitType: "Mét"
-    },
-    materials: [
-      { name: "Decal bạc bóng cuộn (1.27×1m)", qty: 0.003289, unit: "Mét", price: 54610 },
-      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.003289, unit: "Mét", price: 12000 }
-    ],
-    labor: { designer: 0.005, production: 0.04, qc: 0.015 },
-    electricity: { power: 2.2, runTime: 0.08 },
-    overheadPercentage: 6,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
-    forecast: {
-      salesForecast: 3000,
-      actualSales: 2800,
-      currentStock: 400,
-      safetyStock: 800
+      salesForecast: 0,
+      actualSales: 0,
+      currentStock: 0,
+      safetyStock: 0
     }
   },
   {
     id: "prod-st-cuon-vang-122",
     name: "Sticker Decal Vàng Bóng (Cuộn 1.22×1m)",
-    code: "ST-CUON-VANG-122",
+    code: "CSTICKER-VANG-122",
     category: "Nhãn dán (Sticker)",
     factoryType: "In",
     layout: {
@@ -809,7 +799,7 @@ const MOCK_PRODUCTS = [
   {
     id: "prod-st-cuon-holo-127",
     name: "Sticker Decal Hologram Tia Laser (Cuộn 1.27×1m)",
-    code: "ST-CUON-HOLO-127",
+    code: "CSTICKER-HOLO-127",
     category: "Nhãn dán (Sticker)",
     factoryType: "In",
     layout: {
@@ -836,39 +826,94 @@ const MOCK_PRODUCTS = [
     }
   },
   {
-    id: "prod-st-cuon-mccal-120",
-    name: "Sticker Decal Mccal Trắng Sữa Cán Màng (Cuộn 1.2×1m)",
-    code: "ST-CUON-MCCAL-120",
+    id: "prod-clear-csticker-01",
+    name: "Clear Sticker Decal Trong Tùy Chỉnh (Chưa cấu hình chi phí)",
+    code: "CLEAR-CSTICKER-01",
+    category: "Nhãn dán (Sticker)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "custom",
+      sheetSize: "Tùy chỉnh",
+      itemSize: "Theo yêu cầu",
+      itemsPerSheet: 1,
+      unitType: "Cái"
+    },
+    materials: [],
+    labor: { designer: 0, production: 0, qc: 0 },
+    electricity: { power: 0, runTime: 0 },
+    overheadPercentage: 0,
+    paybackMachineId: null,
+    paybackMachineQty: 0,
+    forecast: {
+      salesForecast: 0,
+      actualSales: 0,
+      currentStock: 0,
+      safetyStock: 0
+    }
+  },
+  {
+    id: "prod-st-trong-33x48",
+    name: "Sticker Decal Trong (Clear) (Fasson 33×48cm)",
+    code: "CLEAR-CSTICKER-33x48",
     category: "Nhãn dán (Sticker)",
     factoryType: "In",
     layout: {
-      preset: "decal-cuon-120",
-      sheetSize: "1.2 x 1m",
+      preset: "decal-33x48",
+      sheetSize: "33x48cm",
+      itemSize: "2.0 inch",
+      itemsPerSheet: 40,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Decal trong suốt Fasson 33×48cm", qty: 0.025, unit: "Tờ", price: 1600 },
+      { name: "Click in màu Konica Minolta (A3/33×48)", qty: 0.025, unit: "Click", price: 700 }
+    ],
+    labor: { designer: 0.005, production: 0.03, qc: 0.01 },
+    electricity: { power: 1.5, runTime: 0.05 },
+    overheadPercentage: 5,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 0.025,
+    forecast: {
+      salesForecast: 3500,
+      actualSales: 3200,
+      currentStock: 600,
+      safetyStock: 1000
+    }
+  },
+  {
+    id: "prod-st-cuon-trong-127",
+    name: "Sticker Decal Siêu Trong Suốt Mực Dầu (Cuộn 1.27×1m)",
+    code: "CLEAR-CSTICKER-CUON-127",
+    category: "Nhãn dán (Sticker)",
+    factoryType: "In",
+    layout: {
+      preset: "decal-cuon-127",
+      sheetSize: "1.27 x 1m",
       itemSize: "2.0 inch",
       itemsPerSheet: 304,
       unitType: "Mét"
     },
     materials: [
-      { name: "Decal mccal trắng sữa cuộn (1.2×1m)", qty: 0.003289, unit: "Mét", price: 39610 },
-      { name: "Màng cán tem Sunrise bóng/mờ cuộn (1.2×1m)", qty: 0.003289, unit: "Mét", price: 31250 },
+      { name: "Decal siêu trong suốt mực dầu cuộn (1.27×1m)", qty: 0.003289, unit: "Mét", price: 37211 },
       { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.003289, unit: "Mét", price: 12000 }
     ],
-    labor: { designer: 0.005, production: 0.05, qc: 0.015 },
-    electricity: { power: 2.4, runTime: 0.09 },
+    labor: { designer: 0.005, production: 0.04, qc: 0.015 },
+    electricity: { power: 2.2, runTime: 0.08 },
     overheadPercentage: 6,
     paybackMachineId: null,
     paybackMachineQty: 0,
     forecast: {
-      salesForecast: 4500,
-      actualSales: 4100,
-      currentStock: 800,
-      safetyStock: 1200
+      salesForecast: 4000,
+      actualSales: 3700,
+      currentStock: 500,
+      safetyStock: 1000
     }
   },
   {
     id: "prod-st-cuon-proton-127",
     name: "Sticker Decal Proton Trong Cán Màng (Cuộn 1.27×1m)",
-    code: "ST-CUON-PROTON-127",
+    code: "CLEAR-CSTICKER-PROTON-127",
     category: "Nhãn dán (Sticker)",
     factoryType: "In",
     layout: {
@@ -898,7 +943,7 @@ const MOCK_PRODUCTS = [
   {
     id: "prod-6",
     name: "Sticker UV-DTF (Màng A + B - Khổ 0.62×1m)",
-    code: "ST-UV-DTF-04",
+    code: "UV-CSTICKER-01",
     category: "Nhãn dán (Sticker)",
     factoryType: "In",
     layout: {
@@ -923,6 +968,204 @@ const MOCK_PRODUCTS = [
       actualSales: 1850,
       currentStock: 100,
       safetyStock: 300
+    }
+  },
+  {
+    id: "prod-uv-csticker-02",
+    name: "UV DTF Sticker Tùy Chỉnh (Chưa cấu hình chi phí)",
+    code: "UV-CSTICKER-02",
+    category: "Nhãn dán (Sticker)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "custom",
+      sheetSize: "0.62 x 1m",
+      itemSize: "Theo yêu cầu",
+      itemsPerSheet: 1,
+      unitType: "Mét"
+    },
+    materials: [],
+    labor: { designer: 0, production: 0, qc: 0 },
+    electricity: { power: 0, runTime: 0 },
+    overheadPercentage: 0,
+    paybackMachineId: null,
+    paybackMachineQty: 0,
+    forecast: {
+      salesForecast: 0,
+      actualSales: 0,
+      currentStock: 0,
+      safetyStock: 0
+    }
+  },
+  {
+    id: "prod-st-kraft-33x35",
+    name: "Sticker Decal Kraft (ThaiKK 33×35.4cm)",
+    code: "KRAFT-CSTICKER-01",
+    category: "Nhãn dán (Sticker)",
+    factoryType: "In",
+    layout: {
+      preset: "decal-33x35",
+      sheetSize: "33x35.4cm",
+      itemSize: "2.0 inch",
+      itemsPerSheet: 30,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Decal Kraft nâu da bò 33×35.4cm", qty: 0.033333, unit: "Tờ", price: 1800 },
+      { name: "Click in màu Konica Minolta (A3/33×48)", qty: 0.033333, unit: "Click", price: 700 }
+    ],
+    labor: { designer: 0.005, production: 0.03, qc: 0.01 },
+    electricity: { power: 1.5, runTime: 0.05 },
+    overheadPercentage: 5,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 0.033333,
+    forecast: {
+      salesForecast: 2000,
+      actualSales: 1800,
+      currentStock: 300,
+      safetyStock: 500
+    }
+  },
+  {
+    id: "prod-kraft-csticker-02",
+    name: "Custom Kraft Sticker Cuộn / Tùy Chỉnh (Chưa cấu hình chi phí)",
+    code: "KRAFT-CSTICKER-02",
+    category: "Nhãn dán (Sticker)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "custom",
+      sheetSize: "Tùy chỉnh",
+      itemSize: "Theo yêu cầu",
+      itemsPerSheet: 1,
+      unitType: "Cái"
+    },
+    materials: [],
+    labor: { designer: 0, production: 0, qc: 0 },
+    electricity: { power: 0, runTime: 0 },
+    overheadPercentage: 0,
+    paybackMachineId: null,
+    paybackMachineQty: 0,
+    forecast: {
+      salesForecast: 0,
+      actualSales: 0,
+      currentStock: 0,
+      safetyStock: 0
+    }
+  },
+  {
+    id: "prod-st-bac-33x35",
+    name: "Sticker Decal Bạc Bóng (ThaiKK 33×35.4cm)",
+    code: "SILVER-CSTICKER-01",
+    category: "Nhãn dán (Sticker)",
+    factoryType: "In",
+    layout: {
+      preset: "decal-33x35",
+      sheetSize: "33x35.4cm",
+      itemSize: "2.0 inch",
+      itemsPerSheet: 30,
+      unitType: "Tờ"
+    },
+    materials: [
+      { name: "Decal bạc xé không rách 33×35.4cm", qty: 0.033333, unit: "Tờ", price: 2200 },
+      { name: "Click in màu Konica Minolta (A3/33×48)", qty: 0.033333, unit: "Click", price: 700 }
+    ],
+    labor: { designer: 0.005, production: 0.035, qc: 0.012 },
+    electricity: { power: 1.5, runTime: 0.05 },
+    overheadPercentage: 5,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 0.033333,
+    forecast: {
+      salesForecast: 2500,
+      actualSales: 2300,
+      currentStock: 400,
+      safetyStock: 600
+    }
+  },
+  {
+    id: "prod-st-cuon-bac-127",
+    name: "Sticker Decal Bạc Bóng (Cuộn 1.27×1m)",
+    code: "SILVER-CSTICKER-CUON-127",
+    category: "Nhãn dán (Sticker)",
+    factoryType: "In",
+    layout: {
+      preset: "decal-cuon-127",
+      sheetSize: "1.27 x 1m",
+      itemSize: "2.0 inch",
+      itemsPerSheet: 304,
+      unitType: "Mét"
+    },
+    materials: [
+      { name: "Decal bạc bóng cuộn (1.27×1m)", qty: 0.003289, unit: "Mét", price: 54610 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.003289, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.005, production: 0.04, qc: 0.015 },
+    electricity: { power: 2.2, runTime: 0.08 },
+    overheadPercentage: 6,
+    paybackMachineId: null,
+    paybackMachineQty: 0,
+    forecast: {
+      salesForecast: 3000,
+      actualSales: 2800,
+      currentStock: 400,
+      safetyStock: 800
+    }
+  },
+  {
+    id: "prod-silver-csticker-02",
+    name: "Custom Silver Sticker Tùy Chỉnh (Chưa cấu hình chi phí)",
+    code: "SILVER-CSTICKER-02",
+    category: "Nhãn dán (Sticker)",
+    factoryType: "In",
+    profitPercentage: 20,
+    layout: {
+      preset: "custom",
+      sheetSize: "Tùy chỉnh",
+      itemSize: "Theo yêu cầu",
+      itemsPerSheet: 1,
+      unitType: "Cái"
+    },
+    materials: [],
+    labor: { designer: 0, production: 0, qc: 0 },
+    electricity: { power: 0, runTime: 0 },
+    overheadPercentage: 0,
+    paybackMachineId: null,
+    paybackMachineQty: 0,
+    forecast: {
+      salesForecast: 0,
+      actualSales: 0,
+      currentStock: 0,
+      safetyStock: 0
+    }
+  },
+  {
+    id: "prod-st-cuon-mccal-120",
+    name: "Sticker Decal Mccal Trắng Sữa Cán Màng (Cuộn 1.2×1m)",
+    code: "STICKER-MCCAL-120",
+    category: "Nhãn dán (Sticker)",
+    factoryType: "In",
+    layout: {
+      preset: "decal-cuon-120",
+      sheetSize: "1.2 x 1m",
+      itemSize: "2.0 inch",
+      itemsPerSheet: 304,
+      unitType: "Mét"
+    },
+    materials: [
+      { name: "Decal mccal trắng sữa cuộn (1.2×1m)", qty: 0.003289, unit: "Mét", price: 39610 },
+      { name: "Màng cán tem Sunrise bóng/mờ cuộn (1.2×1m)", qty: 0.003289, unit: "Mét", price: 31250 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.003289, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.005, production: 0.05, qc: 0.015 },
+    electricity: { power: 2.4, runTime: 0.09 },
+    overheadPercentage: 6,
+    paybackMachineId: null,
+    paybackMachineQty: 0,
+    forecast: {
+      salesForecast: 4500,
+      actualSales: 4100,
+      currentStock: 800,
+      safetyStock: 1200
     }
   },
   {
@@ -1131,7 +1374,25 @@ class AppStateManager {
     };
     const deletedIds = getDeletedProductIds();
 
-    const CURRENT_VERSION = "v23.7_delete_product_feature";
+    const SKU_MIGRATION_MAP = {
+      "CALENDAR-A4-01": "CAL-A4-01",
+      "PC-PAPER-01": "PLC-01",
+      "PC-PLASTIC-02": "PLC-02",
+      "UNO-PAPER-01": "PLC-UNO-01",
+      "ST-SUA-33x48": "STICKER-SUA-33x48",
+      "ST-TRONG-33x48": "CLEAR-CSTICKER-33x48",
+      "ST-BAC-33x35": "SILVER-CSTICKER-01",
+      "ST-KRAFT-33x35": "KRAFT-CSTICKER-01",
+      "ST-CUON-TRONG-127": "CLEAR-CSTICKER-CUON-127",
+      "ST-CUON-BAC-127": "SILVER-CSTICKER-CUON-127",
+      "ST-CUON-VANG-122": "CSTICKER-VANG-122",
+      "ST-CUON-HOLO-127": "CSTICKER-HOLO-127",
+      "ST-CUON-MCCAL-120": "STICKER-MCCAL-120",
+      "ST-CUON-PROTON-127": "CLEAR-CSTICKER-PROTON-127",
+      "ST-UV-DTF-04": "UV-CSTICKER-01"
+    };
+
+    const CURRENT_VERSION = "v23.9_update_sku_prefixes";
     const migratedVer = localStorage.getItem("factory_version_migrated");
     if (migratedVer !== CURRENT_VERSION) {
       localStorage.setItem("factory_version_migrated", CURRENT_VERSION);
@@ -1140,7 +1401,10 @@ class AppStateManager {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          customProducts = parsed.filter(p => !deletedIds.includes(p.id) && !deletedIds.includes(p.code) && p.id !== 'prod-4' && p.id !== 'prod-5' && !MOCK_PRODUCTS.some(mp => mp.id === p.id || mp.code === p.code));
+          customProducts = parsed.filter(p => !deletedIds.includes(p.id) && !deletedIds.includes(p.code) && p.id !== 'prod-4' && p.id !== 'prod-5' && !MOCK_PRODUCTS.some(mp => mp.id === p.id || mp.code === p.code || SKU_MIGRATION_MAP[p.code] === mp.code));
+          customProducts.forEach(p => {
+            if (SKU_MIGRATION_MAP[p.code]) p.code = SKU_MIGRATION_MAP[p.code];
+          });
         } catch (e) {}
       }
       const freshProducts = [
@@ -1159,21 +1423,28 @@ class AppStateManager {
           // Strictly filter out any deleted products
           parsed = parsed.filter(p => !deletedIds.includes(p.id) && !deletedIds.includes(p.code));
 
+          // Migrate SKU codes
+          parsed.forEach(p => {
+            if (SKU_MIGRATION_MAP[p.code]) p.code = SKU_MIGRATION_MAP[p.code];
+          });
+
           // Ensure new mock products are automatically merged ONLY if not deleted
           MOCK_PRODUCTS.forEach(mp => {
             if (deletedIds.includes(mp.id) || deletedIds.includes(mp.code)) {
               return; // Explicitly deleted by user, do not resurrect
             }
-            const existingIdx = parsed.findIndex(p => p.id === mp.id || p.code === mp.code);
+            const existingIdx = parsed.findIndex(p => p.id === mp.id || p.code === mp.code || SKU_MIGRATION_MAP[p.code] === mp.code);
             if (existingIdx === -1) {
               parsed.push(JSON.parse(JSON.stringify(mp)));
-            } else if (mp.code === "PC-PAPER-01" || mp.code === "PC-PLASTIC-02" || mp.code.startsWith("ST-") || mp.id.startsWith("prod-st-") || mp.id === "prod-6") {
-              // Always force synchronize official BOM materials & layout for default lines
+            } else {
+              // Always force synchronize official code & name
               parsed[existingIdx].name = mp.name;
               parsed[existingIdx].code = mp.code;
               parsed[existingIdx].category = mp.category;
-              parsed[existingIdx].materials = JSON.parse(JSON.stringify(mp.materials));
-              parsed[existingIdx].layout = JSON.parse(JSON.stringify(mp.layout));
+              if (mp.materials && mp.materials.length > 0) {
+                parsed[existingIdx].materials = JSON.parse(JSON.stringify(mp.materials));
+              }
+              if (mp.layout) parsed[existingIdx].layout = JSON.parse(JSON.stringify(mp.layout));
               parsed[existingIdx].factoryType = mp.factoryType;
               if (mp.profitPercentage) parsed[existingIdx].profitPercentage = mp.profitPercentage;
             }
