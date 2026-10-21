@@ -620,3 +620,171 @@ function setupSheetMRP(sheet) {
   sheet.setColumnWidth(8, 220);
   sheet.setColumnWidth(9, 220);
 }
+
+// =============================================================================
+// CƠ CHẾ ĐỒNG BỘ 2 CHIỀU TRỰC TIẾP VỚI WEB APP (WEBHOOK DO_GET / DO_POST)
+// =============================================================================
+
+function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var dbSheet = ss.getSheetByName("_DB_STORAGE_");
+  var val = "";
+  if (dbSheet) {
+    val = dbSheet.getRange("A1").getValue();
+  }
+  if (!val) {
+    var sheets = ss.getSheets();
+    for (var i = 0; i < sheets.length; i++) {
+      var cellVal = sheets[i].getRange("A1").getValue();
+      if (cellVal && typeof cellVal === "string" && cellVal.indexOf('"products"') !== -1) {
+        val = cellVal;
+        break;
+      }
+    }
+  }
+  return ContentService.createTextOutput(val || "{}")
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    var json = "";
+    if (e && e.postData && e.postData.contents) {
+      json = e.postData.contents;
+    } else if (e && e.parameter && e.parameter.data) {
+      json = e.parameter.data;
+    }
+    if (!json) {
+      return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "No data received" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    var data = JSON.parse(json);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // 1. Lưu backup JSON an toàn vào tab riêng _DB_STORAGE_
+    var dbSheet = ss.getSheetByName("_DB_STORAGE_");
+    if (!dbSheet) {
+      dbSheet = ss.insertSheet("_DB_STORAGE_");
+    }
+    dbSheet.getRange("A1").setValue(json);
+    
+    // 2. Tự động đồng bộ trực tiếp vào tab 3_KHAU_HAO_MAY
+    if (data.settings && data.settings.machines) {
+      syncTabKhauHao(ss, data.settings.machines);
+    }
+    
+    // 3. Tự động đồng bộ trực tiếp vào tab 2_NHAN_SU_LUONG
+    if (data.settings && data.settings.hr) {
+      syncTabNhanSu(ss, data.settings.hr, data.settings.standardHours || 208);
+    }
+    
+    // 4. Tự động đồng bộ trực tiếp vào tab 1_CAU_HINH
+    if (data.settings) {
+      syncTabCauHinh(ss, data.settings);
+    }
+    
+    SpreadsheetApp.flush();
+    return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function syncTabKhauHao(ss, machines) {
+  var sheet = ss.getSheetByName("3_KHAU_HAO_MAY");
+  if (!sheet) return;
+  var maxRows = sheet.getMaxRows();
+  if (maxRows >= 3) {
+    sheet.getRange(3, 1, Math.max(1, maxRows - 2), 11).clearContent().clearFormat();
+  }
+  if (!machines || machines.length === 0) return;
+  var rows = [];
+  for (var i = 0; i < machines.length; i++) {
+    var m = machines[i];
+    var discount = (m.discountAfter3Years !== undefined ? m.discountAfter3Years : 80) / 100;
+    rows.push([
+      m.id || ("MACH-" + (i + 1)),
+      m.name,
+      m.investment || 0,
+      m.paybackYears || 3,
+      m.expectedVolumePerYear || 20000,
+      m.unitType || "Cái",
+      "", "", discount, "",
+      (m.currentVolume ? "Đã tích lũy: " + Number(m.currentVolume).toLocaleString('vi-VN') + " " + (m.unitType || "Cái") : "Mới đầu tư")
+    ]);
+  }
+  sheet.getRange(3, 1, rows.length, 11).setValues(rows);
+  for (var k = 0; k < rows.length; k++) {
+    var r = k + 3;
+    sheet.getRange("G" + r).setFormula("=D" + r + "*E" + r);
+    sheet.getRange("H" + r).setFormula("=C" + r + "/G" + r);
+    sheet.getRange("J" + r).setFormula("=H" + r + "*(1-I" + r + ")");
+  }
+  sheet.getRange(3, 1, rows.length, 11).setFontFamily("Arial").setFontSize(10);
+  sheet.getRange("C3:C" + (rows.length + 2)).setNumberFormat("#,##0\" ₫\"");
+  sheet.getRange("D3:D" + (rows.length + 2)).setNumberFormat("0\" Năm\"");
+  sheet.getRange("E3:E" + (rows.length + 2)).setNumberFormat("#,##0");
+  sheet.getRange("G3:G" + (rows.length + 2)).setNumberFormat("#,##0");
+  sheet.getRange("H3:H" + (rows.length + 2)).setNumberFormat("#,##0\" ₫\"").setFontWeight("bold").setBackground("#fee2e2");
+  sheet.getRange("I3:I" + (rows.length + 2)).setNumberFormat("0.0%");
+  sheet.getRange("J3:J" + (rows.length + 2)).setNumberFormat("#,##0\" ₫\"").setFontWeight("bold").setBackground("#dcfce7");
+}
+
+function syncTabNhanSu(ss, hr, standardHours) {
+  var sheet = ss.getSheetByName("2_NHAN_SU_LUONG");
+  if (!sheet || !hr) return;
+  var rows = [];
+  var depts = ["In", "Thêu"];
+  for (var d = 0; d < depts.length; d++) {
+    var factory = depts[d];
+    var factoryHr = hr[factory];
+    if (!factoryHr) continue;
+    var subDepts = Object.keys(factoryHr);
+    for (var s = 0; s < subDepts.length; s++) {
+      var sub = subDepts[s];
+      var list = factoryHr[sub];
+      if (Array.isArray(list)) {
+        for (var e = 0; e < list.length; e++) {
+          var emp = list[e];
+          rows.push([
+            factory,
+            sub.toUpperCase(),
+            emp.name + (emp.code ? " (" + emp.code + ")" : ""),
+            emp.salary || 0,
+            standardHours || 208,
+            ""
+          ]);
+        }
+      }
+    }
+  }
+  if (rows.length === 0) return;
+  var maxRows = sheet.getMaxRows();
+  if (maxRows >= 3) {
+    sheet.getRange(3, 1, Math.max(1, maxRows - 2), 6).clearContent().clearFormat();
+  }
+  sheet.getRange(3, 1, rows.length, 6).setValues(rows);
+  for (var i = 0; i < rows.length; i++) {
+    var r = i + 3;
+    sheet.getRange("F" + r).setFormula("=D" + r + "/E" + r);
+  }
+  sheet.getRange(3, 1, rows.length, 6).setFontFamily("Arial").setFontSize(10);
+  sheet.getRange("D3:D" + (rows.length + 2)).setNumberFormat("#,##0\" ₫\"");
+  sheet.getRange("E3:E" + (rows.length + 2)).setNumberFormat("#,##0");
+  sheet.getRange("F3:F" + (rows.length + 2)).setNumberFormat("#,##0\" ₫/h\"").setFontWeight("bold");
+}
+
+function syncTabCauHinh(ss, settings) {
+  var sheet = ss.getSheetByName("1_CAU_HINH");
+  if (!sheet) return;
+  if (settings.standardHours) sheet.getRange("B3").setValue(settings.standardHours);
+  if (settings.defaultOverhead !== undefined) sheet.getRange("B4").setValue(settings.defaultOverhead / 100);
+  if (settings.defaultProfitMargin !== undefined) sheet.getRange("B5").setValue(settings.defaultProfitMargin / 100);
+  if (settings.monthlyElectricity) {
+    if (settings.monthlyElectricity.In !== undefined) sheet.getRange("B9").setValue(settings.monthlyElectricity.In);
+    if (settings.monthlyElectricity.Thêu !== undefined) sheet.getRange("B10").setValue(settings.monthlyElectricity.Thêu);
+  }
+}

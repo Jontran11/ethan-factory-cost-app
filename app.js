@@ -777,16 +777,18 @@ class AppStateManager {
           };
         }
 
-        const rawMachines = parsed.machines || [];
-        const mergedMachines = DEFAULT_SETTINGS.machines.map(defM => {
-          const found = rawMachines.find(m => m.id === defM.id);
-          return found ? { ...defM, ...found, paybackYears: found.paybackYears || defM.paybackYears, discountAfter3Years: found.discountAfter3Years || defM.discountAfter3Years } : defM;
-        });
-        rawMachines.forEach(m => {
-          if (!mergedMachines.some(dm => dm.id === m.id)) {
-            mergedMachines.push(m);
-          }
-        });
+        let mergedMachines = [];
+        if (Array.isArray(parsed.machines)) {
+          mergedMachines = parsed.machines.map(m => ({
+            paybackYears: 3,
+            discountAfter3Years: 80,
+            currentVolume: 0,
+            unitType: "Cái",
+            ...m
+          }));
+        } else {
+          mergedMachines = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.machines));
+        }
 
         const rawCatalog = parsed.materialsCatalog || [];
         const mergedCatalog = [...rawCatalog];
@@ -971,7 +973,7 @@ class AppStateManager {
       
       updateCloudStatus("synced");
       if (showToast) {
-        alert("✅ Đã đẩy toàn bộ dữ liệu từ Web App lên Google Sheets thành công!");
+        alert("✅ Đã đẩy toàn bộ dữ liệu từ Web App lên Google Sheets thành công!\n\nNếu bạn đã cập nhật mã Apps Script mới nhất trong Bảng tính, dữ liệu đã được đồng bộ trực tiếp vào các tab: 3_KHAU_HAO_MAY, 2_NHAN_SU_LUONG và 1_CAU_HINH.");
       }
       return true;
     } catch (e) {
@@ -3441,7 +3443,10 @@ function renderSettingsPaybackList() {
           <strong style="color: #fff; font-size: 0.85rem;">${m.name}</strong>
           <span style="font-size: 0.7rem; color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 0.1rem 0.35rem; border-radius: 3px; margin-left: 0.4rem;">+${formatVND(m.surchargePerUnit)} / ${m.unitType}</span>
         </div>
-        <button type="button" class="btn btn-xs btn-danger capex-delete-btn" data-id="${m.id}" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;">Xóa</button>
+        <div style="display: flex; gap: 0.35rem;">
+          <button type="button" class="btn btn-xs btn-primary capex-edit-btn" data-id="${m.id}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; background: #4f46e5; border-color: #6366f1;">✏️ Sửa / Cộng dồn</button>
+          <button type="button" class="btn btn-xs btn-danger capex-delete-btn" data-id="${m.id}" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;">Xóa</button>
+        </div>
       </div>
 
       <div style="font-size: 0.75rem; color: var(--text-secondary); display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.35rem; margin-bottom: 0.5rem;">
@@ -3470,12 +3475,30 @@ function renderSettingsPaybackList() {
       ${speedHtml}
     `;
 
+    row.querySelector(".capex-edit-btn").addEventListener("click", () => {
+      openEditCapexModal(m);
+    });
+
     row.querySelector(".capex-delete-btn").addEventListener("click", () => {
-      if (confirm(`Bạn có muốn xóa thiết lập hòa vốn cho "${m.name}" không?`)) {
+      if (confirm(`Bạn có muốn xóa thiết lập máy móc "${m.name}" không?\n\nSau khi xóa, máy này sẽ bị gỡ bỏ khỏi hệ thống và tự động đồng bộ lên Google Sheets.`)) {
         state.settings.machines = state.settings.machines.filter(x => x.id !== m.id);
+        
+        let productsModified = false;
+        state.products.forEach(p => {
+          if (p.paybackMachineId === m.id) {
+            p.paybackMachineId = null;
+            productsModified = true;
+          }
+        });
+        if (productsModified) {
+          state.saveProducts();
+        }
+
         state.saveSettings(state.settings);
         renderSettings();
         renderCalculator();
+        recalculateForecastTotals();
+        updateDashboard();
       }
     });
 
@@ -3485,11 +3508,82 @@ function renderSettingsPaybackList() {
       state.saveSettings(state.settings);
       renderSettings();
       renderCalculator();
+      recalculateForecastTotals();
+      updateDashboard();
       alert(`Đã cập nhật sản lượng tích lũy của "${m.name}" lên ${vol.toLocaleString('vi-VN')} ${m.unitType}!`);
     });
 
     container.appendChild(row);
   });
+}
+
+function openEditCapexModal(machine) {
+  const modal = document.getElementById("modal-edit-capex");
+  if (!modal) return;
+
+  document.getElementById("modal-edit-capex-id").value = machine.id;
+  document.getElementById("modal-edit-capex-name").value = machine.name;
+  
+  const invInput = document.getElementById("modal-edit-capex-investment");
+  invInput.value = (machine.investment || 0).toLocaleString('vi-VN');
+  maskCurrencyInput(invInput);
+
+  const addInvInput = document.getElementById("modal-edit-capex-add-investment");
+  addInvInput.value = "";
+  maskCurrencyInput(addInvInput);
+
+  const yearsInput = document.getElementById("modal-edit-capex-years");
+  yearsInput.value = machine.paybackYears || 3;
+
+  const volInput = document.getElementById("modal-edit-capex-expected-vol");
+  volInput.value = machine.expectedVolumePerYear || 20000;
+
+  const unitSelect = document.getElementById("modal-edit-capex-unit-type");
+  unitSelect.value = machine.unitType || "Cái";
+
+  const discInput = document.getElementById("modal-edit-capex-discount");
+  discInput.value = machine.discountAfter3Years !== undefined ? machine.discountAfter3Years : 80;
+
+  const curVolInput = document.getElementById("modal-edit-capex-current-vol");
+  curVolInput.value = machine.currentVolume || 0;
+
+  function updatePreview() {
+    const curInv = parseInt((invInput.value || "0").replace(/[^0-9]/g, ""), 10) || 0;
+    const addInv = parseInt((addInvInput.value || "0").replace(/[^0-9]/g, ""), 10) || 0;
+    const totalInv = curInv + addInv;
+    const y = parseFloat(yearsInput.value) || 3;
+    const ev = parseFloat(volInput.value) || 1;
+    const targetVol = y * ev;
+    const unitRate = targetVol > 0 ? Math.round(totalInv / targetVol) : 0;
+    const discPct = parseFloat(discInput.value) || 80;
+    const postRate = Math.round(unitRate * (1 - discPct / 100));
+    const unit = unitSelect.value || "Cái";
+
+    const summaryEl = document.getElementById("modal-edit-capex-summary");
+    if (summaryEl) {
+      let addNote = addInv > 0 ? ` <span style="color:#10b981; font-weight:700;">(+ cộng dồn ${formatVND(addInv)})</span>` : "";
+      summaryEl.innerHTML = `
+        <div style="margin-bottom: 0.25rem;">💰 <strong>Tổng vốn đầu tư mới:</strong> <span style="font-size: 0.85rem; color:#fff; font-weight:700;">${formatVND(totalInv)}</span>${addNote}</div>
+        <div style="margin-bottom: 0.25rem;">🎯 <strong>Sản lượng mục tiêu (${y} năm):</strong> ${targetVol.toLocaleString('vi-VN')} ${unit}</div>
+        <div>⚡ <strong>Phụ phí thu hồi vốn mới:</strong> <span style="color:#f87171; font-weight:700;">+${formatVND(unitRate)} / ${unit}</span> (Khấu hao cao) ➔ Giảm còn <span style="color:#34d399; font-weight:700;">+${formatVND(postRate)} / ${unit}</span> (Sau hòa vốn)</div>
+      `;
+    }
+  }
+
+  updatePreview();
+
+  invInput.oninput = updatePreview;
+  addInvInput.oninput = updatePreview;
+  yearsInput.oninput = updatePreview;
+  volInput.oninput = updatePreview;
+  unitSelect.onchange = updatePreview;
+  discInput.oninput = updatePreview;
+
+  if (typeof modal.showModal === "function") {
+    modal.showModal();
+  } else {
+    modal.setAttribute("open", "");
+  }
 }
 
 function renderHrAccordion(factoryKey, containerId) {
@@ -4763,6 +4857,89 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
       renderSettings();
       renderCalculator();
       alert(`Đã thêm thiết lập hòa vốn thành công cho máy "${name}"!`);
+    });
+  }
+
+  // Edit & Accumulate Investment for Capex Machines
+  const editCapexForm = document.getElementById("modal-edit-capex-form");
+  if (editCapexForm) {
+    editCapexForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const machId = document.getElementById("modal-edit-capex-id").value;
+      const mach = state.settings.machines?.find(m => m.id === machId);
+      if (!mach) return;
+
+      const name = document.getElementById("modal-edit-capex-name").value.trim();
+      const curInv = parseInt((document.getElementById("modal-edit-capex-investment").value || "0").replace(/[^0-9]/g, ""), 10) || 0;
+      const addInv = parseInt((document.getElementById("modal-edit-capex-add-investment").value || "0").replace(/[^0-9]/g, ""), 10) || 0;
+      const totalInv = curInv + addInv;
+      const years = parseFloat(document.getElementById("modal-edit-capex-years").value) || 3;
+      const expectedVol = parseFloat(document.getElementById("modal-edit-capex-expected-vol").value) || 20000;
+      const unitType = document.getElementById("modal-edit-capex-unit-type").value || "Cái";
+      const discount = parseFloat(document.getElementById("modal-edit-capex-discount").value) || 80;
+      const currentVol = parseFloat(document.getElementById("modal-edit-capex-current-vol").value) || 0;
+
+      if (!name || totalInv <= 0 || years <= 0 || expectedVol <= 0) {
+        alert("Vui lòng điền đầy đủ và chính xác thông tin máy móc đầu tư!");
+        return;
+      }
+
+      const targetVol = years * expectedVol;
+      const surcharge = Math.round(totalInv / targetVol);
+
+      mach.name = name;
+      mach.investment = totalInv;
+      mach.paybackYears = years;
+      mach.expectedVolumePerYear = expectedVol;
+      mach.unitType = unitType;
+      mach.discountAfter3Years = discount;
+      mach.currentVolume = currentVol;
+      mach.surchargePerUnit = surcharge;
+
+      state.saveSettings(state.settings);
+
+      const modal = document.getElementById("modal-edit-capex");
+      if (modal) {
+        if (typeof modal.close === "function") modal.close();
+        else modal.removeAttribute("open");
+      }
+
+      renderSettings();
+      renderCalculator();
+      recalculateForecastTotals();
+      updateDashboard();
+
+      let addMsg = addInv > 0 ? ` (Đã cộng dồn thêm ${formatVND(addInv)})` : "";
+      alert(`✅ Đã cập nhật thành công máy "${name}"!\n\n- Vốn đầu tư mới: ${formatVND(totalInv)}${addMsg}\n- Phụ phí khấu hao mới: ${formatVND(surcharge)} / ${unitType}`);
+    });
+  }
+
+  document.getElementById("modal-edit-capex-close-btn")?.addEventListener("click", () => {
+    const modal = document.getElementById("modal-edit-capex");
+    if (typeof modal?.close === "function") modal.close();
+    else modal?.removeAttribute("open");
+  });
+
+  document.getElementById("modal-edit-capex-cancel-btn")?.addEventListener("click", () => {
+    const modal = document.getElementById("modal-edit-capex");
+    if (typeof modal?.close === "function") modal.close();
+    else modal?.removeAttribute("open");
+  });
+
+  // Copy Google Apps Script Button
+  const copyScriptBtn = document.getElementById("btn-copy-apps-script");
+  if (copyScriptBtn) {
+    copyScriptBtn.addEventListener("click", () => {
+      const codeBlock = document.getElementById("apps-script-code-block");
+      if (codeBlock) {
+        navigator.clipboard.writeText(codeBlock.textContent.trim()).then(() => {
+          const originalText = copyScriptBtn.textContent;
+          copyScriptBtn.textContent = "✅ Đã sao chép!";
+          setTimeout(() => { copyScriptBtn.textContent = originalText; }, 2000);
+        }).catch(() => {
+          alert("Vui lòng bôi đen và sao chép thủ công toàn bộ đoạn mã trong khung!");
+        });
+      }
     });
   }
   

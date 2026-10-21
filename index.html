@@ -1259,36 +1259,175 @@
                     <button type="button" class="btn btn-danger" id="btn-disconnect-sheet" style="flex: 0.5; display: none; min-height: 38px;">Hủy kết nối</button>
                   </div>
                   
-                  <div style="margin-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1rem;">
-                    <h4 style="font-size: 0.8rem; color: #fff; margin-bottom: 0.4rem;">Mã nguồn Google Apps Script chuẩn (Hỗ trợ 2 chiều cực kỳ ổn định):</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                      <h4 style="font-size: 0.8rem; color: #fff; margin: 0;">Mã nguồn Google Apps Script chuẩn (Tự động cập nhật trực tiếp vào tab 3_KHAU_HAO_MAY, 2_NHAN_SU_LUONG, 1_CAU_HINH):</h4>
+                      <button type="button" class="btn btn-xs btn-outline" id="btn-copy-apps-script" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; color: #38bdf8; border-color: #38bdf8;">📋 Sao chép mã</button>
+                    </div>
                     <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.4rem;">
                       Vào Google Sheet ➔ <strong>Tiện ích mở rộng (Extensions)</strong> ➔ <strong>Apps Script</strong>, dán toàn bộ đoạn mã bên dưới rồi bấm <strong>Lưu</strong>:
                     </p>
-                    <pre style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 6px; font-size: 0.7rem; color: #a5b4fc; font-family: monospace; overflow-x: auto; margin-top: 0.5rem; border: 1px solid rgba(255,255,255,0.04); max-height: 180px; user-select: all;">
+                    <pre id="apps-script-code-block" style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 6px; font-size: 0.7rem; color: #a5b4fc; font-family: monospace; overflow-x: auto; margin-top: 0.5rem; border: 1px solid rgba(255,255,255,0.04); max-height: 220px; user-select: all;">
 function doGet(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var val = sheet.getRange("A1").getValue();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var dbSheet = ss.getSheetByName("_DB_STORAGE_");
+  var val = "";
+  if (dbSheet) {
+    val = dbSheet.getRange("A1").getValue();
+  }
+  if (!val) {
+    var sheets = ss.getSheets();
+    for (var i = 0; i < sheets.length; i++) {
+      var cellVal = sheets[i].getRange("A1").getValue();
+      if (cellVal && typeof cellVal === "string" && cellVal.indexOf('"products"') !== -1) {
+        val = cellVal;
+        break;
+      }
+    }
+  }
   return ContentService.createTextOutput(val || "{}")
     .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     var json = "";
     if (e && e.postData && e.postData.contents) {
       json = e.postData.contents;
     } else if (e && e.parameter && e.parameter.data) {
       json = e.parameter.data;
     }
-    if (json) {
-      sheet.getRange("A1").setValue(json);
+    if (!json) {
+      return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "No data received" }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
+    
+    var data = JSON.parse(json);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // 1. Lưu backup JSON an toàn vào tab riêng _DB_STORAGE_
+    var dbSheet = ss.getSheetByName("_DB_STORAGE_");
+    if (!dbSheet) {
+      dbSheet = ss.insertSheet("_DB_STORAGE_");
+    }
+    dbSheet.getRange("A1").setValue(json);
+    
+    // 2. Tự động đồng bộ trực tiếp vào tab 3_KHAU_HAO_MAY
+    if (data.settings && data.settings.machines) {
+      syncTabKhauHao(ss, data.settings.machines);
+    }
+    
+    // 3. Tự động đồng bộ trực tiếp vào tab 2_NHAN_SU_LUONG
+    if (data.settings && data.settings.hr) {
+      syncTabNhanSu(ss, data.settings.hr, data.settings.standardHours || 208);
+    }
+    
+    // 4. Tự động đồng bộ trực tiếp vào tab 1_CAU_HINH
+    if (data.settings) {
+      syncTabCauHinh(ss, data.settings);
+    }
+    
+    SpreadsheetApp.flush();
     return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function syncTabKhauHao(ss, machines) {
+  var sheet = ss.getSheetByName("3_KHAU_HAO_MAY");
+  if (!sheet) return;
+  var maxRows = sheet.getMaxRows();
+  if (maxRows >= 3) {
+    sheet.getRange(3, 1, Math.max(1, maxRows - 2), 11).clearContent().clearFormat();
+  }
+  if (!machines || machines.length === 0) return;
+  var rows = [];
+  for (var i = 0; i < machines.length; i++) {
+    var m = machines[i];
+    var discount = (m.discountAfter3Years !== undefined ? m.discountAfter3Years : 80) / 100;
+    rows.push([
+      m.id || ("MACH-" + (i + 1)),
+      m.name,
+      m.investment || 0,
+      m.paybackYears || 3,
+      m.expectedVolumePerYear || 20000,
+      m.unitType || "Cái",
+      "", "", discount, "",
+      (m.currentVolume ? "Đã tích lũy: " + Number(m.currentVolume).toLocaleString('vi-VN') + " " + (m.unitType || "Cái") : "Mới đầu tư")
+    ]);
+  }
+  sheet.getRange(3, 1, rows.length, 11).setValues(rows);
+  for (var k = 0; k < rows.length; k++) {
+    var r = k + 3;
+    sheet.getRange("G" + r).setFormula("=D" + r + "*E" + r);
+    sheet.getRange("H" + r).setFormula("=C" + r + "/G" + r);
+    sheet.getRange("J" + r).setFormula("=H" + r + "*(1-I" + r + ")");
+  }
+  sheet.getRange(3, 1, rows.length, 11).setFontFamily("Arial").setFontSize(10);
+  sheet.getRange("C3:C" + (rows.length + 2)).setNumberFormat("#,##0\" ₫\"");
+  sheet.getRange("D3:D" + (rows.length + 2)).setNumberFormat("0\" Năm\"");
+  sheet.getRange("E3:E" + (rows.length + 2)).setNumberFormat("#,##0");
+  sheet.getRange("G3:G" + (rows.length + 2)).setNumberFormat("#,##0");
+  sheet.getRange("H3:H" + (rows.length + 2)).setNumberFormat("#,##0\" ₫\"").setFontWeight("bold").setBackground("#fee2e2");
+  sheet.getRange("I3:I" + (rows.length + 2)).setNumberFormat("0.0%");
+  sheet.getRange("J3:J" + (rows.length + 2)).setNumberFormat("#,##0\" ₫\"").setFontWeight("bold").setBackground("#dcfce7");
+}
+
+function syncTabNhanSu(ss, hr, standardHours) {
+  var sheet = ss.getSheetByName("2_NHAN_SU_LUONG");
+  if (!sheet || !hr) return;
+  var rows = [];
+  var depts = ["In", "Thêu"];
+  for (var d = 0; d < depts.length; d++) {
+    var factory = depts[d];
+    var factoryHr = hr[factory];
+    if (!factoryHr) continue;
+    var subDepts = Object.keys(factoryHr);
+    for (var s = 0; s < subDepts.length; s++) {
+      var sub = subDepts[s];
+      var list = factoryHr[sub];
+      if (Array.isArray(list)) {
+        for (var e = 0; e < list.length; e++) {
+          var emp = list[e];
+          rows.push([
+            factory,
+            sub.toUpperCase(),
+            emp.name + (emp.code ? " (" + emp.code + ")" : ""),
+            emp.salary || 0,
+            standardHours || 208,
+            ""
+          ]);
+        }
+      }
+    }
+  }
+  if (rows.length === 0) return;
+  var maxRows = sheet.getMaxRows();
+  if (maxRows >= 3) {
+    sheet.getRange(3, 1, Math.max(1, maxRows - 2), 6).clearContent().clearFormat();
+  }
+  sheet.getRange(3, 1, rows.length, 6).setValues(rows);
+  for (var i = 0; i < rows.length; i++) {
+    var r = i + 3;
+    sheet.getRange("F" + r).setFormula("=D" + r + "/E" + r);
+  }
+  sheet.getRange(3, 1, rows.length, 6).setFontFamily("Arial").setFontSize(10);
+  sheet.getRange("D3:D" + (rows.length + 2)).setNumberFormat("#,##0\" ₫\"");
+  sheet.getRange("E3:E" + (rows.length + 2)).setNumberFormat("#,##0");
+  sheet.getRange("F3:F" + (rows.length + 2)).setNumberFormat("#,##0\" ₫/h\"").setFontWeight("bold");
+}
+
+function syncTabCauHinh(ss, settings) {
+  var sheet = ss.getSheetByName("1_CAU_HINH");
+  if (!sheet) return;
+  if (settings.standardHours) sheet.getRange("B3").setValue(settings.standardHours);
+  if (settings.defaultOverhead !== undefined) sheet.getRange("B4").setValue(settings.defaultOverhead / 100);
+  if (settings.defaultProfitMargin !== undefined) sheet.getRange("B5").setValue(settings.defaultProfitMargin / 100);
+  if (settings.monthlyElectricity) {
+    if (settings.monthlyElectricity.In !== undefined) sheet.getRange("B9").setValue(settings.monthlyElectricity.In);
+    if (settings.monthlyElectricity.Thêu !== undefined) sheet.getRange("B10").setValue(settings.monthlyElectricity.Thêu);
   }
 }</pre>
                     <ol start="4" style="font-size: 0.75rem; color: var(--text-secondary); padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.5rem;">
@@ -1583,6 +1722,77 @@ function doPost(e) {
     </div>
   </dialog>
 
+  <!-- Modal Chỉnh Sửa & Cộng Dồn Vốn Đầu Tư Máy Móc -->
+  <dialog id="modal-edit-capex" class="glass-modal">
+    <div class="modal-content" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 id="modal-edit-capex-title">Chỉnh Sửa &amp; Cộng Dồn Vốn Máy Móc</h3>
+        <button class="btn-close" id="modal-edit-capex-close-btn">&times;</button>
+      </div>
+      <form id="modal-edit-capex-form">
+        <input type="hidden" id="modal-edit-capex-id">
+        
+        <div class="form-group">
+          <label for="modal-edit-capex-name">Tên máy móc đầu tư <span class="required">*</span></label>
+          <input type="text" id="modal-edit-capex-name" required class="form-input">
+        </div>
+
+        <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
+          <div class="form-group">
+            <label for="modal-edit-capex-investment">Vốn đầu tư ban đầu / hiện tại (₫) <span class="required">*</span></label>
+            <input type="text" id="modal-edit-capex-investment" required class="form-input currency-input">
+          </div>
+          <div class="form-group">
+            <label for="modal-edit-capex-add-investment" style="color: #34d399; font-weight: 600;">➕ Cộng dồn thêm vốn (₫)</label>
+            <input type="text" id="modal-edit-capex-add-investment" placeholder="Ví dụ: 100.000.000" class="form-input currency-input" style="border-color: rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.05);">
+            <span class="help-text" style="font-size: 0.68rem; color: #34d399;">(Nhập tiền mua thêm/nâng cấp để cộng dồn)</span>
+          </div>
+        </div>
+
+        <div class="form-grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
+          <div class="form-group">
+            <label for="modal-edit-capex-years">Năm hoàn vốn <span class="required">*</span></label>
+            <input type="number" id="modal-edit-capex-years" min="0.5" step="0.5" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-edit-capex-expected-vol">Sản lượng/năm <span class="required">*</span></label>
+            <input type="number" id="modal-edit-capex-expected-vol" min="1" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-edit-capex-unit-type">Đơn vị tính <span class="required">*</span></label>
+            <select id="modal-edit-capex-unit-type" class="form-input" required style="background: var(--bg-input); border-color: var(--border-glass); color: var(--text-primary);">
+              <option value="Click">Click</option>
+              <option value="Tờ">Tờ</option>
+              <option value="Mét">Mét</option>
+              <option value="Cái">Cái</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
+          <div class="form-group">
+            <label for="modal-edit-capex-discount">Tỷ lệ giảm sau hoàn vốn (%)</label>
+            <input type="number" id="modal-edit-capex-discount" min="0" max="100" class="form-input" value="80">
+          </div>
+          <div class="form-group">
+            <label for="modal-edit-capex-current-vol">Sản lượng đã tích lũy</label>
+            <input type="number" id="modal-edit-capex-current-vol" min="0" class="form-input" value="0">
+          </div>
+        </div>
+
+        <!-- Dynamic summary preview -->
+        <div id="modal-edit-capex-summary" style="margin-top: 0.75rem; padding: 0.65rem 0.85rem; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 6px; font-size: 0.75rem; color: #fbbf24; line-height: 1.5;">
+          <!-- Live updated preview -->
+        </div>
+
+        <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-outline" id="modal-edit-capex-cancel-btn">Hủy</button>
+          <button type="submit" class="btn btn-primary" id="modal-edit-capex-submit-btn" style="background: var(--color-warning); border-color: var(--color-warning);">💾 Lưu Cập Nhật</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
   <!-- Modal for BOM Material Picker from Catalog -->
   <dialog id="modal-bom-catalog-picker" class="glass-modal">
     <div class="modal-content" style="max-width: 620px; max-height: 85vh; display: flex; flex-direction: column;">
@@ -1634,6 +1844,6 @@ function doPost(e) {
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=23.3" type="module"></script>
+  <script src="app.js?v=23.4" type="module"></script>
 </body>
 </html>
