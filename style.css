@@ -1798,3 +1798,173 @@ body {
   accent-color: #6366f1;
 }
 
+/* ==========================================================================
+   Order Cost Inspector & Smart SKU Matcher (v24.0)
+   ========================================================================== */
+
+.prefix-pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+}
+
+.prefix-pill-btn {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.prefix-pill-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.prefix-pill-btn.active {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: #6366f1;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+.sku-live-tester {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.45) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 12px;
+  padding: 1.15rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.sku-live-tester::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1, #3b82f6, #06b6d4, #10b981);
+}
+
+.order-group-card {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  margin-bottom: 0.85rem;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.order-group-card:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+}
+
+.order-card-header {
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  cursor: pointer;
+  background: rgba(30, 41, 59, 0.3);
+  user-select: none;
+}
+
+.order-card-header:hover {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.order-card-body {
+  padding: 0.85rem 1.15rem 1.15rem 1.15rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.badge-prefix-tag {
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  letter-spacing: 0.02em;
+}
+
+.badge-match-status {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.badge-match-exact {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-match-prefix {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.badge-match-fuzzy {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-match-unmatched {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.view-mode-pill-group {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.view-mode-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.view-mode-btn.active {
+  background: #6366f1;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+

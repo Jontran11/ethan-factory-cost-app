@@ -1222,6 +1222,13 @@ class AppStateManager {
     this.products = this.loadProducts();
     this.activeTab = "dashboard";
     this.selectedProductId = null;
+    this.orderCostState = {
+      rawRows: [],
+      filterPrefix: "all",
+      filterStatus: "all",
+      searchQuery: "",
+      viewMode: "order"
+    };
     
     const savedUrl = localStorage.getItem("factory_sheet_url_v2");
     if (savedUrl === "none") {
@@ -1818,6 +1825,426 @@ function calculateProductForecast(product, baseCost) {
 }
 
 // ==========================================================================
+// 2.1 SMART SKU PREFIX MATCHING & ORDER COST ENGINE (v24.0)
+// ==========================================================================
+
+const PREFIX_DEFINITIONS = [
+  { 
+    prefix: "CLEAR-CSTICKER", 
+    name: "Clear Sticker", 
+    color: "#06b6d4", 
+    bg: "rgba(6, 182, 212, 0.15)", 
+    border: "rgba(6, 182, 212, 0.35)",
+    defaultCode: "CLEAR-CSTICKER-01", 
+    description: "Decal trong suốt" 
+  },
+  { 
+    prefix: "SILVER-CSTICKER", 
+    name: "Silver Sticker", 
+    color: "#94a3b8", 
+    bg: "rgba(148, 163, 184, 0.15)", 
+    border: "rgba(148, 163, 184, 0.35)",
+    defaultCode: "SILVER-CSTICKER-01", 
+    description: "Decal xi bạc bóng" 
+  },
+  { 
+    prefix: "KRAFT-CSTICKER", 
+    name: "Kraft Sticker", 
+    color: "#d97706", 
+    bg: "rgba(217, 119, 6, 0.15)", 
+    border: "rgba(217, 119, 6, 0.35)",
+    defaultCode: "KRAFT-CSTICKER-01", 
+    description: "Decal Kraft nâu da bò" 
+  },
+  { 
+    prefix: "UV-CSTICKER", 
+    name: "UV DTF Sticker", 
+    color: "#8b5cf6", 
+    bg: "rgba(139, 92, 246, 0.15)", 
+    border: "rgba(139, 92, 246, 0.35)",
+    defaultCode: "UV-CSTICKER-01", 
+    description: "Sticker in UV-DTF chuyển nhiệt" 
+  },
+  { 
+    prefix: "CSTICKER", 
+    name: "Custom Sticker", 
+    color: "#ec4899", 
+    bg: "rgba(236, 72, 153, 0.15)", 
+    border: "rgba(236, 72, 153, 0.35)",
+    defaultCode: "CSTICKER-01", 
+    description: "Decal vàng/hologram cuộn" 
+  },
+  { 
+    prefix: "STICKER", 
+    name: "Sticker Tiêu Chuẩn", 
+    color: "#10b981", 
+    bg: "rgba(16, 185, 129, 0.15)", 
+    border: "rgba(16, 185, 129, 0.35)",
+    defaultCode: "STICKER-SUA-33x48", 
+    description: "Decal sữa Fasson/Mccal" 
+  },
+  { 
+    prefix: "PLC2", 
+    name: "Playing Card V.2", 
+    color: "#3b82f6", 
+    bg: "rgba(59, 130, 246, 0.15)", 
+    border: "rgba(59, 130, 246, 0.35)",
+    defaultCode: "PLC2-01", 
+    description: "Bộ bài Playing Cards V.2" 
+  },
+  { 
+    prefix: "PLC", 
+    name: "Playing Card", 
+    color: "#6366f1", 
+    bg: "rgba(99, 102, 241, 0.15)", 
+    border: "rgba(99, 102, 241, 0.35)",
+    defaultCode: "PLC-01", 
+    description: "Bộ bài Playing Cards / Uno" 
+  },
+  { 
+    prefix: "GCB", 
+    name: "Gift Card Book", 
+    color: "#f59e0b", 
+    bg: "rgba(245, 158, 11, 0.15)", 
+    border: "rgba(245, 158, 11, 0.35)",
+    defaultCode: "GCB-05P-MATTE", 
+    description: "Sổ thẻ Gift Card Book (5-20 trang)" 
+  },
+  { 
+    prefix: "SCARD", 
+    name: "Skin Card ATM", 
+    color: "#14b8a6", 
+    bg: "rgba(20, 184, 166, 0.15)", 
+    border: "rgba(20, 184, 166, 0.35)",
+    defaultCode: "SCARD-01", 
+    description: "Miếng dán thẻ ATM Skin Card" 
+  },
+  { 
+    prefix: "CAL", 
+    name: "Lịch Để Bàn (Calendar)", 
+    color: "#ef4444", 
+    bg: "rgba(239, 68, 68, 0.15)", 
+    border: "rgba(239, 68, 68, 0.35)",
+    defaultCode: "CAL-A4-01", 
+    description: "Lịch để bàn A4 / A5 / Mini" 
+  },
+  { 
+    prefix: "HD-EMB", 
+    name: "Áo Hoodie Thêu", 
+    color: "#a855f7", 
+    bg: "rgba(168, 85, 247, 0.15)", 
+    border: "rgba(168, 85, 247, 0.35)",
+    defaultCode: "HD-EMB-01", 
+    description: "Áo hoodie thêu vi tính" 
+  },
+  { 
+    prefix: "CAP-EMB", 
+    name: "Nón Thêu Vi Tính", 
+    color: "#f97316", 
+    bg: "rgba(249, 115, 22, 0.15)", 
+    border: "rgba(249, 115, 22, 0.35)",
+    defaultCode: "CAP-EMB-02", 
+    description: "Mũ lưỡi trai thêu logo 3D" 
+  }
+];
+
+const SAMPLE_ORDERS_RAW = [
+  { orderId: "#ORD-2026-001", sku: "CLEAR-CSTICKER-CUSTOM-09", name: "Decal Trong Suốt 5cm (Clear Sticker)", variant: "5cm Tròn", qty: 25, price: 12000 },
+  { orderId: "#ORD-2026-001", sku: "GCB-05P-MATTE", name: "Sổ Thẻ Gift Card Book (5 trang bìa mờ)", variant: "5 trang Mờ", qty: 2, price: 85000 },
+  { orderId: "#ORD-2026-002", sku: "CAL-2026-DESK", name: "Lịch Để Bàn A4 Lò Xo 13 Tờ", variant: "Khổ A4", qty: 5, price: 95000 },
+  { orderId: "#ORD-2026-003", sku: "UV-CSTICKER-GOLD-99", name: "Sticker UV DTF Logo Nổi Chuyển Nhiệt", variant: "Khổ cuộn 0.62m", qty: 30, price: 15000 },
+  { orderId: "#ORD-2026-004", sku: "PLC2-DELUXE-01", name: "Bộ Bài Playing Cards V.2 Cao Cấp", variant: "Bản V.2", qty: 3, price: 120000 },
+  { orderId: "#ORD-2026-005", sku: "SCARD-ATM-PAY", name: "Skin Card ATM / Ngân Hàng Hologram", variant: "Chuẩn ATM", qty: 50, price: 25000 },
+  { orderId: "#ORD-2026-006", sku: "STICKER-FASSON-SUA", name: "Sticker Decal Sữa Fasson Chống Nước", variant: "33x48cm", qty: 40, price: 10000 },
+  { orderId: "#ORD-2026-007", sku: "SILVER-CSTICKER-SHINE", name: "Custom Silver Sticker Decal Xi Bạc Bóng", variant: "Tem bạc máy móc", qty: 15, price: 35000 },
+  { orderId: "#ORD-2026-008", sku: "KRAFT-CSTICKER-RETRO", name: "Custom Kraft Sticker Decal Giấy Da Bò", variant: "Vintage Kraft", qty: 20, price: 20000 },
+  { orderId: "#ORD-2026-009", sku: "CSTICKER-HOLO-127", name: "Decal Hologram Tia Laser 7 Màu", variant: "Cuộn 1.27m", qty: 10, price: 45000 },
+  { orderId: "#ORD-2026-010", sku: "GCB-15P-HOLO-VIP", name: "Sổ Thẻ Quà Tặng Gift Card Book (15 trang bìa Holo)", variant: "15 trang Holo", qty: 4, price: 150000 },
+  { orderId: "#ORD-2026-011", sku: "HD-EMB-BLACK-XL", name: "Áo Hoodie Nỉ Bông Thêu Vi Tính Nổi Chữ Kí", variant: "Size XL Đen", qty: 2, price: 380000 },
+  { orderId: "#ORD-2026-012", sku: "CAP-EMB-NAVY-01", name: "Mũ Lưỡi Trai Classic Thêu Logo 3D Nổi", variant: "Màu Navy", qty: 6, price: 125000 }
+];
+
+function matchProductBySkuPrefix(skuRaw, nameRaw = '', variationRaw = '') {
+  const cleanSku = String(skuRaw || '').trim().toUpperCase();
+  const cleanName = String(nameRaw || '').trim();
+  const cleanVar = String(variationRaw || '').trim();
+  const fullText = `${cleanSku} ${cleanName} ${cleanVar}`.toUpperCase();
+
+  // 1. Exact Match on product.code
+  if (cleanSku) {
+    const exact = state.products.find(p => p.code && p.code.toUpperCase() === cleanSku);
+    if (exact) {
+      const pref = PREFIX_DEFINITIONS.find(d => cleanSku.startsWith(d.prefix)) || null;
+      return {
+        product: exact,
+        prefixDef: pref,
+        matchType: "EXACT",
+        matchLabel: "Khớp chính xác mã SKU",
+        score: 100,
+        isMatched: true
+      };
+    }
+  }
+
+  // 2. Prefix Match (longest prefix checked first)
+  for (const pref of PREFIX_DEFINITIONS) {
+    const pStr = pref.prefix;
+    const isPrefixHit = cleanSku === pStr ||
+      cleanSku.startsWith(pStr + "-") ||
+      cleanSku.startsWith(pStr + ":") ||
+      cleanSku.startsWith(pStr + "_") ||
+      cleanSku.startsWith(pStr);
+
+    if (isPrefixHit) {
+      const candidates = state.products.filter(p => p.code && p.code.toUpperCase().startsWith(pStr));
+      if (candidates.length === 1) {
+        return {
+          product: candidates[0],
+          prefixDef: pref,
+          matchType: "PREFIX",
+          matchLabel: `Khớp tiền tố ${pref.prefix}`,
+          score: 95,
+          isMatched: true
+        };
+      }
+
+      if (candidates.length > 1) {
+        let bestCandidate = null;
+        let maxScore = -1;
+
+        candidates.forEach(cand => {
+          let score = 0;
+          const candCodeTokens = cand.code.toUpperCase().split(/[-_:]/);
+          candCodeTokens.forEach(token => {
+            if (token && token !== pStr && fullText.includes(token)) {
+              score += 15;
+            }
+          });
+
+          if (pStr === "GCB") {
+            ["5P", "05P", "10P", "15P", "20P"].forEach(pCount => {
+              if (cand.code.includes(pCount) && fullText.includes(pCount.replace(/^0/, ''))) score += 20;
+            });
+            if (cand.code.includes("HOLO") && (fullText.includes("HOLO") || fullText.includes("7 MÀU") || fullText.includes("LẤP LÁNH"))) score += 25;
+            if (cand.code.includes("MATTE") && (fullText.includes("MATTE") || fullText.includes("MỜ"))) score += 25;
+          }
+
+          if (cand.code.includes("33X48") && fullText.includes("33X48")) score += 20;
+          if (cand.code.includes("CUON") && (fullText.includes("CUỘN") || fullText.includes("CUON") || fullText.includes("ROLL"))) score += 20;
+          if (cand.code.includes("VANG") && (fullText.includes("VÀNG") || fullText.includes("GOLD"))) score += 20;
+          if (cand.code.includes("BAC") && (fullText.includes("BẠC") || fullText.includes("SILVER"))) score += 20;
+          if (cand.code.includes("KRAFT") && (fullText.includes("KRAFT") || fullText.includes("DA BÒ"))) score += 20;
+          if (cand.code.includes("PROTON") && fullText.includes("PROTON")) score += 20;
+          if (cand.code.includes("MCCAL") && fullText.includes("MCCAL")) score += 20;
+          if (cand.code.includes("UNO") && fullText.includes("UNO")) score += 30;
+          if (cand.code.includes("A4") && fullText.includes("A4")) score += 20;
+          if (cand.code.includes("A5") && fullText.includes("A5")) score += 20;
+
+          if (cand.code === pref.defaultCode) score += 2;
+
+          if (score > maxScore) {
+            maxScore = score;
+            bestCandidate = cand;
+          }
+        });
+
+        return {
+          product: bestCandidate || candidates[0],
+          prefixDef: pref,
+          matchType: "PREFIX",
+          matchLabel: `Khớp tiền tố ${pref.prefix} (Biến thể tối ưu)`,
+          score: 90,
+          isMatched: true
+        };
+      }
+    }
+  }
+
+  // 3. Fallback Fuzzy Name / Keyword Match
+  const keywordMappings = [
+    { keys: ["LỊCH", "CALENDAR"], prefix: "CAL" },
+    { keys: ["BÀI V.2", "BÀI V2", "PLAYING CARD V2", "PLAYING CARD V.2"], prefix: "PLC2" },
+    { keys: ["BỘ BÀI", "PLAYING CARD", "UNO"], prefix: "PLC" },
+    { keys: ["GIFT CARD", "SỔ THẺ", "SỔ QUÀ"], prefix: "GCB" },
+    { keys: ["SKIN CARD", "DÁN THẺ", "THẺ ATM"], prefix: "SCARD" },
+    { keys: ["UV DTF", "UV-DTF", "UVDTF"], prefix: "UV-CSTICKER" },
+    { keys: ["CLEAR STICKER", "TRONG SUỐT", "DECAL TRONG"], prefix: "CLEAR-CSTICKER" },
+    { keys: ["KRAFT", "DA BÒ"], prefix: "KRAFT-CSTICKER" },
+    { keys: ["XI BẠC", "BẠC BÓNG", "SILVER STICKER"], prefix: "SILVER-CSTICKER" },
+    { keys: ["HOODIE", "ÁO THÊU"], prefix: "HD-EMB" },
+    { keys: ["NÓN", "MŨ LƯỠI TRAI", "MŨ THÊU", "CAP"], prefix: "CAP-EMB" },
+    { keys: ["CUSTOM STICKER", "TEM CUỘN"], prefix: "CSTICKER" },
+    { keys: ["STICKER", "DECAL"], prefix: "STICKER" }
+  ];
+
+  for (const km of keywordMappings) {
+    if (km.keys.some(k => fullText.includes(k))) {
+      const pref = PREFIX_DEFINITIONS.find(d => d.prefix === km.prefix);
+      if (pref) {
+        const prod = state.products.find(p => p.code === pref.defaultCode) ||
+                     state.products.find(p => p.code && p.code.startsWith(pref.prefix));
+        if (prod) {
+          return {
+            product: prod,
+            prefixDef: pref,
+            matchType: "FUZZY",
+            matchLabel: `Khớp từ khóa tên [${km.prefix}]`,
+            score: 75,
+            isMatched: true
+          };
+        }
+      }
+    }
+  }
+
+  // 4. No Match
+  return {
+    product: null,
+    prefixDef: null,
+    matchType: "UNMATCHED",
+    matchLabel: "Không nhận diện được SKU",
+    score: 0,
+    isMatched: false
+  };
+}
+
+function calculateOrderItemCosts(item) {
+  let product = null;
+  let prefixDef = null;
+  let matchType = "UNMATCHED";
+  let matchLabel = "Chưa khớp";
+  let isMatched = false;
+
+  if (item.manualProductId) {
+    product = state.products.find(p => p.id === item.manualProductId);
+    if (product) {
+      prefixDef = PREFIX_DEFINITIONS.find(d => product.code && product.code.startsWith(d.prefix)) || null;
+      matchType = "MANUAL";
+      matchLabel = "Chỉ định thủ công";
+      isMatched = true;
+    }
+  } else {
+    const matchResult = matchProductBySkuPrefix(item.sku, item.name, item.variant);
+    product = matchResult.product;
+    prefixDef = matchResult.prefixDef;
+    matchType = matchResult.matchType;
+    matchLabel = matchResult.matchLabel;
+    isMatched = matchResult.isMatched;
+  }
+
+  const qty = parseFloat(item.qty) || 0;
+  const inputPrice = parseFloat(item.price) || 0;
+
+  if (!product) {
+    return {
+      ...item,
+      product: null,
+      prefixDef,
+      matchType,
+      matchLabel,
+      isMatched: false,
+      unitVariableCost: 0,
+      unitOverheadCost: 0,
+      unitPaybackSurcharge: 0,
+      unitFullCost: 0,
+      unitSellerPrice: 0,
+      effectiveUnitPrice: inputPrice,
+      lineVariableCost: 0,
+      lineFullCost: 0,
+      lineRevenue: Math.round(inputPrice * qty),
+      lineProfit: Math.round(inputPrice * qty),
+      profitMargin: 0
+    };
+  }
+
+  const cost = calculateProductCost(product, state.settings);
+  const unitVariableCost = cost.variableCost || 0;
+  const unitOverheadCost = cost.overheadCost || 0;
+  const unitPaybackSurcharge = cost.paybackSurchargeFirst3Years || 0;
+  const unitFullCost = cost.paybackBaseCost || (cost.baseCost + unitPaybackSurcharge);
+  const unitSellerPrice = cost.paybackSellerPrice || cost.sellerPrice || 0;
+
+  const effectiveUnitPrice = inputPrice > 0 ? inputPrice : unitSellerPrice;
+  const lineVariableCost = Math.round(unitVariableCost * qty);
+  const lineFullCost = Math.round(unitFullCost * qty);
+  const lineRevenue = Math.round(effectiveUnitPrice * qty);
+  const lineProfit = lineRevenue - lineFullCost;
+  const profitMargin = lineRevenue > 0 ? Math.round((lineProfit / lineRevenue) * 100) : 0;
+
+  return {
+    ...item,
+    product,
+    prefixDef,
+    matchType,
+    matchLabel,
+    isMatched: true,
+    unitVariableCost,
+    unitOverheadCost,
+    unitPaybackSurcharge,
+    unitFullCost,
+    unitSellerPrice,
+    effectiveUnitPrice,
+    lineVariableCost,
+    lineFullCost,
+    lineRevenue,
+    lineProfit,
+    profitMargin
+  };
+}
+
+function groupAndCalculateOrders(rawItems) {
+  const ordersMap = new Map();
+  const flatItems = [];
+
+  rawItems.forEach((raw, idx) => {
+    const orderId = String(raw.orderId || `ĐƠN-#${idx + 1}`).trim();
+    if (!ordersMap.has(orderId)) {
+      ordersMap.set(orderId, {
+        orderId,
+        items: [],
+        totalQty: 0,
+        totalVariableCost: 0,
+        totalFullCost: 0,
+        totalRevenue: 0,
+        totalProfit: 0,
+        profitMargin: 0,
+        prefixes: new Set(),
+        isAllMatched: true,
+        hasWarning: false
+      });
+    }
+
+    const calculatedItem = calculateOrderItemCosts(raw);
+    calculatedItem.itemIndex = idx;
+    flatItems.push(calculatedItem);
+
+    const order = ordersMap.get(orderId);
+    order.items.push(calculatedItem);
+    order.totalQty += calculatedItem.qty;
+    order.totalVariableCost += calculatedItem.lineVariableCost;
+    order.totalFullCost += calculatedItem.lineFullCost;
+    order.totalRevenue += calculatedItem.lineRevenue;
+    order.totalProfit += calculatedItem.lineProfit;
+
+    if (calculatedItem.prefixDef) {
+      order.prefixes.add(calculatedItem.prefixDef.prefix);
+    }
+    if (!calculatedItem.isMatched) {
+      order.isAllMatched = false;
+      order.hasWarning = true;
+    }
+  });
+
+  const orders = Array.from(ordersMap.values()).map(order => {
+    order.profitMargin = order.totalRevenue > 0 ? Math.round((order.totalProfit / order.totalRevenue) * 100) : 0;
+    order.prefixesList = Array.from(order.prefixes);
+    return order;
+  });
+
+  return { orders, flatItems };
+}
+
+// ==========================================================================
 // 3. Tab Routing & Views Rendering
 // ==========================================================================
 
@@ -1852,6 +2279,10 @@ function switchTab(tabId) {
     pageTitle.textContent = "Dự Báo Mua Hàng";
     pageSubtitle.textContent = "Lên kế hoạch đặt hàng dự phòng dựa trên dữ liệu tồn kho";
     renderForecast();
+  } else if (tabId === "order-cost") {
+    pageTitle.textContent = "Dò Giá Cost Đơn Hàng (Smart SKU Engine)";
+    pageSubtitle.textContent = "Tự động phân tích tiền tố SKU, xác định chi phí giá vốn (Cost) và lợi nhuận cho từng đơn hàng";
+    renderOrderCostInspector();
   } else if (tabId === "monthly-report") {
     pageTitle.textContent = "Báo Cáo Chi Phí & Doanh Thu Từng Tháng";
     pageSubtitle.textContent = "Phân tích Biến phí (VC), Số dư đảm phí, Định phí xưởng (FC) và Lợi nhuận ròng";
@@ -5456,6 +5887,12 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
         };
 
         const findBestMatch = (csvSku, csvName, csvVar, products) => {
+          // 0. Use Smart SKU Prefix Engine (v24.0)
+          const smartMatch = matchProductBySkuPrefix(csvSku, csvName, csvVar);
+          if (smartMatch && smartMatch.product) {
+            return smartMatch.product;
+          }
+
           const normSku = normalizeString(csvSku);
           const normName = normalizeString(csvName);
           const normVar = normalizeString(csvVar);
@@ -6260,10 +6697,935 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
     });
   }
 
+  // ==========================================================================
+  // 7. ORDER COST INSPECTOR EVENT BINDINGS (v24.0)
+  // ==========================================================================
+
+  const btnUploadOrderFile = document.getElementById("btn-upload-order-file");
+  const orderCostFileInput = document.getElementById("order-cost-file-input");
+  const btnOpenPasteModal = document.getElementById("btn-open-paste-modal");
+  const modalOrderPaste = document.getElementById("modal-order-paste");
+  const modalOrderPasteClose = document.getElementById("modal-order-paste-close-btn");
+  const modalOrderPasteCancel = document.getElementById("modal-order-paste-cancel-btn");
+  const modalOrderPasteSubmit = document.getElementById("modal-order-paste-submit-btn");
+  const orderPasteTextarea = document.getElementById("order-paste-textarea");
+
+  const btnLoadSampleOrders = document.getElementById("btn-load-sample-orders");
+  const btnDownloadSampleOrderXlsx = document.getElementById("btn-download-sample-order-xlsx");
+  const btnExportOrderCostXlsx = document.getElementById("btn-export-order-cost-xlsx");
+  const btnSyncOrdersToMRP = document.getElementById("btn-sync-orders-to-mrp");
+
+  const liveSkuInput = document.getElementById("live-sku-input");
+  const orderSearchInput = document.getElementById("order-search-input");
+  const orderFilterStatus = document.getElementById("order-filter-status");
+  const btnViewOrderGroup = document.getElementById("btn-view-order-group");
+  const btnViewFlatItems = document.getElementById("btn-view-flat-items");
+
+  if (btnUploadOrderFile && orderCostFileInput) {
+    btnUploadOrderFile.addEventListener("click", () => orderCostFileInput.click());
+  }
+
+  if (orderCostFileInput) {
+    orderCostFileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const fileExt = file.name.split('.').pop().toLowerCase();
+      const reader = new FileReader();
+
+      reader.onload = (evt) => {
+        try {
+          let grid = [];
+          if (fileExt === 'xlsx' || fileExt === 'xls') {
+            if (typeof XLSX === 'undefined') {
+              alert("Lỗi: Thư viện đọc file Excel chưa sẵn sàng!");
+              return;
+            }
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.SheetNames[0];
+            grid = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { header: 1 });
+          } else {
+            const text = evt.target.result;
+            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            if (lines.length < 2) {
+              alert("File CSV cần ít nhất 1 dòng tiêu đề và 1 dòng dữ liệu!");
+              return;
+            }
+            let sep = ",";
+            if (lines[0].includes("\t")) sep = "\t";
+            else if (lines[0].includes(";")) sep = ";";
+
+            grid = lines.map(line => {
+              const res = [];
+              let inside = false;
+              let curr = "";
+              for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (ch === '"') inside = !inside;
+                else if (ch === sep && !inside) {
+                  res.push(curr.trim().replace(/^"|"$/g, ''));
+                  curr = "";
+                } else {
+                  curr += ch;
+                }
+              }
+              res.push(curr.trim().replace(/^"|"$/g, ''));
+              return res;
+            });
+          }
+
+          const parsedRows = parseOrderRowsFromGrid(grid);
+          if (parsedRows.length === 0) {
+            alert("Không tìm thấy dòng đơn hàng hợp lệ nào trong file! Vui lòng tải file mẫu để xem cấu trúc chuẩn.");
+            return;
+          }
+
+          state.orderCostState.rawRows = parsedRows;
+          renderOrderCostInspector();
+          alert(`✅ Đã tải lên và nhận diện thành công ${parsedRows.length} dòng đơn hàng từ file!`);
+        } catch (err) {
+          console.error("Lỗi khi xử lý file đơn hàng:", err);
+          alert("Lỗi khi đọc file đơn hàng! Vui lòng kiểm tra định dạng .xlsx hoặc .csv.");
+        } finally {
+          orderCostFileInput.value = "";
+        }
+      };
+
+      if (fileExt === 'xlsx' || fileExt === 'xls') {
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.readAsText(file, 'utf-8');
+      }
+    });
+  }
+
+  // Paste dialog
+  if (btnOpenPasteModal && modalOrderPaste) {
+    btnOpenPasteModal.addEventListener("click", () => {
+      if (orderPasteTextarea) orderPasteTextarea.value = "";
+      modalOrderPaste.showModal();
+    });
+  }
+  if (modalOrderPasteClose && modalOrderPaste) {
+    modalOrderPasteClose.addEventListener("click", () => modalOrderPaste.close());
+  }
+  if (modalOrderPasteCancel && modalOrderPaste) {
+    modalOrderPasteCancel.addEventListener("click", () => modalOrderPaste.close());
+  }
+  if (modalOrderPasteSubmit && modalOrderPaste) {
+    modalOrderPasteSubmit.addEventListener("click", () => {
+      const text = (orderPasteTextarea?.value || '').trim();
+      if (!text) {
+        alert("Vui lòng dán dữ liệu danh sách đơn hàng vào ô văn bản!");
+        return;
+      }
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length === 0) return;
+
+      const sep = lines[0].includes("\t") ? "\t" : (lines[0].includes(",") ? "," : ";");
+      const grid = lines.map(line => line.split(sep).map(c => c.trim().replace(/^"|"$/g, '')));
+
+      // Check if first line is a header
+      const firstLineHeaderCheck = grid[0].some(cell => {
+        const c = cell.toLowerCase();
+        return c.includes("mã") || c.includes("sku") || c.includes("đơn") || c.includes("tên") || c.includes("order");
+      });
+
+      let parsedRows = [];
+      if (firstLineHeaderCheck) {
+        parsedRows = parseOrderRowsFromGrid(grid);
+      } else {
+        // synthesize header if missing
+        grid.unshift(["Mã Đơn", "Mã SKU", "Tên Sản Phẩm", "Biến Thể", "Số Lượng", "Đơn Giá"]);
+        parsedRows = parseOrderRowsFromGrid(grid);
+      }
+
+      if (parsedRows.length === 0) {
+        alert("Không thể phân tích dữ liệu đã dán! Vui lòng kiểm tra lại số cột.");
+        return;
+      }
+
+      state.orderCostState.rawRows = parsedRows;
+      modalOrderPaste.close();
+      renderOrderCostInspector();
+      alert(`✅ Đã phân tích thành công ${parsedRows.length} dòng đơn hàng!`);
+    });
+  }
+
+  // Load sample orders
+  if (btnLoadSampleOrders) {
+    btnLoadSampleOrders.addEventListener("click", () => {
+      state.orderCostState.rawRows = JSON.parse(JSON.stringify(SAMPLE_ORDERS_RAW));
+      renderOrderCostInspector();
+      alert("✨ Đã nạp 12 đơn hàng mẫu bao quát toàn bộ 13 tiền tố chuẩn!");
+    });
+  }
+
+  // Download Sample Excel
+  if (btnDownloadSampleOrderXlsx) {
+    btnDownloadSampleOrderXlsx.addEventListener("click", downloadSampleOrdersXLSX);
+  }
+
+  // Export Order Cost Report Excel
+  if (btnExportOrderCostXlsx) {
+    btnExportOrderCostXlsx.addEventListener("click", exportOrderCostReportXLSX);
+  }
+
+  // Sync to MRP
+  if (btnSyncOrdersToMRP) {
+    btnSyncOrdersToMRP.addEventListener("click", syncOrdersToMRP);
+  }
+
+  // Live Single SKU Tester input
+  if (liveSkuInput) {
+    liveSkuInput.addEventListener("input", (e) => {
+      renderLiveSkuInspector(e.target.value);
+    });
+  }
+
+  // Quick SKU pills
+  document.querySelectorAll(".quick-sku-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      const sku = pill.getAttribute("data-sku");
+      if (liveSkuInput && sku) {
+        liveSkuInput.value = sku;
+        renderLiveSkuInspector(sku);
+      }
+    });
+  });
+
+  // Search input
+  if (orderSearchInput) {
+    orderSearchInput.addEventListener("input", (e) => {
+      state.orderCostState.searchQuery = e.target.value;
+      renderOrderCostInspector();
+    });
+  }
+
+  // Status filter
+  if (orderFilterStatus) {
+    orderFilterStatus.addEventListener("change", (e) => {
+      state.orderCostState.filterStatus = e.target.value;
+      renderOrderCostInspector();
+    });
+  }
+
+  // View mode toggles
+  if (btnViewOrderGroup && btnViewFlatItems) {
+    btnViewOrderGroup.addEventListener("click", () => {
+      state.orderCostState.viewMode = "order";
+      btnViewOrderGroup.classList.add("active");
+      btnViewFlatItems.classList.remove("active");
+      renderOrderCostInspector();
+    });
+    btnViewFlatItems.addEventListener("click", () => {
+      state.orderCostState.viewMode = "flat";
+      btnViewFlatItems.classList.add("active");
+      btnViewOrderGroup.classList.remove("active");
+      renderOrderCostInspector();
+    });
+  }
+
   // Initialize
   updateMaterialsCatalogDatalist();
   switchTab("dashboard");
 });
+
+// ==========================================================================
+// 8. ORDER COST INSPECTOR UI CONTROLLER FUNCTIONS (v24.0)
+// ==========================================================================
+
+function renderLiveSkuInspector(query) {
+  const container = document.getElementById("live-sku-result-box");
+  if (!container) return;
+
+  const q = String(query || '').trim();
+  if (!q) {
+    container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">Vui lòng nhập mã SKU hoặc tiền tố để kiểm tra giá cost...</span>`;
+    return;
+  }
+
+  const match = matchProductBySkuPrefix(q);
+  const p = match.product;
+  const pref = match.prefixDef;
+
+  if (!p) {
+    container.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="color: #ef4444; font-size: 1.1rem;">⚠️</span>
+          <div>
+            <div style="font-weight: 600; color: #f87171; font-size: 0.85rem;">Không tìm thấy tiền tố hoặc sản phẩm phù hợp cho "${q}"</div>
+            <span style="font-size: 0.72rem; color: var(--text-secondary);">Hãy kiểm tra lại xem mã SKU có bắt đầu bằng 1 trong 13 tiền tố chuẩn: CAL-, PLC-, PLC2-, GCB-, SCARD-, STICKER-, CSTICKER-, CLEAR-CSTICKER-, UV-CSTICKER-, KRAFT-CSTICKER-, SILVER-CSTICKER-, HD-EMB-, CAP-EMB-</span>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const cost = calculateProductCost(p, state.settings);
+  const unitVar = cost.variableCost || 0;
+  const unitMat = cost.materialsCost || 0;
+  const unitLabor = cost.laborCost || 0;
+  const unitPayback = cost.paybackSurchargeFirst3Years || 0;
+  const unitOverhead = cost.overheadCost || 0;
+  const unitFull = cost.paybackBaseCost || (cost.baseCost + unitPayback);
+  const unitSeller = cost.paybackSellerPrice || cost.sellerPrice || 0;
+
+  const prefBadge = pref ? `
+    <span class="badge-prefix-tag" style="background: ${pref.bg}; color: ${pref.color}; border: 1px solid ${pref.border};">
+      🏷️ ${pref.prefix} (${pref.name})
+    </span>
+  ` : `<span class="badge-prefix-tag" style="background: rgba(255,255,255,0.1); color: #fff;">${p.code}</span>`;
+
+  container.innerHTML = `
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: center;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
+          ${prefBadge}
+          <span class="badge-match-status badge-match-${match.matchType.toLowerCase()}">${match.matchLabel}</span>
+        </div>
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0 0 0.25rem 0;">${p.name}</h3>
+        <div style="font-size: 0.75rem; color: #a5b4fc; display: flex; gap: 0.75rem;">
+          <span>Mã gốc: <strong style="color: #fff; font-family: monospace;">${p.code}</strong></span>
+          <span>Nhà máy: <strong style="color: #fff;">${p.factoryType}</strong></span>
+          <span>Đơn vị: <strong style="color: #fff;">${p.layout?.unitType || 'Cái'}</strong></span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: flex-end;">
+        <div style="background: rgba(0,0,0,0.25); padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); text-align: right;">
+          <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase;">Biến Phí (NVL+Thợ)</span>
+          <div style="font-size: 0.95rem; font-weight: 700; color: #fbbf24;">${formatVND(unitVar)}</div>
+          <span style="font-size: 0.65rem; color: #94a3b8;">NVL: ${formatVND(unitMat)} | Thợ: ${formatVND(unitLabor)}</span>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.25); padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); text-align: right;">
+          <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase;">Khấu Hao Máy + QL</span>
+          <div style="font-size: 0.95rem; font-weight: 700; color: #60a5fa;">${formatVND(unitPayback + unitOverhead)}</div>
+          <span style="font-size: 0.65rem; color: #94a3b8;">Máy: ${formatVND(unitPayback)} | QL: ${formatVND(unitOverhead)}</span>
+        </div>
+
+        <div style="background: rgba(239, 68, 68, 0.1); padding: 0.5rem 0.85rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); text-align: right;">
+          <span style="font-size: 0.65rem; color: #f87171; text-transform: uppercase; font-weight: 700;">GIÁ COST TOÀN PHẦN</span>
+          <div style="font-size: 1.15rem; font-weight: 800; color: #f87171;">${formatVND(unitFull)}</div>
+          <span style="font-size: 0.65rem; color: #34d399;">Giá bán xưởng: ${formatVND(unitSeller)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderOrderCostInspector() {
+  if (!state.orderCostState.rawRows || state.orderCostState.rawRows.length === 0) {
+    state.orderCostState.rawRows = JSON.parse(JSON.stringify(SAMPLE_ORDERS_RAW));
+  }
+
+  const { orders, flatItems } = groupAndCalculateOrders(state.orderCostState.rawRows);
+  state.orderCostState.orders = orders;
+  state.orderCostState.flatItems = flatItems;
+
+  // 1. Render Live SKU inspector
+  const liveInput = document.getElementById("live-sku-input");
+  if (liveInput) {
+    renderLiveSkuInspector(liveInput.value);
+  }
+
+  // 2. Compute Batch Totals
+  const totalOrders = orders.length;
+  const totalItems = flatItems.reduce((sum, it) => sum + (it.qty || 0), 0);
+  const matchedRowsCount = flatItems.filter(it => it.isMatched).length;
+  const matchRate = flatItems.length > 0 ? Math.round((matchedRowsCount / flatItems.length) * 100) : 100;
+  const totalVariableCost = orders.reduce((sum, o) => sum + o.totalVariableCost, 0);
+  const totalFullCost = orders.reduce((sum, o) => sum + o.totalFullCost, 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + o.totalRevenue, 0);
+  const totalProfit = orders.reduce((sum, o) => sum + o.totalProfit, 0);
+  const totalProfitMargin = totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100) : 0;
+  const totalDepreciation = totalFullCost - totalVariableCost;
+
+  // 3. Update KPI cards
+  const elOrders = document.getElementById("kpi-batch-orders");
+  const elOrdersSub = document.getElementById("kpi-batch-orders-sub");
+  const elItems = document.getElementById("kpi-batch-items");
+  const elItemsSub = document.getElementById("kpi-batch-items-sub");
+  const elMatchRate = document.getElementById("kpi-batch-match-rate");
+  const elMatchSub = document.getElementById("kpi-batch-match-sub");
+  const elVarCost = document.getElementById("kpi-batch-variable-cost");
+  const elTotalCost = document.getElementById("kpi-batch-total-cost");
+  const elDeprecSub = document.getElementById("kpi-batch-depreciation-sub");
+  const elRevProfit = document.getElementById("kpi-batch-revenue-profit");
+  const elMarginSub = document.getElementById("kpi-batch-margin-sub");
+
+  if (elOrders) elOrders.textContent = `${totalOrders.toLocaleString('vi-VN')} đơn`;
+  if (elOrdersSub) elOrdersSub.textContent = `${flatItems.length.toLocaleString('vi-VN')} dòng sản phẩm`;
+  if (elItems) elItems.textContent = `${totalItems.toLocaleString('vi-VN')} chiếc`;
+  if (elItemsSub) {
+    const avgPerOrder = totalOrders > 0 ? Math.round(totalItems / totalOrders) : 0;
+    elItemsSub.textContent = `Trung bình: ${avgPerOrder} cái/đơn`;
+  }
+  if (elMatchRate) elMatchRate.textContent = `${matchRate}%`;
+  if (elMatchSub) {
+    const unmatchedCount = flatItems.length - matchedRowsCount;
+    elMatchSub.textContent = unmatchedCount > 0 ? `⚠️ ${unmatchedCount} dòng chưa nhận diện SKU` : `✅ Đã nhận diện 100% SKU`;
+  }
+  if (elVarCost) elVarCost.textContent = formatVND(totalVariableCost);
+  if (elTotalCost) elTotalCost.textContent = formatVND(totalFullCost);
+  if (elDeprecSub) elDeprecSub.textContent = `Khấu hao máy & QL: ${formatVND(totalDepreciation)}`;
+  if (elRevProfit) elRevProfit.textContent = formatVND(totalRevenue);
+  if (elMarginSub) elMarginSub.textContent = `Lãi gộp: ${formatVND(totalProfit)} (${totalProfitMargin >= 0 ? '+' : ''}${totalProfitMargin}%)`;
+
+  // 4. Render Prefix Filter Pills
+  const pillsContainer = document.getElementById("order-prefix-pills");
+  if (pillsContainer) {
+    const activePref = state.orderCostState.filterPrefix || "all";
+    let pillsHtml = `
+      <button type="button" class="prefix-pill-btn ${activePref === 'all' ? 'active' : ''}" data-prefix="all">
+        <span>Tất Cả</span> (${flatItems.length})
+      </button>
+    `;
+
+    PREFIX_DEFINITIONS.forEach(def => {
+      const count = flatItems.filter(it => it.prefixDef && it.prefixDef.prefix === def.prefix).length;
+      const isActive = activePref === def.prefix;
+      pillsHtml += `
+        <button type="button" class="prefix-pill-btn ${isActive ? 'active' : ''}" data-prefix="${def.prefix}" style="border-color: ${isActive ? def.color : 'rgba(255,255,255,0.08)'}; color: ${isActive ? '#fff' : def.color};">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${def.color};"></span>
+          <span>${def.prefix}</span> (${count})
+        </button>
+      `;
+    });
+
+    pillsContainer.innerHTML = pillsHtml;
+
+    pillsContainer.querySelectorAll(".prefix-pill-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.orderCostState.filterPrefix = btn.getAttribute("data-prefix");
+        renderOrderCostInspector();
+      });
+    });
+  }
+
+  // 5. Filter orders
+  const query = (state.orderCostState.searchQuery || '').toLowerCase().trim();
+  const filterPrefix = state.orderCostState.filterPrefix || 'all';
+  const filterStatus = state.orderCostState.filterStatus || 'all';
+
+  let filteredOrders = orders.filter(order => {
+    if (filterPrefix !== 'all') {
+      const hasPref = order.items.some(it => it.prefixDef && it.prefixDef.prefix === filterPrefix);
+      if (!hasPref) return false;
+    }
+
+    if (filterStatus === 'matched' && !order.isAllMatched) return false;
+    if (filterStatus === 'unmatched' && order.isAllMatched) return false;
+
+    if (query) {
+      const matchOrderId = order.orderId.toLowerCase().includes(query);
+      const matchItem = order.items.some(it =>
+        (it.sku && it.sku.toLowerCase().includes(query)) ||
+        (it.name && it.name.toLowerCase().includes(query)) ||
+        (it.product && it.product.name.toLowerCase().includes(query)) ||
+        (it.product && it.product.code.toLowerCase().includes(query))
+      );
+      if (!matchOrderId && !matchItem) return false;
+    }
+
+    return true;
+  });
+
+  // 6. Render Container
+  const container = document.getElementById("order-cost-results-container");
+  if (!container) return;
+
+  if (filteredOrders.length === 0) {
+    container.innerHTML = `
+      <div class="glass-card" style="padding: 2.5rem; text-align: center; color: var(--text-secondary);">
+        <span style="font-size: 2.5rem; display: block; margin-bottom: 0.75rem;">🔍</span>
+        <h4 style="color: #fff; font-size: 1rem; margin-bottom: 0.5rem;">Không tìm thấy đơn hàng nào phù hợp với bộ lọc</h4>
+        <p style="font-size: 0.8rem; margin-bottom: 1rem;">Hãy thử xóa bộ lọc tìm kiếm hoặc nạp lại dữ liệu đơn hàng mẫu.</p>
+        <button type="button" class="btn btn-secondary" onclick="state.orderCostState.searchQuery=''; state.orderCostState.filterPrefix='all'; state.orderCostState.filterStatus='all'; renderOrderCostInspector();">
+          Đặt Lại Bộ Lọc
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  if (state.orderCostState.viewMode === "flat") {
+    // Flat Table View
+    let tableHtml = `
+      <div class="glass-card table-responsive" style="padding: 0; overflow-x: auto;">
+        <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border-glass); background: rgba(0,0,0,0.25);">
+              <th style="padding: 0.65rem; text-align: center;">STT</th>
+              <th style="padding: 0.65rem;">Mã Đơn Hàng</th>
+              <th style="padding: 0.65rem;">SKU Trong File</th>
+              <th style="padding: 0.65rem;">Tiền Tố Nhận Diện</th>
+              <th style="padding: 0.65rem;">Sản Phẩm Trong Hệ Thống</th>
+              <th style="padding: 0.65rem; text-align: right;">Số Lượng</th>
+              <th style="padding: 0.65rem; text-align: right;">Đơn Giá Biến Phí</th>
+              <th style="padding: 0.65rem; text-align: right;">Đơn Giá Cost Toàn Phần</th>
+              <th style="padding: 0.65rem; text-align: right; color: #f87171;">TỔNG COST MÓN</th>
+              <th style="padding: 0.65rem; text-align: right;">Đơn Giá Bán</th>
+              <th style="padding: 0.65rem; text-align: right; color: #34d399;">Lãi Gộp Món</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    let itemStt = 1;
+    filteredOrders.forEach(ord => {
+      ord.items.forEach(it => {
+        const prefBadge = it.prefixDef ? `
+          <span class="badge-prefix-tag" style="background: ${it.prefixDef.bg}; color: ${it.prefixDef.color}; border: 1px solid ${it.prefixDef.border};">
+            ${it.prefixDef.prefix}
+          </span>
+        ` : `<span style="color: #f87171; font-weight: 600;">Không có</span>`;
+
+        tableHtml += `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+            <td style="padding: 0.6rem; text-align: center; color: var(--text-muted); font-family: monospace;">${itemStt++}</td>
+            <td style="padding: 0.6rem; font-weight: 700; color: #60a5fa; font-family: monospace;">${ord.orderId}</td>
+            <td style="padding: 0.6rem; font-family: monospace; color: #fff;">${it.sku || 'N/A'}</td>
+            <td style="padding: 0.6rem;">${prefBadge}</td>
+            <td style="padding: 0.6rem;">
+              <select class="form-input select-manual-prod" data-item-index="${it.itemIndex}" style="padding: 0.25rem 0.45rem; font-size: 0.72rem; min-width: 220px; background: rgba(15,23,42,0.8);">
+                <option value="" ${!it.product ? 'selected' : ''}>-- Chọn sản phẩm khớp --</option>
+                ${state.products.map(p => `<option value="${p.id}" ${it.product && it.product.id === p.id ? 'selected' : ''}>[${p.code}] ${p.name}</option>`).join("")}
+              </select>
+            </td>
+            <td style="padding: 0.6rem; text-align: right; font-weight: 600; color: #fff;">${(it.qty || 0).toLocaleString('vi-VN')}</td>
+            <td style="padding: 0.6rem; text-align: right; color: #fbbf24;">${formatVND(it.unitVariableCost)}</td>
+            <td style="padding: 0.6rem; text-align: right; color: #f87171; font-weight: 600;">${formatVND(it.unitFullCost)}</td>
+            <td style="padding: 0.6rem; text-align: right; color: #f87171; font-weight: 800; background: rgba(239,68,68,0.05);">${formatVND(it.lineFullCost)}</td>
+            <td style="padding: 0.6rem; text-align: right; color: #94a3b8;">${formatVND(it.effectiveUnitPrice)}</td>
+            <td style="padding: 0.6rem; text-align: right; color: ${it.lineProfit >= 0 ? '#34d399' : '#f87171'}; font-weight: 700;">
+              ${formatVND(it.lineProfit)}
+              <span style="font-size: 0.65rem; display: block; color: var(--text-muted); font-weight: 400;">(${it.profitMargin >= 0 ? '+' : ''}${it.profitMargin}%)</span>
+            </td>
+          </tr>
+        `;
+      });
+    });
+
+    tableHtml += `
+          </tbody>
+        </table>
+      </div>
+    `;
+    container.innerHTML = tableHtml;
+  } else {
+    // Order Group View (Default)
+    let cardsHtml = "";
+    filteredOrders.forEach((order, oIdx) => {
+      const badgesHtml = order.prefixesList.map(prefStr => {
+        const pDef = PREFIX_DEFINITIONS.find(d => d.prefix === prefStr);
+        return pDef ? `
+          <span class="badge-prefix-tag" style="background: ${pDef.bg}; color: ${pDef.color}; border: 1px solid ${pDef.border};">
+            ${pDef.prefix}
+          </span>
+        ` : `<span class="badge-prefix-tag" style="background: rgba(255,255,255,0.1); color: #fff;">${prefStr}</span>`;
+      }).join(" ");
+
+      const statusBadge = order.isAllMatched ?
+        `<span class="badge-match-status badge-match-exact">✅ Khớp 100%</span>` :
+        `<span class="badge-match-status badge-match-unmatched">⚠️ Cần gán SP</span>`;
+
+      // Sub-items table
+      let subTableHtml = `
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.74rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); text-align: left;">
+                <th style="padding: 0.4rem 0.5rem;">Mã SKU File</th>
+                <th style="padding: 0.4rem 0.5rem;">Tiền Tố</th>
+                <th style="padding: 0.4rem 0.5rem;">Sản Phẩm Trong Hệ Thống (Có thể gán lại)</th>
+                <th style="padding: 0.4rem 0.5rem; text-align: right;">SL</th>
+                <th style="padding: 0.4rem 0.5rem; text-align: right;">Biến Phí (1 sp)</th>
+                <th style="padding: 0.4rem 0.5rem; text-align: right;">Cost Toàn Phần (1 sp)</th>
+                <th style="padding: 0.4rem 0.5rem; text-align: right; color: #f87171;">Thành Tiền Cost</th>
+                <th style="padding: 0.4rem 0.5rem; text-align: right;">Đơn Giá Bán</th>
+                <th style="padding: 0.4rem 0.5rem; text-align: right; color: #34d399;">Lãi Gộp Món</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      order.items.forEach(it => {
+        const itemPref = it.prefixDef ? `
+          <span class="badge-prefix-tag" style="background: ${it.prefixDef.bg}; color: ${it.prefixDef.color}; border: 1px solid ${it.prefixDef.border};">
+            ${it.prefixDef.prefix}
+          </span>
+        ` : `<span style="color: #f87171; font-size: 0.7rem; font-weight: 600;">⚠️ Chưa khớp</span>`;
+
+        subTableHtml += `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <td style="padding: 0.5rem; font-family: monospace; color: #fff; font-weight: 500;">
+              ${it.sku || 'N/A'}
+              ${it.name ? `<span style="font-size: 0.65rem; display: block; color: var(--text-muted); font-family: sans-serif;">${it.name} ${it.variant ? `(${it.variant})` : ''}</span>` : ''}
+            </td>
+            <td style="padding: 0.5rem;">${itemPref}</td>
+            <td style="padding: 0.5rem;">
+              <select class="form-input select-manual-prod" data-item-index="${it.itemIndex}" style="padding: 0.25rem 0.45rem; font-size: 0.72rem; min-width: 240px; background: rgba(15,23,42,0.85);">
+                <option value="" ${!it.product ? 'selected' : ''}>-- Chọn sản phẩm để tính cost --</option>
+                ${state.products.map(p => `<option value="${p.id}" ${it.product && it.product.id === p.id ? 'selected' : ''}>[${p.code}] ${p.name}</option>`).join("")}
+              </select>
+            </td>
+            <td style="padding: 0.5rem; text-align: right; font-weight: 700; color: #fff;">${it.qty}</td>
+            <td style="padding: 0.5rem; text-align: right; color: #fbbf24;">${formatVND(it.unitVariableCost)}</td>
+            <td style="padding: 0.5rem; text-align: right; color: #f87171; font-weight: 600;">${formatVND(it.unitFullCost)}</td>
+            <td style="padding: 0.5rem; text-align: right; color: #f87171; font-weight: 800; background: rgba(239,68,68,0.05);">${formatVND(it.lineFullCost)}</td>
+            <td style="padding: 0.5rem; text-align: right; color: #94a3b8;">${formatVND(it.effectiveUnitPrice)}</td>
+            <td style="padding: 0.5rem; text-align: right; color: ${it.lineProfit >= 0 ? '#34d399' : '#f87171'}; font-weight: 700;">
+              ${formatVND(it.lineProfit)}
+            </td>
+          </tr>
+        `;
+      });
+
+      subTableHtml += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      cardsHtml += `
+        <div class="order-group-card">
+          <div class="order-card-header" data-order-index="${oIdx}">
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+              <span style="font-size: 1.1rem; color: #60a5fa;">📦</span>
+              <strong style="color: #fff; font-size: 0.92rem; font-family: monospace;">${order.orderId}</strong>
+              <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">${badgesHtml}</div>
+              ${statusBadge}
+              <span style="font-size: 0.75rem; color: #94a3b8;">(${order.items.length} món • ${order.totalQty} sản phẩm)</span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1.25rem;">
+              <div style="text-align: right;">
+                <span style="font-size: 0.65rem; color: #f87171; text-transform: uppercase; font-weight: 700; display: block;">TỔNG GIÁ COST ĐƠN:</span>
+                <span style="font-size: 1.05rem; font-weight: 800; color: #f87171;">${formatVND(order.totalFullCost)}</span>
+              </div>
+
+              <div style="text-align: right;">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; display: block;">Doanh Thu / Lãi Gộp:</span>
+                <span style="font-size: 0.85rem; font-weight: 700; color: #34d399;">${formatVND(order.totalRevenue)}</span>
+                <span style="font-size: 0.7rem; color: #a5b4fc; margin-left: 0.25rem;">(Lãi: ${formatVND(order.totalProfit)})</span>
+              </div>
+
+              <span class="order-chevron" style="font-size: 0.75rem; color: #94a3b8; transition: transform 0.2s;">▼</span>
+            </div>
+          </div>
+
+          <div class="order-card-body" id="order-body-${oIdx}" style="display: block;">
+            ${subTableHtml}
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = cardsHtml;
+
+    // Toggle accordions
+    container.querySelectorAll(".order-card-header").forEach(header => {
+      header.addEventListener("click", (e) => {
+        if (e.target.tagName === 'SELECT' || e.target.tagName === 'OPTION') return;
+        const oIdx = header.getAttribute("data-order-index");
+        const body = document.getElementById(`order-body-${oIdx}`);
+        const chevron = header.querySelector(".order-chevron");
+        if (body) {
+          const isHidden = body.style.display === "none";
+          body.style.display = isHidden ? "block" : "none";
+          if (chevron) chevron.style.transform = isHidden ? "rotate(0deg)" : "rotate(-90deg)";
+        }
+      });
+    });
+  }
+
+  // Handle manual product select changes
+  container.querySelectorAll(".select-manual-prod").forEach(select => {
+    select.addEventListener("change", () => {
+      const itIdx = parseInt(select.getAttribute("data-item-index"), 10);
+      const chosenProdId = select.value;
+      if (!isNaN(itIdx) && state.orderCostState.rawRows[itIdx]) {
+        state.orderCostState.rawRows[itIdx].manualProductId = chosenProdId || null;
+        renderOrderCostInspector();
+      }
+    });
+  });
+}
+
+function parseOrderRowsFromGrid(grid) {
+  if (!grid || grid.length < 2) return [];
+
+  const headers = grid[0].map(h => String(h || '').trim().toLowerCase());
+  let orderIdx = -1;
+  let skuIdx = -1;
+  let nameIdx = -1;
+  let varIdx = -1;
+  let qtyIdx = -1;
+  let priceIdx = -1;
+  let statusIdx = -1;
+
+  headers.forEach((h, idx) => {
+    if (h.includes("đơn") || h.includes("order") || h.includes("vận đơn") || h.includes("tracking")) {
+      orderIdx = idx;
+    } else if (h.includes("sku") || h.includes("mã sp") || h.includes("mã sản phẩm") || h.includes("code") || h.includes("barcode")) {
+      skuIdx = idx;
+    } else if (h.includes("tên") || h.includes("name") || h.includes("sản phẩm") || h.includes("product") || h.includes("title")) {
+      nameIdx = idx;
+    } else if (h.includes("biến thể") || h.includes("variant") || h.includes("variation") || h.includes("phân loại") || h.includes("size") || h.includes("kích thước")) {
+      varIdx = idx;
+    } else if (h.includes("số lượng") || h.includes("qty") || h.includes("quantity") || h.includes("sl") || h.includes("bán")) {
+      qtyIdx = idx;
+    } else if (h.includes("giá") || h.includes("price") || h.includes("retail") || h.includes("đơn giá") || h.includes("tiền")) {
+      priceIdx = idx;
+    } else if (h.includes("status") || h.includes("trạng thái") || h.includes("tình trạng")) {
+      statusIdx = idx;
+    }
+  });
+
+  if (orderIdx === -1 && grid[0].length >= 4) orderIdx = 0;
+  if (skuIdx === -1) skuIdx = orderIdx === 0 ? 1 : 0;
+  if (qtyIdx === -1) {
+    for (let c = 0; c < grid[1]?.length; c++) {
+      if (c !== orderIdx && c !== skuIdx && c !== nameIdx && !isNaN(parseFloat(grid[1][c]))) {
+        qtyIdx = c;
+        break;
+      }
+    }
+  }
+
+  const resultRows = [];
+  for (let i = 1; i < grid.length; i++) {
+    const row = grid[i];
+    if (!row || row.length === 0) continue;
+
+    if (statusIdx !== -1) {
+      const st = String(row[statusIdx] || '').toUpperCase();
+      if (st.includes("CANCEL") || st.includes("HỦY")) continue;
+    }
+
+    const orderId = orderIdx !== -1 ? String(row[orderIdx] || '').trim() : `#ORD-${i}`;
+    const sku = skuIdx !== -1 ? String(row[skuIdx] || '').trim() : '';
+    const name = nameIdx !== -1 ? String(row[nameIdx] || '').trim() : '';
+    const variant = varIdx !== -1 ? String(row[varIdx] || '').trim() : '';
+    const qty = qtyIdx !== -1 ? (parseFloat(row[qtyIdx]) || 1) : 1;
+    const price = priceIdx !== -1 ? (parseFloat(row[priceIdx]) || 0) : 0;
+
+    if (!sku && !name) continue;
+
+    resultRows.push({
+      orderId: orderId || `#ORD-${i}`,
+      sku,
+      name,
+      variant,
+      qty,
+      price
+    });
+  }
+
+  return resultRows;
+}
+
+function downloadSampleOrdersXLSX() {
+  if (typeof XLSX === 'undefined') {
+    alert("Thư viện SheetJS chưa sẵn sàng, đang chuyển sang tải file CSV...");
+    downloadSampleOrdersCSV();
+    return;
+  }
+  const headers = ["Mã Đơn Hàng", "Mã SKU", "Tên Sản Phẩm", "Biến Thể (Size/Màu)", "Số Lượng", "Đơn Giá Bán"];
+  const data = SAMPLE_ORDERS_RAW.map(r => [r.orderId, r.sku, r.name, r.variant, r.qty, r.price]);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Don_Hang_Mau");
+  XLSX.writeFile(wb, "danh_sach_don_hang_mau_13_tien_to.xlsx");
+}
+
+function downloadSampleOrdersCSV() {
+  const csvContent = 
+`Mã Đơn Hàng,Mã SKU,Tên Sản Phẩm,Biến Thể (Size/Màu),Số Lượng,Đơn Giá Bán
+#ORD-2026-001,CLEAR-CSTICKER-CUSTOM-09,Decal Trong Suốt 5cm (Clear Sticker),5cm Tròn,25,12000
+#ORD-2026-001,GCB-05P-MATTE,Sổ Thẻ Gift Card Book (5 trang bìa mờ),5 trang Mờ,2,85000
+#ORD-2026-002,CAL-2026-DESK,Lịch Để Bàn A4 Lò Xo 13 Tờ,Khổ A4,5,95000
+#ORD-2026-003,UV-CSTICKER-GOLD-99,Sticker UV DTF Logo Nổi Chuyển Nhiệt,Khổ cuộn 0.62m,30,15000
+#ORD-2026-004,PLC2-DELUXE-01,Bộ Bài Playing Cards V.2 Cao Cấp,Bản V.2,3,120000
+#ORD-2026-005,SCARD-ATM-PAY,Skin Card ATM / Ngân Hàng Hologram,Chuẩn ATM,50,25000
+#ORD-2026-006,STICKER-FASSON-SUA,Sticker Decal Sữa Fasson Chống Nước,33x48cm,40,10000
+#ORD-2026-007,SILVER-CSTICKER-SHINE,Custom Silver Sticker Decal Xi Bạc Bóng,Tem bạc máy móc,15,35000
+#ORD-2026-008,KRAFT-CSTICKER-RETRO,Custom Kraft Sticker Decal Giấy Da Bò,Vintage Kraft,20,20000
+#ORD-2026-009,CSTICKER-HOLO-127,Decal Hologram Tia Laser 7 Màu,Cuộn 1.27m,10,45000
+#ORD-2026-010,GCB-15P-HOLO-VIP,Sổ Thẻ Quà Tặng Gift Card Book (15 trang bìa Holo),15 trang Holo,4,150000
+#ORD-2026-011,HD-EMB-BLACK-XL,Áo Hoodie Nỉ Bông Thêu Vi Tính Nổi Chữ Kí,Size XL Đen,2,380000
+#ORD-2026-012,CAP-EMB-NAVY-01,Mũ Lưỡi Trai Classic Thêu Logo 3D Nổi,Màu Navy,6,125000`;
+
+  const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "danh_sach_don_hang_mau_13_tien_to.csv");
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function exportOrderCostReportXLSX() {
+  const { orders, flatItems } = groupAndCalculateOrders(state.orderCostState.rawRows);
+  if (flatItems.length === 0) {
+    alert("Không có dữ liệu đơn hàng nào để xuất báo cáo!");
+    return;
+  }
+
+  if (typeof XLSX === 'undefined') {
+    alert("Đang xuất báo cáo dạng CSV...");
+    exportOrderCostReportCSV(flatItems);
+    return;
+  }
+
+  const rows = [
+    [
+      "Mã Đơn Hàng",
+      "Mã SKU File",
+      "Tên Hàng File",
+      "Biến Thể",
+      "Tiền Tố Nhận Diện",
+      "Mã SP Khớp Hệ Thống",
+      "Tên Sản Phẩm Hệ Thống",
+      "Số Lượng",
+      "Đơn Giá Biến Phí (NVL+Thợ)",
+      "Đơn Giá Khấu Hao Máy & QL",
+      "ĐƠN GIÁ COST TOÀN PHẦN",
+      "TỔNG CHI PHÍ COST MÓN",
+      "Đơn Giá Bán Thực Tế",
+      "TỔNG DOANH THU MÓN",
+      "LÃI GỘP MÓN",
+      "TỶ SUẤT LỢI NHUẬN (%)",
+      "Độ Tin Cậy Khớp"
+    ]
+  ];
+
+  flatItems.forEach(it => {
+    rows.push([
+      it.orderId || '',
+      it.sku || '',
+      it.name || '',
+      it.variant || '',
+      it.prefixDef ? it.prefixDef.prefix : 'N/A',
+      it.product ? it.product.code : 'CHƯA KHỚP',
+      it.product ? it.product.name : 'CHƯA KHỚP',
+      it.qty || 0,
+      it.unitVariableCost || 0,
+      (it.unitOverheadCost || 0) + (it.unitPaybackSurcharge || 0),
+      it.unitFullCost || 0,
+      it.lineFullCost || 0,
+      it.effectiveUnitPrice || 0,
+      it.lineRevenue || 0,
+      it.lineProfit || 0,
+      it.profitMargin || 0,
+      it.matchLabel || ''
+    ]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Chi_Phi_Don_Hang");
+  XLSX.writeFile(wb, `bao_cao_cost_don_hang_${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
+
+function exportOrderCostReportCSV(flatItems) {
+  const headers = [
+    "Mã Đơn Hàng",
+    "Mã SKU File",
+    "Tên Hàng File",
+    "Biến Thể",
+    "Tiền Tố Nhận Diện",
+    "Mã SP Khớp",
+    "Tên SP Khớp",
+    "Số Lượng",
+    "Đơn Giá Biến Phí",
+    "Đơn Giá Cost Toàn Phần",
+    "Tổng Chi Phí Cost",
+    "Đơn Giá Bán",
+    "Tổng Doanh Thu",
+    "Lãi Gộp",
+    "Tỷ Suất Lợi Nhuận (%)"
+  ];
+
+  let csvContent = headers.join(",") + "\n";
+  flatItems.forEach(it => {
+    const row = [
+      `"${it.orderId || ''}"`,
+      `"${it.sku || ''}"`,
+      `"${(it.name || '').replace(/"/g, '""')}"`,
+      `"${(it.variant || '').replace(/"/g, '""')}"`,
+      `"${it.prefixDef ? it.prefixDef.prefix : 'N/A'}"`,
+      `"${it.product ? it.product.code : ''}"`,
+      `"${it.product ? (it.product.name || '').replace(/"/g, '""') : ''}"`,
+      it.qty || 0,
+      it.unitVariableCost || 0,
+      it.unitFullCost || 0,
+      it.lineFullCost || 0,
+      it.effectiveUnitPrice || 0,
+      it.lineRevenue || 0,
+      it.lineProfit || 0,
+      it.profitMargin || 0
+    ];
+    csvContent += row.join(",") + "\n";
+  });
+
+  const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `bao_cao_cost_don_hang_${new Date().toISOString().slice(0, 10)}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function syncOrdersToMRP() {
+  const { flatItems } = groupAndCalculateOrders(state.orderCostState.rawRows);
+  if (flatItems.length === 0) {
+    alert("Không có sản phẩm nào để đồng bộ vào MRP!");
+    return;
+  }
+
+  const quantitiesToAdd = {};
+  let totalQty = 0;
+  let matchedCount = 0;
+
+  flatItems.forEach(it => {
+    if (it.product && it.qty > 0) {
+      quantitiesToAdd[it.product.id] = (quantitiesToAdd[it.product.id] || 0) + it.qty;
+      totalQty += it.qty;
+      matchedCount++;
+    }
+  });
+
+  const confirmMsg = `Bạn có chắc muốn đồng bộ sản lượng từ danh sách đơn hàng vào Kế Hoạch & Dự Báo (MRP) Tháng 7?\n\n- Tổng số dòng đã khớp: ${matchedCount} dòng\n- Tổng sản lượng cộng thêm: ${totalQty.toLocaleString('vi-VN')} chiếc\n\nNhấn OK để đồng bộ, Cancel để hủy.`;
+  if (!confirm(confirmMsg)) return;
+
+  let updatedProducts = 0;
+  Object.keys(quantitiesToAdd).forEach(pId => {
+    const p = state.products.find(x => x.id === pId);
+    if (p) {
+      p.forecast.actualSales = (p.forecast.actualSales || 0) + quantitiesToAdd[pId];
+      p.forecast.salesForecast = Math.round(p.forecast.actualSales * 1.1);
+      updatedProducts++;
+    }
+  });
+
+  if (updatedProducts > 0) {
+    state.saveProducts();
+    renderForecast();
+    recalculateForecastTotals();
+    alert(`✅ Đã đồng bộ thành công sản lượng của ${updatedProducts} sản phẩm vào Kế Hoạch Sản Xuất & Dự Báo (MRP)!`);
+  }
+}
 
 // Export application instance globally for inline button onclick bindings if any
 window.app = {
@@ -6273,5 +7635,12 @@ window.app = {
   exportMonthlyReportCSV,
   saveCurrentMonthCosts,
   resetCurrentMonthSalary,
-  handleLiveMonthlyCostChange
+  handleLiveMonthlyCostChange,
+  renderOrderCostInspector,
+  downloadSampleOrdersXLSX,
+  downloadSampleOrdersCSV,
+  exportOrderCostReportXLSX,
+  syncOrdersToMRP,
+  matchProductBySkuPrefix
 };
+

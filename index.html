@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=23.9">
+  <link rel="stylesheet" href="style.css?v=24.0">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -63,6 +63,10 @@
         <button class="nav-item" data-tab="forecast" aria-selected="false" role="tab">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
           <span>Dự Báo Mua Hàng</span>
+        </button>
+        <button class="nav-item" data-tab="order-cost" aria-selected="false" role="tab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="2"></rect><path d="m9 14 2 2 4-4"></path></svg>
+          <span>Dò Cost Đơn Hàng</span>
         </button>
         <button class="nav-item" data-tab="monthly-report" aria-selected="false" role="tab">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -978,6 +982,147 @@
                 </tbody>
               </table>
             </div>
+          </div>
+        </section>
+
+
+        <!-- TAB: SMART SKU ORDER COST LOOKUP & INSPECTOR (v24.0) -->
+        <section id="tab-order-cost" class="tab-pane" role="tabpanel">
+          <!-- Top Action Toolbar -->
+          <div class="toolbar glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" class="btn btn-primary" id="btn-upload-order-file" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; background: linear-gradient(135deg, #6366f1, #4f46e5);">
+                <span>📁</span> Tải File Đơn Hàng (Excel/CSV)
+              </button>
+              <input type="file" id="order-cost-file-input" accept=".xlsx, .xls, .csv" style="display: none;">
+              
+              <button type="button" class="btn btn-outline" id="btn-open-paste-modal" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; border-color: rgba(99, 102, 241, 0.4); color: #a5b4fc;">
+                <span>📋</span> Dán Danh Sách Đơn
+              </button>
+
+              <button type="button" class="btn btn-secondary" id="btn-load-sample-orders" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; border-color: rgba(52, 211, 153, 0.4); color: #34d399; background: rgba(52, 211, 153, 0.08);">
+                <span>✨</span> Nạp Đơn Hàng Mẫu (13 Tiền Tố)
+              </button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary" id="btn-download-sample-order-xlsx" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); background: rgba(96, 165, 250, 0.05);">
+                <span>📥</span> Tải File Mẫu (.xlsx)
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-export-order-cost-xlsx" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.05);">
+                <span>📊</span> Xuất Báo Cáo Giá Cost (.xlsx)
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-sync-orders-to-mrp" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: #a78bfa; border-color: rgba(167, 139, 250, 0.3); background: rgba(167, 139, 250, 0.05);">
+                <span>🔄</span> Nạp Vào Dự Báo MRP
+              </button>
+            </div>
+          </div>
+
+          <!-- Real-Time Single SKU Live Inspector Card -->
+          <div class="sku-live-tester glass">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">⚡</span>
+                <h4 style="font-size: 0.88rem; font-weight: 700; color: #fff; margin: 0;">Tra Cứu Nhanh 1 Mã SKU / Mã Đơn Hàng Tức Thì (Live Tester)</h4>
+              </div>
+              <span style="font-size: 0.72rem; color: #94a3b8;">Gõ mã SKU bất kỳ để xem hệ thống tự động bóc tách tiền tố và tính chi phí</span>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.85rem;">
+              <input type="text" id="live-sku-input" class="form-input" placeholder="Ví dụ: CLEAR-CSTICKER-CUSTOM-09, GCB-15P-HOLO-DELUXE, CAL-2026, UV-CSTICKER-01..." value="CLEAR-CSTICKER-CUSTOM-09" style="flex: 1; min-width: 280px; font-family: monospace; font-weight: 600; font-size: 0.9rem; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">
+              <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline quick-sku-pill" data-sku="CLEAR-CSTICKER-01" style="font-size: 0.7rem; padding: 0.3rem 0.5rem; font-family: monospace;">CLEAR-CSTICKER</button>
+                <button type="button" class="btn btn-outline quick-sku-pill" data-sku="GCB-10P-HOLO-VIP" style="font-size: 0.7rem; padding: 0.3rem 0.5rem; font-family: monospace;">GCB-10P-HOLO</button>
+                <button type="button" class="btn btn-outline quick-sku-pill" data-sku="CAL-2026-DESK" style="font-size: 0.7rem; padding: 0.3rem 0.5rem; font-family: monospace;">CAL-2026</button>
+                <button type="button" class="btn btn-outline quick-sku-pill" data-sku="UV-CSTICKER-GOLD-99" style="font-size: 0.7rem; padding: 0.3rem 0.5rem; font-family: monospace;">UV-CSTICKER</button>
+                <button type="button" class="btn btn-outline quick-sku-pill" data-sku="PLC2-DELUXE-01" style="font-size: 0.7rem; padding: 0.3rem 0.5rem; font-family: monospace;">PLC2-DELUXE</button>
+              </div>
+            </div>
+
+            <!-- Live single tester breakdown result -->
+            <div id="live-sku-result-box" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 0.85rem 1rem;">
+              <!-- Dynamically populated by app.js -->
+            </div>
+          </div>
+
+          <!-- Prefix Cheat Sheet & Filter Pills -->
+          <div style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Lọc Theo Tiền Tố Chuẩn (13 Tiền Tố Đang Hoạt Động):</span>
+              <span id="prefix-pills-summary" style="font-size: 0.72rem; color: #a5b4fc;">34 sản phẩm chuẩn hóa</span>
+            </div>
+            <div class="prefix-pills-container" id="order-prefix-pills">
+              <!-- Dynamically rendered pills -->
+            </div>
+          </div>
+
+          <!-- KPI Metric Cards for Current Batch -->
+          <div class="dashboard-grid" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="dashboard-card glass metric-card" style="padding: 1rem; border-left: 4px solid #6366f1;">
+              <span class="metric-label" style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Tổng Đơn Hàng</span>
+              <div class="metric-value" id="kpi-batch-orders" style="font-size: 1.4rem; font-weight: 700; color: #fff;">0 đơn</div>
+              <span class="metric-trend text-secondary" id="kpi-batch-orders-sub" style="font-size: 0.7rem;">0 dòng hàng</span>
+            </div>
+
+            <div class="dashboard-card glass metric-card" style="padding: 1rem; border-left: 4px solid #3b82f6;">
+              <span class="metric-label" style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Tổng Sản Lượng</span>
+              <div class="metric-value" id="kpi-batch-items" style="font-size: 1.4rem; font-weight: 700; color: #60a5fa;">0 chiếc</div>
+              <span class="metric-trend text-secondary" id="kpi-batch-items-sub" style="font-size: 0.7rem;">Trung bình: 0 cái/đơn</span>
+            </div>
+
+            <div class="dashboard-card glass metric-card" style="padding: 1rem; border-left: 4px solid #10b981;">
+              <span class="metric-label" style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Tỷ Lệ Nhận Diện SKU</span>
+              <div class="metric-value" id="kpi-batch-match-rate" style="font-size: 1.4rem; font-weight: 700; color: #34d399;">100%</div>
+              <span class="metric-trend text-secondary" id="kpi-batch-match-sub" style="font-size: 0.7rem;">0 dòng không khớp</span>
+            </div>
+
+            <div class="dashboard-card glass metric-card" style="padding: 1rem; border-left: 4px solid #f59e0b;">
+              <span class="metric-label" style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Tổng Biến Phí (NVL + Thợ)</span>
+              <div class="metric-value" id="kpi-batch-variable-cost" style="font-size: 1.4rem; font-weight: 700; color: #fbbf24;">0 ₫</div>
+              <span class="metric-trend text-secondary" style="font-size: 0.7rem;">Biến phí trực tiếp toàn lô</span>
+            </div>
+
+            <div class="dashboard-card glass metric-card" style="padding: 1rem; border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.04);">
+              <span class="metric-label" style="font-size: 0.72rem; color: #f87171; text-transform: uppercase; font-weight: 600;">TỔNG GIÁ COST TOÀN PHẦN</span>
+              <div class="metric-value" id="kpi-batch-total-cost" style="font-size: 1.5rem; font-weight: 800; color: #f87171;">0 ₫</div>
+              <span class="metric-trend text-secondary" id="kpi-batch-depreciation-sub" style="font-size: 0.7rem;">Gồm NVL + Thợ + Khấu hao máy</span>
+            </div>
+
+            <div class="dashboard-card glass metric-card" style="padding: 1rem; border-left: 4px solid #8b5cf6;">
+              <span class="metric-label" style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Doanh Thu & Lãi Gộp Đơn</span>
+              <div class="metric-value" id="kpi-batch-revenue-profit" style="font-size: 1.3rem; font-weight: 700; color: #c084fc;">0 ₫</div>
+              <span class="metric-trend text-secondary" id="kpi-batch-margin-sub" style="font-size: 0.7rem;">Lãi gộp: 0 ₫ (0%)</span>
+            </div>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; flex-wrap: wrap; min-width: 280px;">
+              <input type="text" id="order-search-input" class="form-input search-input" placeholder="🔍 Tìm mã đơn, SKU, tên sản phẩm..." style="min-width: 240px; flex: 1;">
+              
+              <select id="order-filter-status" class="form-input select-input" style="width: 190px;">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="matched">✅ Khớp thành công</option>
+                <option value="unmatched">⚠️ Có dòng chưa khớp</option>
+              </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 500;">Chế độ xem:</span>
+              <div class="view-mode-pill-group">
+                <button type="button" class="view-mode-btn active" id="btn-view-order-group">
+                  <span>📦 Theo Đơn Hàng</span>
+                </button>
+                <button type="button" class="view-mode-btn" id="btn-view-flat-items">
+                  <span>📄 Dòng Chi Tiết</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Orders Container (Grouped Cards or Flat Table) -->
+          <div id="order-cost-results-container">
+            <!-- Dynamically populated by renderOrderCostInspector() in app.js -->
           </div>
         </section>
 
@@ -1972,6 +2117,40 @@ function syncTabCauHinh(ss, settings) {
           </button>
         </div>
       </div>
+  <!-- Modal for Pasting Order Lines Directly -->
+  <dialog id="modal-order-paste" class="glass-modal">
+    <div class="modal-content" style="max-width: 680px; max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <div>
+          <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+            <span>📋 Dán Dữ Liệu Danh Sách Đơn Hàng</span>
+          </h3>
+          <span style="font-size: 0.8rem; color: var(--text-secondary);">Dán dữ liệu copy từ Excel hoặc file text (hỗ trợ phân cách bởi Tab hoặc dấu phẩy)</span>
+        </div>
+        <button class="btn-close" id="modal-order-paste-close-btn">&times;</button>
+      </div>
+
+      <div style="margin-bottom: 0.75rem; font-size: 0.75rem; color: #fbbf24; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 6px; padding: 0.5rem 0.75rem; line-height: 1.4;">
+        💡 <strong>Cấu trúc dữ liệu khuyến nghị (có hoặc không có dòng tiêu đề):</strong><br>
+        <code>Mã Đơn [Tab] Mã SKU [Tab] Tên Sản Phẩm [Tab] Số Lượng [Tab] Đơn Giá Bán</code>
+      </div>
+
+      <textarea id="order-paste-textarea" class="form-input" placeholder="Dán các dòng đơn hàng vào đây...
+Ví dụ:
+#ORD-101	CLEAR-CSTICKER-CUSTOM-09	Decal trong	10	35000
+#ORD-101	GCB-05P-MATTE	Sổ quà tặng	2	85000
+#ORD-102	CAL-2026-DESK	Lịch để bàn	5	65000
+#ORD-103	UV-CSTICKER-GOLD-99	UV DTF	20	25000" style="flex: 1; min-height: 220px; font-family: monospace; font-size: 0.82rem; line-height: 1.4; resize: vertical; white-space: pre;"></textarea>
+
+      <div class="modal-actions" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.75rem;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">* Hệ thống sẽ tự động bóc tách tiền tố và tính chi phí cost</span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-outline" id="modal-order-paste-cancel-btn">Hủy</button>
+          <button type="button" class="btn btn-primary" id="modal-order-paste-submit-btn" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+            ⚡ Phân Tích &amp; Tính Giá Cost
+          </button>
+        </div>
+      </div>
     </div>
   </dialog>
 
@@ -1983,6 +2162,6 @@ function syncTabCauHinh(ss, settings) {
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=23.9" type="module"></script>
+  <script src="app.js?v=24.0" type="module"></script>
 </body>
 </html>
