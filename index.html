@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=23.7">
+  <link rel="stylesheet" href="style.css?v=23.8">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -984,12 +984,16 @@
 
         <!-- TAB: MONTHLY FINANCIAL & COST REPORT -->
         <section id="tab-monthly-report" class="tab-pane" role="tabpanel">
-          <div class="toolbar glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="toolbar glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-              <label for="monthly-report-select" style="font-weight: 600; color: #fff; font-size: 0.85rem;">Chọn Tháng Báo Cáo:</label>
-              <select id="monthly-report-select" class="form-input select-input" style="min-width: 220px; font-weight: 600; color: #60a5fa; border-color: rgba(96, 165, 250, 0.4);">
+              <label for="monthly-report-select" style="font-weight: 600; color: #fff; font-size: 0.85rem;">Chọn Tháng Báo Cáo &amp; Chi Phí:</label>
+              <select id="monthly-report-select" class="form-input select-input" style="min-width: 250px; font-weight: 600; color: #60a5fa; border-color: rgba(96, 165, 250, 0.4);">
                 <option value="7">Tháng 7/2026 (Sản Lượng Bán Thực Tế)</option>
-                <option value="8">Tháng 8/2026 (Kế Hoạch & Dự Báo Mua Hàng)</option>
+                <option value="8">Tháng 8/2026 (Kế Hoạch &amp; Dự Báo Mua Hàng)</option>
+                <option value="9">Tháng 9/2026 (Kế Hoạch &amp; Thực Tế T9)</option>
+                <option value="10">Tháng 10/2026 (Kế Hoạch Quý 4 - T10)</option>
+                <option value="11">Tháng 11/2026 (Mùa Cao Điểm - T11)</option>
+                <option value="12">Tháng 12/2026 (Tổng Kết Năm &amp; Tết)</option>
               </select>
               <select id="monthly-report-filter-factory" class="form-input select-input">
                 <option value="all">Tất cả nhà máy</option>
@@ -1012,8 +1016,116 @@
             </div>
           </div>
 
+          <!-- MONTHLY COST CONTROL CENTER (CẬP NHẬT TIỀN ĐIỆN & TIỀN LƯƠNG TỪNG THÁNG) -->
+          <div class="dashboard-card glass" id="mr-cost-control-panel" style="margin-bottom: 1.5rem; padding: 1.25rem 1.5rem; border: 1px solid rgba(96, 165, 250, 0.35); background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.35);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.85rem; margin-bottom: 1.25rem;">
+              <div>
+                <h3 style="color: #60a5fa; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>⚡</span> Quản Lý Chi Phí Hàng Tháng &amp; Cập Nhật Tiền Điện, Tiền Lương
+                </h3>
+                <span class="text-secondary" style="font-size: 0.78rem;">
+                  Cập nhật tiền điện và tiền lương thực tế cho <strong id="mr-active-month-label" style="color: #38bdf8;">Tháng 7/2026</strong>. Bấm lưu để đồng bộ vào hệ thống.
+                </span>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                <button type="button" id="btn-mr-reset-salary" class="btn btn-secondary" style="font-size: 0.76rem; padding: 0.45rem 0.8rem; border-color: rgba(148, 163, 184, 0.3); color: #cbd5e1; display: inline-flex; align-items: center; gap: 0.35rem;" title="Lấy lại số lương chuẩn tính từ danh sách 44 nhân sự">
+                  <span>🔄</span> Lấy Lương Chuẩn (44 NV)
+                </button>
+                <button type="button" id="btn-mr-save-month-costs" class="btn btn-primary" style="font-size: 0.78rem; padding: 0.45rem 1rem; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: none; display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);">
+                  <span>💾</span> Lưu Chi Phí Tháng Này
+                </button>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; align-items: start;">
+              
+              <!-- Cột 1: Tiền Điện 2 Nhà Máy -->
+              <div style="background: rgba(15, 23, 42, 0.65); padding: 1rem 1.1rem; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.25);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                  <span style="font-size: 0.82rem; font-weight: 700; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.35rem;">
+                    <span>💡</span> Tiền Điện 2 Nhà Máy
+                  </span>
+                  <span id="mr-display-elec-sum" style="font-size: 0.85rem; font-weight: 700; color: #fbbf24;">₫19.000.000</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                  <div>
+                    <label style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 0.25rem;">🏭 Xưởng In (₫/tháng)</label>
+                    <input type="text" id="mr-input-elec-print" class="form-input mr-cost-calc-trigger" style="font-size: 0.85rem; font-weight: 600; text-align: right; color: #fff; background: rgba(0,0,0,0.35); border-color: rgba(245, 158, 11, 0.35);" value="8.000.000">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 0.25rem;">🧵 Xưởng Thêu (₫/tháng)</label>
+                    <input type="text" id="mr-input-elec-emb" class="form-input mr-cost-calc-trigger" style="font-size: 0.85rem; font-weight: 600; text-align: right; color: #fff; background: rgba(0,0,0,0.35); border-color: rgba(245, 158, 11, 0.35);" value="11.000.000">
+                  </div>
+                </div>
+                <div style="font-size: 0.7rem; color: #64748b; margin-top: 0.5rem;">Cập nhật theo hóa đơn EVN thực tế của từng tháng</div>
+              </div>
+
+              <!-- Cột 2: Tiền Lương 2 Nhà Máy -->
+              <div style="background: rgba(15, 23, 42, 0.65); padding: 1rem 1.1rem; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                  <span style="font-size: 0.82rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.35rem;">
+                    <span>👥</span> Tiền Lương 2 Nhà Máy
+                  </span>
+                  <span id="mr-display-salary-sum" style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">₫290.637.736</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                  <div>
+                    <label style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 0.25rem;">🏭 Lương Xưởng In (16 NV)</label>
+                    <input type="text" id="mr-input-salary-print" class="form-input mr-cost-calc-trigger" style="font-size: 0.85rem; font-weight: 600; text-align: right; color: #fff; background: rgba(0,0,0,0.35); border-color: rgba(56, 189, 248, 0.35);" value="89.898.804">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 0.25rem;">🧵 Lương Xưởng Thêu (28 NV)</label>
+                    <input type="text" id="mr-input-salary-emb" class="form-input mr-cost-calc-trigger" style="font-size: 0.85rem; font-weight: 600; text-align: right; color: #fff; background: rgba(0,0,0,0.35); border-color: rgba(56, 189, 248, 0.35);" value="200.738.932">
+                  </div>
+                </div>
+                <div style="font-size: 0.7rem; color: #64748b; margin-top: 0.5rem;">Nhập số thực chi (thưởng/phạt/OT) hoặc lấy từ DS 44 NV</div>
+              </div>
+
+              <!-- Cột 3: Chi Phí Quản Lý / Khác -->
+              <div style="background: rgba(15, 23, 42, 0.65); padding: 1rem 1.1rem; border-radius: 8px; border: 1px solid rgba(192, 132, 252, 0.25);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                  <span style="font-size: 0.82rem; font-weight: 700; color: #c084fc; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.35rem;">
+                    <span>🏢</span> Định Phí Khác (VPP, Xưởng...)
+                  </span>
+                </div>
+                <div>
+                  <label style="font-size: 0.72rem; color: #94a3b8; display: block; margin-bottom: 0.25rem;">Chi phí cố định phát sinh thêm (₫)</label>
+                  <input type="text" id="mr-input-other-fixed" class="form-input mr-cost-calc-trigger" style="font-size: 0.85rem; font-weight: 600; text-align: right; color: #fff; background: rgba(0,0,0,0.35); border-color: rgba(192, 132, 252, 0.35);" value="0">
+                </div>
+                <div style="font-size: 0.7rem; color: #64748b; margin-top: 0.5rem;">Mặt bằng, Internet, bảo dưỡng xưởng, chi phí chung</div>
+              </div>
+
+            </div>
+
+            <!-- HERO ROW: TỔNG CHI PHÍ TOÀN BỘ HOẠT ĐỘNG (GRAND TOTAL EXPENSES) -->
+            <div style="margin-top: 1.25rem; padding: 1rem 1.25rem; background: linear-gradient(135deg, rgba(239, 68, 68, 0.14) 0%, rgba(249, 115, 22, 0.14) 50%, rgba(234, 179, 8, 0.14) 100%); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <div style="font-size: 0.76rem; text-transform: uppercase; font-weight: 800; color: #f87171; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.4rem;">
+                  <span>🔥</span> TOTAL TỔNG CHI PHÍ THÁNG (TOTAL FACTORY EXPENSES)
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 0.75rem; margin-top: 0.25rem; flex-wrap: wrap;">
+                  <span id="mr-grand-total-cost" style="font-size: 1.85rem; font-weight: 800; color: #fff; text-shadow: 0 0 16px rgba(239, 68, 68, 0.45);">₫0</span>
+                  <span id="mr-grand-total-breakdown" style="font-size: 0.8rem; color: #cbd5e1;">
+                    Định phí: <strong>₫0</strong> + Biến phí: <strong>₫0</strong> + Khấu hao: <strong>₫0</strong>
+                  </span>
+                </div>
+              </div>
+              <div id="mr-cost-pills" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <span style="font-size: 0.75rem; padding: 0.35rem 0.7rem; border-radius: 9999px; background: rgba(251, 113, 133, 0.2); color: #fb7185; border: 1px solid rgba(251, 113, 133, 0.4); font-weight: 600;" id="pill-fixed-pct">
+                  Định phí: 0%
+                </span>
+                <span style="font-size: 0.75rem; padding: 0.35rem 0.7rem; border-radius: 9999px; background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); font-weight: 600;" id="pill-var-pct">
+                  Biến phí: 0%
+                </span>
+                <span style="font-size: 0.75rem; padding: 0.35rem 0.7rem; border-radius: 9999px; background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); font-weight: 600;" id="pill-capex-pct">
+                  Khấu hao: 0%
+                </span>
+              </div>
+            </div>
+          </div>
+
           <!-- Monthly Financial KPI Summary Cards -->
-          <div class="dashboard-grid" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+          <div class="dashboard-grid" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem;">
             <!-- 1. Total Revenue -->
             <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #38bdf8;">
               <span class="metric-label" style="font-size: 0.75rem; color: #38bdf8; font-weight: 600; text-transform: uppercase;">1. Tổng Doanh Thu Tháng</span>
@@ -1028,30 +1140,37 @@
               <span class="metric-trend text-secondary" id="mr-variable-sub">NVL: ₫0 | Nhân công: ₫0</span>
             </div>
 
-            <!-- 3. Contribution Margin -->
-            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #a78bfa;">
-              <span class="metric-label" style="font-size: 0.75rem; color: #a78bfa; font-weight: 600; text-transform: uppercase;">3. Số Dư Đảm Phí (Lãi Gộp)</span>
-              <div class="metric-value" id="mr-contribution-margin" style="font-size: 1.4rem; font-weight: 700; color: #a78bfa;">₫0</div>
-              <span class="metric-trend text-secondary" id="mr-margin-ratio">Tỷ lệ đảm phí: 0%</span>
-            </div>
-
-            <!-- 4. Fixed Cost -->
+            <!-- 3. Fixed Cost -->
             <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #fb7185;">
-              <span class="metric-label" style="font-size: 0.75rem; color: #fb7185; font-weight: 600; text-transform: uppercase;">4. Tổng Định Phí Tháng (FC)</span>
+              <span class="metric-label" style="font-size: 0.75rem; color: #fb7185; font-weight: 600; text-transform: uppercase;">3. Tổng Định Phí Tháng (FC)</span>
               <div class="metric-value" id="mr-total-fixed-cost" style="font-size: 1.4rem; font-weight: 700; color: #fb7185;">₫0</div>
               <span class="metric-trend text-secondary" id="mr-fixed-sub">Lương 44 NV + Tiền điện xưởng</span>
             </div>
 
-            <!-- 5. Machine Depreciation Accrued -->
+            <!-- 4. Machine Depreciation Accrued -->
             <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #fbbf24;">
-              <span class="metric-label" style="font-size: 0.75rem; color: #fbbf24; font-weight: 600; text-transform: uppercase;">5. Khấu Hao Máy Trích Tháng</span>
+              <span class="metric-label" style="font-size: 0.75rem; color: #fbbf24; font-weight: 600; text-transform: uppercase;">4. Khấu Hao Máy Trích Tháng</span>
               <div class="metric-value" id="mr-total-capex" style="font-size: 1.4rem; font-weight: 700; color: #fbbf24;">₫0</div>
               <span class="metric-trend text-secondary" id="mr-capex-sub">Thu hồi vốn 3 năm đầu</span>
             </div>
 
-            <!-- 6. Net Operating Profit -->
+            <!-- 5. Total Expenses (Grand Total) -->
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.05);">
+              <span class="metric-label" style="font-size: 0.75rem; color: #f87171; font-weight: 700; text-transform: uppercase;">5. TOTAL Tổng Chi Phí Tháng</span>
+              <div class="metric-value" id="mr-kpi-grand-total" style="font-size: 1.4rem; font-weight: 800; color: #f87171;">₫0</div>
+              <span class="metric-trend text-secondary" id="mr-kpi-grand-total-sub">Định phí + Biến phí + Máy</span>
+            </div>
+
+            <!-- 6. Contribution Margin -->
+            <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #a78bfa;">
+              <span class="metric-label" style="font-size: 0.75rem; color: #a78bfa; font-weight: 600; text-transform: uppercase;">6. Số Dư Đảm Phí (Lãi Gộp)</span>
+              <div class="metric-value" id="mr-contribution-margin" style="font-size: 1.4rem; font-weight: 700; color: #a78bfa;">₫0</div>
+              <span class="metric-trend text-secondary" id="mr-margin-ratio">Tỷ lệ đảm phí: 0%</span>
+            </div>
+
+            <!-- 7. Net Operating Profit -->
             <div class="dashboard-card glass metric-card" style="padding: 1.25rem; border-left: 4px solid #10b981;">
-              <span class="metric-label" style="font-size: 0.75rem; color: #10b981; font-weight: 600; text-transform: uppercase;">6. Lợi Nhuận Ròng Hoạt Động</span>
+              <span class="metric-label" style="font-size: 0.75rem; color: #10b981; font-weight: 600; text-transform: uppercase;">7. Lợi Nhuận Ròng Hoạt Động</span>
               <div class="metric-value" id="mr-net-profit" style="font-size: 1.4rem; font-weight: 700; color: #10b981;">₫0</div>
               <span class="metric-trend text-secondary" id="mr-profit-sub">Doanh thu - Biến phí - Định phí - Máy</span>
             </div>
@@ -1864,6 +1983,6 @@ function syncTabCauHinh(ss, settings) {
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=23.7" type="module"></script>
+  <script src="app.js?v=23.8" type="module"></script>
 </body>
 </html>

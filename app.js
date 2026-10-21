@@ -20,6 +20,14 @@ const DEFAULT_SETTINGS = {
     In: 8000000,
     Thêu: 11000000
   },
+  monthlyRecords: {
+    "7": { name: "Tháng 7/2026", electricity: { In: 8000000, Thêu: 11000000 }, salary: { In: 89898804, Thêu: 200738932 }, otherFixedCost: 0 },
+    "8": { name: "Tháng 8/2026", electricity: { In: 8500000, Thêu: 11500000 }, salary: { In: 89898804, Thêu: 200738932 }, otherFixedCost: 0 },
+    "9": { name: "Tháng 9/2026", electricity: { In: 8000000, Thêu: 11000000 }, salary: { In: 89898804, Thêu: 200738932 }, otherFixedCost: 0 },
+    "10": { name: "Tháng 10/2026", electricity: { In: 8000000, Thêu: 11000000 }, salary: { In: 89898804, Thêu: 200738932 }, otherFixedCost: 0 },
+    "11": { name: "Tháng 11/2026", electricity: { In: 8000000, Thêu: 11000000 }, salary: { In: 89898804, Thêu: 200738932 }, otherFixedCost: 0 },
+    "12": { name: "Tháng 12/2026", electricity: { In: 8000000, Thêu: 11000000 }, salary: { In: 89898804, Thêu: 200738932 }, otherFixedCost: 0 }
+  },
   hr: {
     In: {
       designer: [
@@ -1045,9 +1053,15 @@ class AppStateManager {
           }
         });
 
+        const mergedMonthlyRecords = {
+          ...DEFAULT_SETTINGS.monthlyRecords,
+          ...(parsed.monthlyRecords || {})
+        };
+
         return {
           ...DEFAULT_SETTINGS,
           ...parsed,
+          monthlyRecords: mergedMonthlyRecords,
           hr: migratedHr,
           machines: mergedMachines,
           materialsCatalog: mergedCatalog
@@ -3396,41 +3410,104 @@ function recalculateForecastTotals() {
 // 6.5. Tab: Monthly Financial Report (Báo Cáo Chi Phí & Doanh Thu Từng Tháng)
 // ==========================================================================
 
-function renderMonthlyReport() {
+function getStandardPayrollTotals() {
+  const inHr = state.settings.hr?.In || {};
+  const embHr = state.settings.hr?.Thêu || {};
+  const sumSalary = (deptList) => (Array.isArray(deptList) ? deptList.reduce((acc, emp) => acc + (parseFloat(emp.salary) || 0), 0) : 0);
+  const inSalaryTotal = sumSalary(inHr.designer) + sumSalary(inHr.production) + sumSalary(inHr.qc);
+  const embSalaryTotal = sumSalary(embHr.designer) + sumSalary(embHr.laser) + sumSalary(embHr.production) + sumSalary(embHr.qc);
+  return { inSalaryTotal, embSalaryTotal };
+}
+
+function renderMonthlyReport(isLiveInput = false) {
   const monthSelect = document.getElementById("monthly-report-select");
   const month = monthSelect ? monthSelect.value : "7";
   const filterFactory = document.getElementById("monthly-report-filter-factory")?.value || "all";
   const tbody = document.getElementById("monthly-report-tbody");
   if (!tbody) return;
-  tbody.innerHTML = "";
 
-  // 1. Tính toán Định Phí Tháng (Fixed Costs)
-  const inHr = state.settings.hr?.In || {};
-  const embHr = state.settings.hr?.Thêu || {};
+  // 1. Lấy hoặc khởi tạo monthlyRecord cho tháng này
+  if (!state.settings.monthlyRecords) {
+    state.settings.monthlyRecords = {};
+  }
+  const stdPayroll = getStandardPayrollTotals();
+  const defaultInElec = state.settings.monthlyElectricity?.In !== undefined ? state.settings.monthlyElectricity.In : 8000000;
+  const defaultEmbElec = state.settings.monthlyElectricity?.Thêu !== undefined ? state.settings.monthlyElectricity.Thêu : 11000000;
 
-  const sumSalary = (deptList) => (Array.isArray(deptList) ? deptList.reduce((acc, emp) => acc + (parseFloat(emp.salary) || 0), 0) : 0);
-  
-  const inSalaryTotal = sumSalary(inHr.designer) + sumSalary(inHr.production) + sumSalary(inHr.qc);
-  const embSalaryTotal = sumSalary(embHr.designer) + sumSalary(embHr.laser) + sumSalary(embHr.production) + sumSalary(embHr.qc);
+  if (!state.settings.monthlyRecords[month]) {
+    state.settings.monthlyRecords[month] = {
+      name: `Tháng ${month}/2026`,
+      electricity: { In: defaultInElec, Thêu: defaultEmbElec },
+      salary: { In: stdPayroll.inSalaryTotal, Thêu: stdPayroll.embSalaryTotal },
+      otherFixedCost: 0
+    };
+  }
+  const mRecord = state.settings.monthlyRecords[month];
 
-  const inElec = state.settings.monthlyElectricity?.In || 8000000;
-  const embElec = state.settings.monthlyElectricity?.Thêu || 11000000;
+  let inElec = 0;
+  let embElec = 0;
+  let inSalary = 0;
+  let embSalary = 0;
+  let otherFixed = 0;
 
-  let totalMonthlySalary = 0;
-  let totalMonthlyElectricity = 0;
+  const elInputElecPrint = document.getElementById("mr-input-elec-print");
+  const elInputElecEmb = document.getElementById("mr-input-elec-emb");
+  const elInputSalaryPrint = document.getElementById("mr-input-salary-print");
+  const elInputSalaryEmb = document.getElementById("mr-input-salary-emb");
+  const elInputOtherFixed = document.getElementById("mr-input-other-fixed");
+  const activeLabel = document.getElementById("mr-active-month-label");
 
-  if (filterFactory === "In") {
-    totalMonthlySalary = inSalaryTotal;
-    totalMonthlyElectricity = inElec;
-  } else if (filterFactory === "Thêu") {
-    totalMonthlySalary = embSalaryTotal;
-    totalMonthlyElectricity = embElec;
-  } else {
-    totalMonthlySalary = inSalaryTotal + embSalaryTotal;
-    totalMonthlyElectricity = inElec + embElec;
+  if (activeLabel) {
+    activeLabel.textContent = `Tháng ${month}/2026`;
   }
 
-  const totalMonthlyFixedCost = totalMonthlySalary + totalMonthlyElectricity;
+  if (isLiveInput) {
+    inElec = parseCurrencyInput(elInputElecPrint?.value || "0");
+    embElec = parseCurrencyInput(elInputElecEmb?.value || "0");
+    inSalary = parseCurrencyInput(elInputSalaryPrint?.value || "0");
+    embSalary = parseCurrencyInput(elInputSalaryEmb?.value || "0");
+    otherFixed = parseCurrencyInput(elInputOtherFixed?.value || "0");
+  } else {
+    inElec = (mRecord.electricity?.In !== undefined && mRecord.electricity?.In !== null) ? parseFloat(mRecord.electricity.In) : defaultInElec;
+    embElec = (mRecord.electricity?.Thêu !== undefined && mRecord.electricity?.Thêu !== null) ? parseFloat(mRecord.electricity.Thêu) : defaultEmbElec;
+    inSalary = (mRecord.salary?.In !== undefined && mRecord.salary?.In !== null) ? parseFloat(mRecord.salary.In) : stdPayroll.inSalaryTotal;
+    embSalary = (mRecord.salary?.Thêu !== undefined && mRecord.salary?.Thêu !== null) ? parseFloat(mRecord.salary.Thêu) : stdPayroll.embSalaryTotal;
+    otherFixed = parseFloat(mRecord.otherFixedCost) || 0;
+
+    if (elInputElecPrint) elInputElecPrint.value = Math.round(inElec).toLocaleString('vi-VN');
+    if (elInputElecEmb) elInputElecEmb.value = Math.round(embElec).toLocaleString('vi-VN');
+    if (elInputSalaryPrint) elInputSalaryPrint.value = Math.round(inSalary).toLocaleString('vi-VN');
+    if (elInputSalaryEmb) elInputSalaryEmb.value = Math.round(embSalary).toLocaleString('vi-VN');
+    if (elInputOtherFixed) elInputOtherFixed.value = Math.round(otherFixed).toLocaleString('vi-VN');
+  }
+
+  // Cập nhật nhãn tổng phụ tiền điện & lương
+  const dispElecSum = document.getElementById("mr-display-elec-sum");
+  if (dispElecSum) dispElecSum.textContent = formatVND(inElec + embElec);
+
+  const dispSalarySum = document.getElementById("mr-display-salary-sum");
+  if (dispSalarySum) dispSalarySum.textContent = formatVND(inSalary + embSalary);
+
+  // Phân bổ định phí theo bộ lọc nhà máy
+  let activeSalary = 0;
+  let activeElec = 0;
+  let activeOther = 0;
+
+  if (filterFactory === "In") {
+    activeSalary = inSalary;
+    activeElec = inElec;
+    activeOther = otherFixed * (inSalary / (inSalary + embSalary || 1));
+  } else if (filterFactory === "Thêu") {
+    activeSalary = embSalary;
+    activeElec = embElec;
+    activeOther = otherFixed * (embSalary / (inSalary + embSalary || 1));
+  } else {
+    activeSalary = inSalary + embSalary;
+    activeElec = inElec + embElec;
+    activeOther = otherFixed;
+  }
+
+  const totalMonthlyFixedCost = activeSalary + activeElec + activeOther;
 
   // 2. Lọc sản phẩm theo nhà máy & danh mục
   const filterCategory = document.getElementById("monthly-report-filter-category")?.value || "all";
@@ -3448,6 +3525,8 @@ function renderMonthlyReport() {
   let totalMonthCapex = 0;
   let totalMonthMat = 0;
   let totalMonthLabor = 0;
+
+  tbody.innerHTML = "";
 
   if (filteredProducts.length === 0) {
     tbody.innerHTML = `<tr><td colspan="10" class="no-data" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Không có sản phẩm nào cho bộ lọc này.</td></tr>`;
@@ -3473,10 +3552,17 @@ function renderMonthlyReport() {
       const prodTrs = group.products.map(p => {
         const costDetails = calculateProductCost(p, state.settings);
         
-        // Sản lượng theo tháng: Tháng 7 lấy actualSales, Tháng 8 lấy salesForecast
-        const qty = (month === "7") 
-          ? (p.forecast.actualSales !== undefined ? p.forecast.actualSales : Math.round((p.forecast.salesForecast || 0) / 1.1))
-          : (p.forecast.salesForecast || Math.round((p.forecast.actualSales || 0) * 1.1));
+        // Sản lượng theo tháng:
+        let qty = 0;
+        if (month === "7") {
+          qty = (p.forecast.actualSales !== undefined) ? p.forecast.actualSales : Math.round((p.forecast.salesForecast || 0) / 1.1);
+        } else if (p.forecast.monthlySales && p.forecast.monthlySales[month] !== undefined) {
+          qty = p.forecast.monthlySales[month];
+        } else if (month === "8") {
+          qty = p.forecast.salesForecast || Math.round((p.forecast.actualSales || 0) * 1.1);
+        } else {
+          qty = p.forecast.salesForecast || (p.forecast.actualSales || 0);
+        }
 
         const unitVC = costDetails.variableCost;
         const totalVC = unitVC * qty;
@@ -3544,16 +3630,42 @@ function renderMonthlyReport() {
     });
   }
 
-  // 3. Tính toán tỷ lệ đảm phí & Lợi nhuận ròng hoạt động
-  const contributionMarginRatio = totalMonthRevenue > 0 ? Math.round((totalMonthContribution / totalMonthRevenue) * 100) : 0;
-  const netOperatingProfit = totalMonthContribution - totalMonthlyFixedCost - totalMonthCapex;
+  // 3. Tính toán Tổng Chi Phí Hoạt Động (Grand Total Expenses) & Lợi Nhuận
+  const grandTotalExpenses = totalMonthlyFixedCost + totalMonthVC + totalMonthCapex;
+  const fixedPct = grandTotalExpenses > 0 ? Math.round((totalMonthlyFixedCost / grandTotalExpenses) * 100) : 0;
+  const varPct = grandTotalExpenses > 0 ? Math.round((totalMonthVC / grandTotalExpenses) * 100) : 0;
+  const capexPct = grandTotalExpenses > 0 ? Math.max(0, 100 - fixedPct - varPct) : 0;
 
-  // 4. Cập nhật các thẻ KPI tài chính tháng
+  const contributionMarginRatio = totalMonthRevenue > 0 ? Math.round((totalMonthContribution / totalMonthRevenue) * 100) : 0;
+  const netOperatingProfit = totalMonthRevenue - grandTotalExpenses;
+
+  // 4. Cập nhật Banner Hero Tổng Chi Phí & Phân rã
+  const elGrandTotal = document.getElementById("mr-grand-total-cost");
+  if (elGrandTotal) elGrandTotal.textContent = formatVND(grandTotalExpenses);
+
+  const elKpiGrandTotal = document.getElementById("mr-kpi-grand-total");
+  if (elKpiGrandTotal) elKpiGrandTotal.textContent = formatVND(grandTotalExpenses);
+
+  const elGrandTotalBreakdown = document.getElementById("mr-grand-total-breakdown");
+  if (elGrandTotalBreakdown) {
+    elGrandTotalBreakdown.innerHTML = `Định phí: <strong style="color: #fb7185;">${formatVND(totalMonthlyFixedCost)}</strong> (${fixedPct}%) + Biến phí NVL: <strong style="color: #34d399;">${formatVND(totalMonthVC)}</strong> (${varPct}%) + Khấu hao máy: <strong style="color: #fbbf24;">${formatVND(totalMonthCapex)}</strong> (${capexPct}%)`;
+  }
+
+  const pillFixed = document.getElementById("pill-fixed-pct");
+  if (pillFixed) pillFixed.textContent = `Định phí: ${fixedPct}%`;
+
+  const pillVar = document.getElementById("pill-var-pct");
+  if (pillVar) pillVar.textContent = `Biến phí: ${varPct}%`;
+
+  const pillCapex = document.getElementById("pill-capex-pct");
+  if (pillCapex) pillCapex.textContent = `Khấu hao: ${capexPct}%`;
+
+  // 5. Cập nhật các thẻ KPI tài chính tháng
   const elRev = document.getElementById("mr-total-revenue");
   if (elRev) elRev.textContent = formatVND(totalMonthRevenue);
 
   const elRevSub = document.getElementById("mr-revenue-sub");
-  if (elRevSub) elRevSub.textContent = month === "7" ? "Sản lượng bán thực tế Tháng 7" : "Kế hoạch & dự báo bán Tháng 8";
+  if (elRevSub) elRevSub.textContent = month === "7" ? "Sản lượng bán thực tế Tháng 7" : `Kế hoạch & dự báo bán Tháng ${month}`;
 
   const elVc = document.getElementById("mr-total-variable-cost");
   if (elVc) elVc.textContent = formatVND(totalMonthVC);
@@ -3561,23 +3673,23 @@ function renderMonthlyReport() {
   const elVcSub = document.getElementById("mr-variable-sub");
   if (elVcSub) elVcSub.textContent = `NVL: ${formatVND(totalMonthMat)} | Nhân công: ${formatVND(totalMonthLabor)}`;
 
-  const elMargin = document.getElementById("mr-contribution-margin");
-  if (elMargin) elMargin.textContent = formatVND(totalMonthContribution);
-
-  const elMarginRatio = document.getElementById("mr-margin-ratio");
-  if (elMarginRatio) elMarginRatio.textContent = `Tỷ lệ đảm phí: ${contributionMarginRatio}% Doanh thu`;
-
   const elFc = document.getElementById("mr-total-fixed-cost");
   if (elFc) elFc.textContent = formatVND(totalMonthlyFixedCost);
 
   const elFcSub = document.getElementById("mr-fixed-sub");
-  if (elFcSub) elFcSub.textContent = `Lương NV: ${formatVND(totalMonthlySalary)} + Tiền điện: ${formatVND(totalMonthlyElectricity)}`;
+  if (elFcSub) elFcSub.textContent = `Lương: ${formatVND(activeSalary)} + Điện: ${formatVND(activeElec)}` + (activeOther > 0 ? ` + Khác: ${formatVND(activeOther)}` : "");
 
   const elCapex = document.getElementById("mr-total-capex");
   if (elCapex) elCapex.textContent = formatVND(totalMonthCapex);
 
   const elCapexSub = document.getElementById("mr-capex-sub");
   if (elCapexSub) elCapexSub.textContent = "Trích thu hồi vốn máy 3 năm đầu";
+
+  const elMargin = document.getElementById("mr-contribution-margin");
+  if (elMargin) elMargin.textContent = formatVND(totalMonthContribution);
+
+  const elMarginRatio = document.getElementById("mr-margin-ratio");
+  if (elMarginRatio) elMarginRatio.textContent = `Tỷ lệ đảm phí: ${contributionMarginRatio}% Doanh thu`;
 
   const elProfit = document.getElementById("mr-net-profit");
   if (elProfit) {
@@ -3589,10 +3701,10 @@ function renderMonthlyReport() {
   if (elProfitSub) {
     elProfitSub.textContent = netOperatingProfit >= 0 
       ? "Lợi nhuận ròng sau khi bù đắp toàn bộ Biến phí, Định phí & Khấu hao máy"
-      : "Doanh thu chưa đủ bù đắp toàn bộ định phí tháng";
+      : "Doanh thu chưa đủ bù đắp toàn bộ tổng chi phí tháng";
   }
 
-  // 5. Cập nhật dòng chân bảng (Footer)
+  // 6. Cập nhật dòng chân bảng (Footer)
   const footQty = document.getElementById("mr-foot-qty");
   if (footQty) footQty.textContent = totalMonthQty.toLocaleString('vi-VN');
 
@@ -3607,6 +3719,73 @@ function renderMonthlyReport() {
 
   const footCapex = document.getElementById("mr-foot-capex");
   if (footCapex) footCapex.textContent = formatVND(totalMonthCapex);
+}
+
+function handleLiveMonthlyCostChange() {
+  renderMonthlyReport(true);
+}
+
+function saveCurrentMonthCosts() {
+  const monthSelect = document.getElementById("monthly-report-select");
+  const month = monthSelect ? monthSelect.value : "7";
+
+  const inElec = parseCurrencyInput(document.getElementById("mr-input-elec-print")?.value || "0");
+  const embElec = parseCurrencyInput(document.getElementById("mr-input-elec-emb")?.value || "0");
+  const inSalary = parseCurrencyInput(document.getElementById("mr-input-salary-print")?.value || "0");
+  const embSalary = parseCurrencyInput(document.getElementById("mr-input-salary-emb")?.value || "0");
+  const otherFixed = parseCurrencyInput(document.getElementById("mr-input-other-fixed")?.value || "0");
+
+  if (!state.settings.monthlyRecords) {
+    state.settings.monthlyRecords = {};
+  }
+
+  state.settings.monthlyRecords[month] = {
+    name: `Tháng ${month}/2026`,
+    electricity: { In: inElec, Thêu: embElec },
+    salary: { In: inSalary, Thêu: embSalary },
+    otherFixedCost: otherFixed
+  };
+
+  state.saveSettings(state.settings);
+  renderMonthlyReport(false);
+
+  alert(`✅ Đã lưu chi phí Tháng ${month}/2026 thành công!\n\n` +
+        `• Tiền điện In: ${formatVND(inElec)} | Thêu: ${formatVND(embElec)}\n` +
+        `• Tiền lương In: ${formatVND(inSalary)} | Thêu: ${formatVND(embSalary)}\n` +
+        `• Định phí khác: ${formatVND(otherFixed)}\n\n` +
+        `Toàn bộ Total Tổng Chi Phí đã được lưu và tự động đồng bộ.`);
+}
+
+function resetCurrentMonthSalary() {
+  const monthSelect = document.getElementById("monthly-report-select");
+  const month = monthSelect ? monthSelect.value : "7";
+  const stdPayroll = getStandardPayrollTotals();
+
+  const inputSalaryPrint = document.getElementById("mr-input-salary-print");
+  const inputSalaryEmb = document.getElementById("mr-input-salary-emb");
+  if (inputSalaryPrint) inputSalaryPrint.value = Math.round(stdPayroll.inSalaryTotal).toLocaleString('vi-VN');
+  if (inputSalaryEmb) inputSalaryEmb.value = Math.round(stdPayroll.embSalaryTotal).toLocaleString('vi-VN');
+
+  if (!state.settings.monthlyRecords) state.settings.monthlyRecords = {};
+  if (!state.settings.monthlyRecords[month]) {
+    const defaultInElec = state.settings.monthlyElectricity?.In || 8000000;
+    const defaultEmbElec = state.settings.monthlyElectricity?.Thêu || 11000000;
+    state.settings.monthlyRecords[month] = {
+      name: `Tháng ${month}/2026`,
+      electricity: { In: defaultInElec, Thêu: defaultEmbElec },
+      salary: { In: stdPayroll.inSalaryTotal, Thêu: stdPayroll.embSalaryTotal },
+      otherFixedCost: 0
+    };
+  } else {
+    state.settings.monthlyRecords[month].salary = { In: stdPayroll.inSalaryTotal, Thêu: stdPayroll.embSalaryTotal };
+  }
+
+  state.saveSettings(state.settings);
+  renderMonthlyReport(false);
+
+  alert(`🔄 Đã khôi phục lương chuẩn từ 44 nhân sự cho Tháng ${month}/2026:\n` +
+        `• Nhà máy In (16 NV): ${formatVND(stdPayroll.inSalaryTotal)}\n` +
+        `• Nhà máy Thêu (28 NV): ${formatVND(stdPayroll.embSalaryTotal)}`);
 }
 
 function exportMonthlyReportCSV() {
@@ -3639,9 +3818,16 @@ function exportMonthlyReportCSV() {
 
   filteredProducts.forEach(p => {
     const costDetails = calculateProductCost(p, state.settings);
-    const qty = (month === "7") 
-      ? (p.forecast.actualSales !== undefined ? p.forecast.actualSales : Math.round((p.forecast.salesForecast || 0) / 1.1))
-      : (p.forecast.salesForecast || Math.round((p.forecast.actualSales || 0) * 1.1));
+    let qty = 0;
+    if (month === "7") {
+      qty = (p.forecast.actualSales !== undefined) ? p.forecast.actualSales : Math.round((p.forecast.salesForecast || 0) / 1.1);
+    } else if (p.forecast.monthlySales && p.forecast.monthlySales[month] !== undefined) {
+      qty = p.forecast.monthlySales[month];
+    } else if (month === "8") {
+      qty = p.forecast.salesForecast || Math.round((p.forecast.actualSales || 0) * 1.1);
+    } else {
+      qty = p.forecast.salesForecast || (p.forecast.actualSales || 0);
+    }
 
     const unitVC = costDetails.variableCost;
     const totalVC = unitVC * qty;
@@ -5676,20 +5862,41 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
   // 5. Monthly Report tab triggers
   const mrSelect = document.getElementById("monthly-report-select");
   if (mrSelect) {
-    mrSelect.addEventListener("change", renderMonthlyReport);
+    mrSelect.addEventListener("change", () => renderMonthlyReport(false));
   }
   const mrFilter = document.getElementById("monthly-report-filter-factory");
   if (mrFilter) {
-    mrFilter.addEventListener("change", renderMonthlyReport);
+    mrFilter.addEventListener("change", () => renderMonthlyReport(false));
   }
   const mrCatFilter = document.getElementById("monthly-report-filter-category");
   if (mrCatFilter) {
-    mrCatFilter.addEventListener("change", renderMonthlyReport);
+    mrCatFilter.addEventListener("change", () => renderMonthlyReport(false));
   }
   const mrExportBtn = document.getElementById("btn-export-monthly-report");
   if (mrExportBtn) {
     mrExportBtn.addEventListener("click", exportMonthlyReportCSV);
   }
+
+  // Monthly Cost Control Center Listeners
+  const btnMrSave = document.getElementById("btn-mr-save-month-costs");
+  if (btnMrSave) {
+    btnMrSave.addEventListener("click", saveCurrentMonthCosts);
+  }
+
+  const btnMrResetSalary = document.getElementById("btn-mr-reset-salary");
+  if (btnMrResetSalary) {
+    btnMrResetSalary.addEventListener("click", resetCurrentMonthSalary);
+  }
+
+  const mrCostInputs = document.querySelectorAll("#mr-cost-control-panel .mr-cost-calc-trigger");
+  mrCostInputs.forEach(input => {
+    input.addEventListener("input", handleLiveMonthlyCostChange);
+    input.addEventListener("blur", (e) => {
+      const val = parseCurrencyInput(e.target.value);
+      e.target.value = val.toLocaleString('vi-VN');
+      handleLiveMonthlyCostChange();
+    });
+  });
 
   // Cloud Database Sync on Startup (An toàn: force = false, không tự ý ghi đè dữ liệu trên máy)
   if (state.googleSheetUrl) {
@@ -5792,5 +5999,8 @@ window.app = {
   switchTab,
   triggerLiveCalculation,
   renderMonthlyReport,
-  exportMonthlyReportCSV
+  exportMonthlyReportCSV,
+  saveCurrentMonthCosts,
+  resetCurrentMonthSalary,
+  handleLiveMonthlyCostChange
 };
