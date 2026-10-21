@@ -277,7 +277,7 @@ function setupSheetGiaNVL(sheet) {
     ["NVL-GIAY-C300-A4", "Giấy Coucher A4 300gsm", "Hoàng Kim Phát", "Ram 500 tờ", 230000, "Ram", 500],
     ["NVL-GIAY-IVORY-300", "Giấy Irovy 33x48cm 300gsm", "Hoàng Kim Phát", "Ram 500 tờ", 470000, "Ram", 500],
 
-    // Decal
+    // Decal Tờ
     ["NVL-DECAL-SUA-TK", "Decal Sữa Mờ ThaiKK 33x48cm", "ThaiKK", "Thùng 5000 tờ", 14130072, "Thùng", 5000],
     ["NVL-DECAL-TRONG-TK", "Decal Trong ThaiKK 33x48cm", "ThaiKK", "Thùng 2000 tờ", 5417280, "Thùng", 2000],
     ["NVL-DECAL-BAC-TK", "Decal Bạc Bóng ThaiKK 33x35.4cm", "ThaiKK", "Thùng 2000 tờ", 4626000, "Thùng", 2000],
@@ -285,11 +285,20 @@ function setupSheetGiaNVL(sheet) {
     ["NVL-DECAL-SUA-AN", "Decal Sữa Mờ An Nam 33x48cm", "An Nam", "Thùng 3000 tờ", 18000000, "Thùng", 3000],
     ["NVL-DECAL-TRONG-AN", "Decal Trong An Nam 33x48cm", "An Nam", "Thùng 3000 tờ", 18000000, "Thùng", 3000],
 
+    // Decal Cuộn Khổ Lớn
+    ["NVL-DECAL-CUON-TRONG-127", "Decal siêu trong suốt mực dầu cuộn 1.27m", "Nhà cung cấp", "Cuộn 50m", 1860550, "Cuộn", 50],
+    ["NVL-DECAL-CUON-BAC-127", "Decal bạc bóng cuộn 1.27m", "Nhà cung cấp", "Cuộn 50m", 2730500, "Cuộn", 50],
+    ["NVL-DECAL-CUON-VANG-122", "Decal vàng bóng cuộn 1.22m", "Nhà cung cấp", "Cuộn 50m", 1799500, "Cuộn", 50],
+    ["NVL-DECAL-CUON-HOLO-127", "Decal hologram tia laser cuộn 1.27m", "Nhà cung cấp", "Cuộn 50m", 2730500, "Cuộn", 50],
+    ["NVL-DECAL-CUON-MCCAL-120", "Decal mccal trắng sữa cuộn 1.2m", "Nhà cung cấp", "Cuộn 100m", 3961000, "Cuộn", 100],
+    ["NVL-DECAL-CUON-PROTON-127", "Decal proton trong cuộn 1.27m", "Nhà cung cấp", "Cuộn 50m", 1759000, "Cuộn", 50],
+
     // UV-DTF
     ["NVL-PET-A-UVDTF", "Màng A (pet in UV-DTF)", "SBC", "Cuộn 100m", 1444600, "Cuộn", 100],
     ["NVL-PET-B-UVDTF", "Màng B (cán định hình UV-DTF)", "SBC", "Cuộn 100m", 1444600, "Cuộn", 100],
 
     // Màng cán
+    ["NVL-MANG-SUNRISE-120", "Màng cán tem Sunrise bóng/mờ (1.2m)", "Sunrise", "Cuộn 48m hiệu dụng", 1500000, "Cuộn", 48],
     ["NVL-MANG-NHIET-BONG", "Màng Nhiệt Bóng 20MIC", "An Nhân", "Cuộn 1500m", 980000, "Cuộn", 1500],
     ["NVL-MANG-NHIET-MO", "Màng Nhiệt Mờ 20MIC", "An Nhân", "Cuộn 1500m", 1020000, "Cuộn", 1500],
     ["NVL-MANG-NGUOI-OPAT", "Màng Nguội Bóng OPAT", "An Nhân", "Cuộn 500m", 800000, "Cuộn", 500],
@@ -362,6 +371,40 @@ function setupSheetQuyCach(sheet) {
     ["UV-DTF", "Màng A + Màng B", 1, "0.62 x 1m", "3 inch", 45, "Trừ hao khổ xếp file ngang 55-58cm, dài 90cm"],
     ["UV-DTF", "Màng A + Màng B", 1, "0.62 x 1m", "4 inch", 28, "Trừ hao khổ xếp file ngang 55-58cm, dài 90cm"],
     ["UV-DTF", "Màng A + Màng B", 1, "0.62 x 1m", "5 inch", 18, "Trừ hao khổ xếp file ngang 55-58cm, dài 90cm"],
+
+    // Decal Cuộn 1.27m (Siêu trong, Bạc bóng, Hologram tia laser, Proton trong)
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "1.5 inch", 567, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "2 inch", 304, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "3 inch", 154, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "4 inch", 80, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "5 inch", 48, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "6 inch", 35, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "7 inch", 30, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "8 inch", 20, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "9 inch", 16, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "10-11 inch", 12, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "12 inch", 9, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "13-14 inch", 6, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "15-18 inch", 4, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "19-22 inch", 2, "Định mức con/mét dài khổ 1.27m"],
+    ["Decal Cuộn 1.27m", "Siêu trong / Bạc / Holo / Proton", 1, "1.27 x 1m", "23-30 inch", 1, "Định mức con/mét dài khổ 1.27m"],
+
+    // Decal Cuộn 1.2m / 1.22m (Vàng bóng, Mccal trắng sữa)
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "1.5 inch", 546, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "2 inch", 304, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "3 inch", 143, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "4 inch", 80, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "5 inch", 48, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "6 inch", 30, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "7 inch", 25, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "8 inch", 20, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "9 inch", 16, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "10 inch", 12, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "11-12 inch", 9, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "13-14 inch", 6, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "15-18 inch", 4, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "19-21 inch", 2, "Định mức con/mét dài khổ 1.2m / 1.22m"],
+    ["Decal Cuộn 1.2/1.22m", "Vàng bóng / Mccal trắng sữa", 1, "1.2 / 1.22 x 1m", "22-30 inch", 1, "Định mức con/mét dài khổ 1.2m / 1.22m"],
 
     ["Calendar", "C300gsm", 13, "A4 (21 x 29.7cm)", "A4", 1, "1 quyển 13 tờ A4"],
     ["Playing Cards", "C300gsm", 3, "A3 (29.7 x 42cm)", "Bài tiêu chuẩn", 1, "1 bộ 54 lá bài / 3 tờ A3"],

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=23.5">
+  <link rel="stylesheet" href="style.css?v=23.6">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -386,7 +386,9 @@
                           <option value="">-- Tùy chỉnh tự do --</option>
                           <option value="decal-33x48">Decal Sữa/Trong (Khổ 33x48cm)</option>
                           <option value="decal-33x35">Decal Bạc/Kraft (Khổ 33x35.4cm)</option>
-                          <option value="uv-dtf-roll">UV-DTF Cuộn (Khổ 0.62 x 1m)</option>
+                          <option value="decal-cuon-127">Decal Cuộn Khổ 1.27m (Siêu trong, Bạc, Holo, Proton)</option>
+                          <option value="decal-cuon-120">Decal Cuộn Khổ 1.2m/1.22m (Vàng bóng, Mccal)</option>
+                          <option value="uv-dtf-roll">UV-DTF Cuộn (Khổ 0.62 x 1m - Vùng in 55x90cm)</option>
                           <option value="skin-card">Skin Card ATM (Khổ 33x48cm)</option>
                           <option value="playing-cards">Bài Playing Cards (Khổ 33x48cm - 3 tờ/bộ)</option>
                           <option value="calendar-a4">Lịch Để Bàn A4 (Khổ A4 - 13 tờ/quyển)</option>
@@ -398,7 +400,7 @@
                       <!-- 2. Khổ vật tư in -->
                       <div class="form-group" style="margin-bottom: 0;">
                         <label for="layout-sheet-size" style="font-size: 0.75rem; color: #a5b4fc;">Kích thước khổ phôi in:</label>
-                        <input type="text" id="layout-sheet-size" placeholder="Ví dụ: 33x48cm hoặc 0.62x1m" class="form-input" style="min-height: 38px; font-size: 0.78rem;">
+                        <input type="text" id="layout-sheet-size" placeholder="Ví dụ: 33x48cm hoặc 1.27 x 1m" class="form-input" style="min-height: 38px; font-size: 0.78rem;">
                       </div>
 
                       <!-- 3. Kích thước con hàng (Size/Variation) -->
@@ -411,6 +413,18 @@
                             <option value="3.0 inch">3.0 inch</option>
                             <option value="4.0 inch">4.0 inch</option>
                             <option value="5.0 inch">5.0 inch</option>
+                            <option value="6.0 inch">6.0 inch</option>
+                            <option value="7.0 inch">7.0 inch</option>
+                            <option value="8.0 inch">8.0 inch</option>
+                            <option value="9.0 inch">9.0 inch</option>
+                            <option value="10.0 inch">10.0 inch</option>
+                            <option value="12.0 inch">12.0 inch</option>
+                            <option value="14.0 inch">14.0 inch</option>
+                            <option value="16.0 inch">16.0 inch</option>
+                            <option value="18.0 inch">18.0 inch</option>
+                            <option value="20.0 inch">20.0 inch</option>
+                            <option value="25.0 inch">25.0 inch</option>
+                            <option value="30.0 inch">30.0 inch</option>
                             <option value="custom">Tùy chọn...</option>
                           </select>
                           <input type="text" id="layout-item-size" value="2.0 inch" placeholder="Size" class="form-input" style="min-height: 38px; font-size: 0.78rem; flex: 1;">
@@ -1844,6 +1858,6 @@ function syncTabCauHinh(ss, settings) {
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=23.5" type="module"></script>
+  <script src="app.js?v=23.6" type="module"></script>
 </body>
 </html>
