@@ -1791,6 +1791,25 @@ function renderCalculator() {
 
       cardsList.appendChild(section);
     });
+
+    const selectedCard = cardsList.querySelector(".product-card-item.selected");
+    if (selectedCard) {
+      setTimeout(() => {
+        selectedCard.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }, 50);
+    }
+  }
+
+  const listPanel = document.querySelector(".product-list-panel");
+  const cardsContainer = document.getElementById("product-cards-list");
+  if (listPanel && cardsContainer && !listPanel.dataset.wheelBound) {
+    listPanel.dataset.wheelBound = "true";
+    listPanel.addEventListener("wheel", (e) => {
+      if (!e.target.closest("#product-cards-list")) {
+        cardsContainer.scrollTop += e.deltaY;
+        e.preventDefault();
+      }
+    }, { passive: false });
   }
 
   // Render Right Column Calculator Form details
