@@ -726,6 +726,11 @@ function doPost(e) {
     if (data.settings) {
       syncTabCauHinh(ss, data.settings);
     }
+
+    // 5. Tự động đồng bộ trực tiếp vào tab 6_GIA_THANH_BOM
+    if (data.products && Array.isArray(data.products)) {
+      syncTabBOM(ss, data.products);
+    }
     
     SpreadsheetApp.flush();
     return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
@@ -830,4 +835,41 @@ function syncTabCauHinh(ss, settings) {
     if (settings.monthlyElectricity.In !== undefined) sheet.getRange("B9").setValue(settings.monthlyElectricity.In);
     if (settings.monthlyElectricity.Thêu !== undefined) sheet.getRange("B10").setValue(settings.monthlyElectricity.Thêu);
   }
+}
+
+function syncTabBOM(ss, products) {
+  var sheet = ss.getSheetByName("6_GIA_THANH_BOM");
+  if (!sheet || !products || products.length === 0) return;
+  var maxRows = sheet.getMaxRows();
+  if (maxRows >= 3) {
+    sheet.getRange(3, 1, Math.max(1, maxRows - 2), 17).clearContent().clearFormat();
+  }
+  var rows = [];
+  for (var i = 0; i < products.length; i++) {
+    var p = products[i];
+    var l = p.labor || {};
+    var machineName = p.paybackMachineId ? p.paybackMachineId.toUpperCase() : "KHÔNG";
+    var machineQty = p.paybackMachineQty || 0;
+    rows.push([
+      p.code || ("SKU-" + (i + 1)),
+      p.name,
+      (p.layout && p.layout.itemSize ? p.layout.itemSize : "Tiêu chuẩn"),
+      p.factoryType || "In",
+      "", // Chi phí NVL
+      l.designer || 0,
+      l.production || 0,
+      l.qc || 0,
+      "", // Chi phí Nhân công
+      "", // Chi phí Điện
+      "", // Chi phí Quản lý chung
+      machineName,
+      machineQty,
+      "", // Giá vốn 3 năm đầu
+      "", // Giá bán seller 3 năm đầu
+      "", // Giá vốn sau 3 năm
+      ""  // Giá bán seller sau 3 năm
+    ]);
+  }
+  sheet.getRange(3, 1, rows.length, 17).setValues(rows);
+  sheet.getRange(3, 1, rows.length, 17).setFontFamily("Arial").setFontSize(10);
 }

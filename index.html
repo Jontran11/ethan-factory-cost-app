@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=23.6">
+  <link rel="stylesheet" href="style.css?v=23.7">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -307,8 +307,14 @@
               <form id="product-cost-form" class="product-cost-form hidden">
                 <input type="hidden" id="form-product-id">
                 
-                <div class="form-section-header">
-                  <h3 id="form-title-text">Chi Tiết Giá Thành Sản Phẩm</h3>
+                <div class="form-section-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                  <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <h3 id="form-title-text" style="margin: 0;">Chi Tiết Giá Thành Sản Phẩm</h3>
+                    <button type="button" class="btn btn-xs btn-danger" id="btn-top-delete-product" style="padding: 0.3rem 0.65rem; font-size: 0.76rem; display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(239,68,68,0.25);" title="Xóa vĩnh viễn sản phẩm này khỏi hệ thống">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      Xóa sản phẩm
+                    </button>
+                  </div>
                   <div class="factory-toggle-group">
                     <label class="toggle-btn-label">Nhà máy sản xuất:</label>
                     <div class="factory-options">
@@ -1858,6 +1864,6 @@ function syncTabCauHinh(ss, settings) {
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=23.6" type="module"></script>
+  <script src="app.js?v=23.7" type="module"></script>
 </body>
 </html>

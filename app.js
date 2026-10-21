@@ -1107,7 +1107,17 @@ class AppStateManager {
       return p;
     };
 
-    const CURRENT_VERSION = "v23.6_sticker_uvdtf_full";
+    const getDeletedProductIds = () => {
+      try {
+        const raw = localStorage.getItem("factory_deleted_product_ids");
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    };
+    const deletedIds = getDeletedProductIds();
+
+    const CURRENT_VERSION = "v23.7_delete_product_feature";
     const migratedVer = localStorage.getItem("factory_version_migrated");
     if (migratedVer !== CURRENT_VERSION) {
       localStorage.setItem("factory_version_migrated", CURRENT_VERSION);
@@ -1116,10 +1126,13 @@ class AppStateManager {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          customProducts = parsed.filter(p => p.id !== 'prod-4' && p.id !== 'prod-5' && !MOCK_PRODUCTS.some(mp => mp.id === p.id || mp.code === p.code));
+          customProducts = parsed.filter(p => !deletedIds.includes(p.id) && !deletedIds.includes(p.code) && p.id !== 'prod-4' && p.id !== 'prod-5' && !MOCK_PRODUCTS.some(mp => mp.id === p.id || mp.code === p.code));
         } catch (e) {}
       }
-      const freshProducts = [...JSON.parse(JSON.stringify(MOCK_PRODUCTS)), ...customProducts];
+      const freshProducts = [
+        ...JSON.parse(JSON.stringify(MOCK_PRODUCTS)).filter(mp => !deletedIds.includes(mp.id) && !deletedIds.includes(mp.code)),
+        ...customProducts
+      ];
       localStorage.setItem("factory_products_v2", JSON.stringify(freshProducts));
       return freshProducts.map(processProduct);
     }
@@ -1127,30 +1140,38 @@ class AppStateManager {
     const saved = localStorage.getItem("factory_products_v2");
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        // Ensure new mock products are automatically merged if not present
-        MOCK_PRODUCTS.forEach(mp => {
-          const existingIdx = parsed.findIndex(p => p.id === mp.id || p.code === mp.code);
-          if (existingIdx === -1) {
-            parsed.push(JSON.parse(JSON.stringify(mp)));
-          } else if (mp.code === "PC-PAPER-01" || mp.code === "PC-PLASTIC-02" || mp.code.startsWith("ST-") || mp.id.startsWith("prod-st-") || mp.id === "prod-6") {
-            // Always force synchronize the exact official BOM materials & layout for Playing Cards, Stickers, and UV-DTF
-            parsed[existingIdx].name = mp.name;
-            parsed[existingIdx].code = mp.code;
-            parsed[existingIdx].category = mp.category;
-            parsed[existingIdx].materials = JSON.parse(JSON.stringify(mp.materials));
-            parsed[existingIdx].layout = JSON.parse(JSON.stringify(mp.layout));
-            parsed[existingIdx].factoryType = mp.factoryType;
-            if (mp.profitPercentage) parsed[existingIdx].profitPercentage = mp.profitPercentage;
-          }
-        });
-        localStorage.setItem("factory_products_v2", JSON.stringify(parsed));
-        return parsed.map(processProduct);
+        let parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // Strictly filter out any deleted products
+          parsed = parsed.filter(p => !deletedIds.includes(p.id) && !deletedIds.includes(p.code));
+
+          // Ensure new mock products are automatically merged ONLY if not deleted
+          MOCK_PRODUCTS.forEach(mp => {
+            if (deletedIds.includes(mp.id) || deletedIds.includes(mp.code)) {
+              return; // Explicitly deleted by user, do not resurrect
+            }
+            const existingIdx = parsed.findIndex(p => p.id === mp.id || p.code === mp.code);
+            if (existingIdx === -1) {
+              parsed.push(JSON.parse(JSON.stringify(mp)));
+            } else if (mp.code === "PC-PAPER-01" || mp.code === "PC-PLASTIC-02" || mp.code.startsWith("ST-") || mp.id.startsWith("prod-st-") || mp.id === "prod-6") {
+              // Always force synchronize official BOM materials & layout for default lines
+              parsed[existingIdx].name = mp.name;
+              parsed[existingIdx].code = mp.code;
+              parsed[existingIdx].category = mp.category;
+              parsed[existingIdx].materials = JSON.parse(JSON.stringify(mp.materials));
+              parsed[existingIdx].layout = JSON.parse(JSON.stringify(mp.layout));
+              parsed[existingIdx].factoryType = mp.factoryType;
+              if (mp.profitPercentage) parsed[existingIdx].profitPercentage = mp.profitPercentage;
+            }
+          });
+          localStorage.setItem("factory_products_v2", JSON.stringify(parsed));
+          return parsed.map(processProduct);
+        }
       } catch (e) {
         console.error("Error parsing products", e);
       }
     }
-    return JSON.parse(JSON.stringify(MOCK_PRODUCTS)).map(processProduct);
+    return JSON.parse(JSON.stringify(MOCK_PRODUCTS)).filter(mp => !deletedIds.includes(mp.id) && !deletedIds.includes(mp.code)).map(processProduct);
   }
 
   saveProducts() {
@@ -1167,6 +1188,18 @@ class AppStateManager {
       const data = await res.json();
       
       if (data && data.products && data.settings) {
+        // Sync deleted products blacklist from cloud
+        if (Array.isArray(data.deletedProductIds)) {
+          try {
+            const raw = localStorage.getItem("factory_deleted_product_ids");
+            const localDeleted = raw ? JSON.parse(raw) : [];
+            data.deletedProductIds.forEach(id => {
+              if (!localDeleted.includes(id)) localDeleted.push(id);
+            });
+            localStorage.setItem("factory_deleted_product_ids", JSON.stringify(localDeleted));
+          } catch (e) {}
+        }
+
         // Nếu không ép buộc (force = false) và máy hiện tại đã có dữ liệu hợp lệ: KHÔNG tự ý ghi đè
         if (!force && this.products && this.products.length > 0) {
           console.log("Dữ liệu trên máy đang sẵn sàng, không tự động ghi đè từ Google Sheets khi khởi động.");
@@ -1174,7 +1207,14 @@ class AppStateManager {
           return true;
         }
 
-        this.products = data.products;
+        const deletedList = (() => {
+          try {
+            const raw = localStorage.getItem("factory_deleted_product_ids");
+            return raw ? JSON.parse(raw) : [];
+          } catch (e) { return []; }
+        })();
+
+        this.products = (data.products || []).filter(p => !deletedList.includes(p.id) && !deletedList.includes(p.code));
         this.settings = data.settings;
         localStorage.setItem("factory_settings_v2", JSON.stringify(this.settings));
         localStorage.setItem("factory_products_v2", JSON.stringify(this.products));
@@ -1196,9 +1236,17 @@ class AppStateManager {
     }
     try {
       updateCloudStatus("syncing");
+      const deletedList = (() => {
+        try {
+          const raw = localStorage.getItem("factory_deleted_product_ids");
+          return raw ? JSON.parse(raw) : [];
+        } catch (e) { return []; }
+      })();
+
       const stateData = {
         products: this.products,
         settings: this.settings,
+        deletedProductIds: deletedList,
         saved: new Date().toISOString(),
         savedFormatted: new Date().toLocaleString('vi-VN')
       };
@@ -1230,6 +1278,7 @@ class AppStateManager {
   resetData() {
     localStorage.removeItem("factory_settings_v2");
     localStorage.removeItem("factory_products_v2");
+    localStorage.removeItem("factory_deleted_product_ids");
     this.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
     this.products = JSON.parse(JSON.stringify(MOCK_PRODUCTS));
     this.selectedProductId = null;
@@ -2007,18 +2056,22 @@ function renderCalculator() {
 
       const itemsContainer = section.querySelector(".category-group-items");
       group.products.forEach(p => {
-        const card = document.createElement("button");
-        card.type = "button";
+        const card = document.createElement("div");
         card.className = `product-card-item ${state.selectedProductId === p.id ? 'selected' : ''}`;
+        card.setAttribute("role", "button");
+        card.setAttribute("tabindex", "0");
         
         const { baseCost, sellerPrice } = calculateProductCost(p, state.settings);
         
         card.innerHTML = `
           <div class="product-card-item-header">
             <div class="product-card-name">${p.name}</div>
-            <span class="table-row-factory type-${p.factoryType === "In" ? "print" : "embroid"}">
-              ${p.factoryType}
-            </span>
+            <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+              <span class="table-row-factory type-${p.factoryType === "In" ? "print" : "embroid"}">
+                ${p.factoryType}
+              </span>
+              <button type="button" class="btn-card-delete" title="Xóa sản phẩm này" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #f87171; border-radius: 4px; padding: 2px 5px; font-size: 0.72rem; cursor: pointer; transition: all 0.2s; line-height: 1;">🗑️</button>
+            </div>
           </div>
           <div class="product-card-sku">${p.code || 'N/A'}</div>
           <div class="product-card-footer">
@@ -2026,7 +2079,21 @@ function renderCalculator() {
             <div class="product-card-price" style="font-size: 0.85rem;">Vốn: ${formatVND(baseCost)}</div>
           </div>
         `;
-        card.addEventListener("click", () => selectProduct(p.id));
+
+        card.addEventListener("click", (e) => {
+          if (!e.target.closest(".btn-card-delete")) {
+            selectProduct(p.id);
+          }
+        });
+
+        const cardDelBtn = card.querySelector(".btn-card-delete");
+        if (cardDelBtn) {
+          cardDelBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            deleteProductById(p.id);
+          });
+        }
+
         itemsContainer.appendChild(card);
       });
 
@@ -2721,17 +2788,60 @@ function saveProductCostForm(e) {
   alert("Lưu thông tin sản phẩm thành công!");
 }
 
-function deleteCurrentProduct() {
-  if (!state.selectedProductId) return;
-  const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
-  if (!selectedProduct) return;
-
-  if (confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${selectedProduct.name}" khỏi hệ thống?`)) {
-    state.products = state.products.filter(p => p.id !== state.selectedProductId);
-    state.selectedProductId = null;
-    state.saveProducts();
-    renderCalculator();
+function getDeletedProductIds() {
+  try {
+    const raw = localStorage.getItem("factory_deleted_product_ids");
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
   }
+}
+
+function addDeletedProductId(id, code) {
+  const list = getDeletedProductIds();
+  if (id && !list.includes(id)) list.push(id);
+  if (code && !list.includes(code)) list.push(code);
+  localStorage.setItem("factory_deleted_product_ids", JSON.stringify(list));
+}
+
+function deleteProductById(productId) {
+  if (!productId) return;
+  const product = state.products.find(p => p.id === productId);
+  if (!product) return;
+
+  const skuText = product.code ? `\n- Mã SKU: ${product.code}` : "";
+  const confirmMsg = `Bạn có chắc chắn muốn xóa sản phẩm:\n"${product.name}"${skuText}\n\nSau khi xóa, sản phẩm này sẽ bị gỡ bỏ vĩnh viễn khỏi hệ thống và không tự động xuất hiện lại khi làm mới trang.`;
+  if (confirm(confirmMsg)) {
+    // 1. Add to permanent blacklist
+    addDeletedProductId(product.id, product.code);
+
+    // 2. Remove from state.products
+    state.products = state.products.filter(p => p.id !== productId);
+
+    // 3. Update selectedProductId: switch to first available product or null
+    if (state.selectedProductId === productId) {
+      state.selectedProductId = state.products.length > 0 ? state.products[0].id : null;
+    }
+
+    // 4. Save and sync
+    state.saveProducts();
+
+    // 5. Re-render views
+    renderCalculator();
+    if (typeof renderForecast === "function") renderForecast();
+    if (typeof renderDashboard === "function") renderDashboard();
+    if (typeof renderMonthlyReport === "function") renderMonthlyReport();
+
+    alert(`Đã xóa thành công sản phẩm "${product.name}"!`);
+  }
+}
+
+function deleteCurrentProduct() {
+  if (!state.selectedProductId) {
+    alert("Vui lòng chọn một sản phẩm trước khi xóa!");
+    return;
+  }
+  deleteProductById(state.selectedProductId);
 }
 
 function cancelEditCalculator() {
@@ -3122,7 +3232,10 @@ function renderForecast() {
         ${formatVND(totalBudget)}
       </td>
       <td>
-        <button type="button" class="btn btn-xs btn-outline btn-go-calc">Sửa giá</button>
+        <div style="display: flex; align-items: center; gap: 0.35rem; justify-content: flex-end;">
+          <button type="button" class="btn btn-xs btn-outline btn-go-calc" title="Sửa chi tiết giá thành">Sửa giá</button>
+          <button type="button" class="btn btn-xs btn-outline btn-delete-row-product" title="Xóa sản phẩm" style="color: #f87171; border-color: rgba(239,68,68,0.35); padding: 0.2rem 0.45rem;">🗑️</button>
+        </div>
       </td>
     `;
 
@@ -3130,6 +3243,11 @@ function renderForecast() {
     tr.querySelector(".btn-go-calc").addEventListener("click", () => {
       state.selectedProductId = p.id;
       switchTab("calculator");
+    });
+
+    // Delete product from table
+    tr.querySelector(".btn-delete-row-product").addEventListener("click", () => {
+      deleteProductById(p.id);
     });
 
     // Reactive input listeners inside Table
@@ -4718,6 +4836,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Form buttons
   document.getElementById("product-cost-form").addEventListener("submit", saveProductCostForm);
   document.getElementById("btn-delete-product").addEventListener("click", deleteCurrentProduct);
+  const topDeleteBtn = document.getElementById("btn-top-delete-product");
+  if (topDeleteBtn) {
+    topDeleteBtn.addEventListener("click", deleteCurrentProduct);
+  }
   document.getElementById("btn-cancel-edit").addEventListener("click", cancelEditCalculator);
 
   // 3. Forecast tab triggers
