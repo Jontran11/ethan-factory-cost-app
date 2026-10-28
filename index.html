@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=24.1">
+  <link rel="stylesheet" href="style.css?v=24.2">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -67,6 +67,10 @@
         <button class="nav-item" data-tab="order-cost" aria-selected="false" role="tab">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="2"></rect><path d="m9 14 2 2 4-4"></path></svg>
           <span>Dò Cost Đơn Hàng</span>
+        </button>
+        <button class="nav-item" data-tab="capex" aria-selected="false" role="tab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+          <span>Máy Móc &amp; CAPEX</span>
         </button>
         <button class="nav-item" data-tab="monthly-report" aria-selected="false" role="tab">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -1367,7 +1371,182 @@
         </section>
 
 
-        <!-- TAB 4: SETTINGS -->
+        <!-- TAB CAPEX: QUẢN LÝ VỐN ĐẦU TƯ MÁY MÓC & KHẤU HAO ĐƯỜNG THẲNG -->
+        <section id="tab-capex" class="tab-pane" role="tabpanel">
+          
+          <!-- Top KPI Metrics -->
+          <div class="metrics-grid" style="margin-bottom: 1.5rem;">
+            <div class="metric-card glass">
+              <div class="card-header">
+                <span class="card-label">Tổng Vốn Đầu Tư (CAPEX)</span>
+                <span class="card-icon money">₫</span>
+              </div>
+              <div class="card-value" id="capex-kpi-total-inv" style="color: #60a5fa;">9.175.590.182 đ</div>
+              <div class="card-footer">
+                <span class="trend-indicator pos" id="capex-kpi-total-machines">74 thiết bị</span>
+                <span class="footer-text">thuộc 3 phân xưởng</span>
+              </div>
+            </div>
+
+            <div class="metric-card glass">
+              <div class="card-header">
+                <span class="card-label">Khấu Hao Đường Thẳng / 1 Tháng</span>
+                <span class="card-icon print">📅</span>
+              </div>
+              <div class="card-value" id="capex-kpi-monthly" style="color: #f59e0b;">254.877.505 đ</div>
+              <div class="card-footer">
+                <span class="trend-indicator font-semibold" style="color: #fbbf24;">Chia đều 36 tháng</span>
+                <span class="footer-text">không phụ thuộc đơn hàng</span>
+              </div>
+            </div>
+
+            <div class="metric-card glass">
+              <div class="card-header">
+                <span class="card-label">Khấu Hao Hàng Năm (3 Năm)</span>
+                <span class="card-icon embroid">⏳</span>
+              </div>
+              <div class="card-value" id="capex-kpi-yearly" style="color: #a78bfa;">3.058.530.061 đ</div>
+              <div class="card-footer">
+                <span class="trend-indicator">3 năm hoàn vốn</span>
+                <span class="footer-text">mặc định toàn bộ máy</span>
+              </div>
+            </div>
+
+            <div class="metric-card glass">
+              <div class="card-header">
+                <span class="card-label">Khấu Hao / 1 Ngày Làm Việc</span>
+                <span class="card-icon items">⚡</span>
+              </div>
+              <div class="card-value" id="capex-kpi-daily" style="color: #34d399;">9.802.981 đ</div>
+              <div class="card-footer">
+                <span class="trend-indicator pos">Chuẩn 26 ngày/tháng</span>
+                <span class="footer-text">(~1.225.373 đ/giờ - 208h)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formula & Workshop Breakdown Banner -->
+          <div class="dashboard-card glass" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(16, 185, 129, 0.05)); border: 1px solid rgba(99, 102, 241, 0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+              <div>
+                <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <span>📐</span> Công Thức Khấu Hao Đường Thẳng (Straight-Line Depreciation)
+                </h3>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
+                  Chi phí hao mòn tài sản cố định được trích trước đều đặn theo thời gian hữu ích (3 năm = 36 tháng), không phụ thuộc vào sản lượng hay doanh số bán hàng tháng đó.
+                </p>
+              </div>
+              <div style="padding: 0.5rem 0.85rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; font-family: monospace; font-size: 0.85rem; color: #38bdf8;">
+                Khấu hao 1 tháng = Vốn đầu tư ÷ 36 tháng
+              </div>
+            </div>
+
+            <!-- 3 Workshops Summary Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+              
+              <!-- Workshop 1: Thêu & Laser -->
+              <div style="padding: 1rem; background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <strong style="color: #c084fc; font-size: 0.9rem;">🧵 Xưởng Thêu &amp; Laser</strong>
+                  <span style="font-size: 0.72rem; background: rgba(168, 85, 247, 0.2); color: #e9d5ff; padding: 0.15rem 0.45rem; border-radius: 12px; font-weight: 600;">25 máy</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Vốn đầu tư: <strong style="color: #fff;">2.995.000.000 đ</strong> (32.6%)</div>
+                <div style="font-size: 1.05rem; font-weight: 700; color: #f59e0b; margin-bottom: 0.25rem;" id="capex-workshop-theu-monthly">83.194.444 đ<span style="font-size: 0.72rem; font-weight: 400; color: var(--text-secondary);">/tháng</span></div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Tương đương ~3.199.786 đ/ngày • 399.973 đ/giờ</div>
+              </div>
+
+              <!-- Workshop 2: In, Cắt & Hoàn Thiện -->
+              <div style="padding: 1rem; background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <strong style="color: #38bdf8; font-size: 0.9rem;">🖨️ Xưởng In, Cắt &amp; Hoàn Thiện</strong>
+                  <span style="font-size: 0.72rem; background: rgba(56, 189, 248, 0.2); color: #bae6fd; padding: 0.15rem 0.45rem; border-radius: 12px; font-weight: 600;">25 máy</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Vốn đầu tư: <strong style="color: #fff;">5.450.214.182 đ</strong> (59.4%)</div>
+                <div style="font-size: 1.05rem; font-weight: 700; color: #f59e0b; margin-bottom: 0.25rem;" id="capex-workshop-in-monthly">151.394.838 đ<span style="font-size: 0.72rem; font-weight: 400; color: var(--text-secondary);">/tháng</span></div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Tương đương ~5.822.878 đ/ngày • 727.860 đ/giờ</div>
+              </div>
+
+              <!-- Workshop 3: Máy In 3D -->
+              <div style="padding: 1rem; background: rgba(52, 211, 153, 0.06); border: 1px solid rgba(52, 211, 153, 0.25); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <strong style="color: #34d399; font-size: 0.9rem;">🧊 Xưởng Máy In 3D (Bambu Lab)</strong>
+                  <span style="font-size: 0.72rem; background: rgba(52, 211, 153, 0.2); color: #a7f3d0; padding: 0.15rem 0.45rem; border-radius: 12px; font-weight: 600;">24 máy</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.35rem;">Vốn đầu tư: <strong style="color: #fff;">730.376.000 đ</strong> (8.0%)</div>
+                <div style="font-size: 1.05rem; font-weight: 700; color: #f59e0b; margin-bottom: 0.25rem;" id="capex-workshop-3d-monthly">20.288.222 đ<span style="font-size: 0.72rem; font-weight: 400; color: var(--text-secondary);">/tháng</span></div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Tương đương ~780.316 đ/ngày • 97.540 đ/giờ</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Main Capex Machine List Card -->
+          <div class="dashboard-card glass">
+            
+            <!-- Toolbar: Search, Filters & Action -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 1rem;">
+              
+              <!-- Filter Tabs -->
+              <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;" id="capex-filter-buttons">
+                <button type="button" class="btn btn-xs capex-tab-filter active" data-cat="all" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">Tất cả (74)</button>
+                <button type="button" class="btn btn-xs capex-tab-filter" data-cat="Thêu & Laser" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">🧵 Thêu &amp; Laser (25)</button>
+                <button type="button" class="btn btn-xs capex-tab-filter" data-cat="In, Cắt & Hoàn Thiện" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">🖨️ In &amp; Hoàn Thiện (25)</button>
+                <button type="button" class="btn btn-xs capex-tab-filter" data-cat="Máy in 3D" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">🧊 In 3D (24)</button>
+              </div>
+
+              <!-- Search & Add Button -->
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <div style="position: relative; min-width: 220px;">
+                  <input type="text" id="capex-search-input" class="form-input" placeholder="🔍 Tìm tên máy, model..." style="margin: 0; min-height: 34px; font-size: 0.78rem; padding-left: 0.75rem;">
+                </div>
+                <button type="button" id="btn-add-new-machine" class="btn btn-primary" style="min-height: 34px; font-size: 0.78rem; padding: 0 0.85rem; background: linear-gradient(135deg, #6366f1, #4f46e5); display: flex; align-items: center; gap: 0.35rem;">
+                  <span>➕</span> Thêm Máy Mới
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Table Container -->
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+                <thead>
+                  <tr style="background: rgba(255,255,255,0.03); border-bottom: 2px solid rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <th style="padding: 0.75rem 0.6rem; width: 45px; text-align: center;">STT</th>
+                    <th style="padding: 0.75rem 0.6rem;">Tên Thiết Bị / Máy Móc</th>
+                    <th style="padding: 0.75rem 0.6rem;">Phân Xưởng</th>
+                    <th style="padding: 0.75rem 0.6rem; text-align: center;">Số Lượng</th>
+                    <th style="padding: 0.75rem 0.6rem; text-align: right;">Vốn Đầu Tư</th>
+                    <th style="padding: 0.75rem 0.6rem; text-align: center;">Thời Hạn</th>
+                    <th style="padding: 0.75rem 0.6rem; text-align: right; color: #fbbf24;">Khấu Hao / Tháng</th>
+                    <th style="padding: 0.75rem 0.6rem; text-align: right;">Khấu Hao / Ngày</th>
+                    <th style="padding: 0.75rem 0.6rem; text-align: right;">Khấu Hao / Giờ</th>
+                    <th style="padding: 0.75rem 0.6rem; text-align: center;">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="capex-table-tbody">
+                  <!-- Dynamically populated rows -->
+                </tbody>
+                <tfoot>
+                  <tr style="background: rgba(99, 102, 241, 0.08); border-top: 2px solid rgba(99, 102, 241, 0.3); font-weight: 700; color: #fff;">
+                    <td colspan="3" style="padding: 0.85rem 0.6rem; text-align: right; color: #a5b4fc;">TỔNG CỘNG:</td>
+                    <td style="padding: 0.85rem 0.6rem; text-align: center; color: #34d399;" id="capex-foot-qty">74 máy</td>
+                    <td style="padding: 0.85rem 0.6rem; text-align: right; color: #60a5fa;" id="capex-foot-total-inv">9.175.590.182 đ</td>
+                    <td style="padding: 0.85rem 0.6rem; text-align: center;">3 năm</td>
+                    <td style="padding: 0.85rem 0.6rem; text-align: right; color: #fbbf24; font-size: 0.95rem;" id="capex-foot-monthly">254.877.505 đ</td>
+                    <td style="padding: 0.85rem 0.6rem; text-align: right; color: #34d399;" id="capex-foot-daily">9.802.981 đ</td>
+                    <td style="padding: 0.85rem 0.6rem; text-align: right; color: #a78bfa;" id="capex-foot-hourly">1.225.373 đ</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- TAB 5: SETTINGS -->
         <section id="tab-settings" class="tab-pane" role="tabpanel">
           <div class="settings-layout">
             
@@ -1451,6 +1630,11 @@
                 <div class="card-title-bar">
                   <h3>Quản Lý Đầu Tư &amp; Hòa Vốn Máy Móc (CapEx)</h3>
                   <span class="text-secondary">Khai báo vốn đầu tư máy móc, số năm và sản lượng mục tiêu để tính phụ phí hoàn vốn</span>
+                </div>
+                
+                <div style="margin-bottom: 1rem; padding: 0.6rem 0.85rem; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 6px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                  <span style="font-size: 0.78rem; color: #a5b4fc;">💡 Đã tách thành mục riêng: <strong>Máy Móc &amp; CAPEX (Khấu Hao Đường Thẳng 3 Năm)</strong></span>
+                  <button type="button" class="btn btn-xs btn-primary" id="btn-goto-capex-tab" style="font-size: 0.72rem; padding: 0.25rem 0.6rem; background: #4f46e5;">👉 Xem Tab Máy Móc &amp; CAPEX</button>
                 </div>
                 
                 <!-- Form to Add Machine -->
@@ -2162,6 +2346,6 @@ Ví dụ:
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=24.1" type="module"></script>
+  <script src="app.js?v=24.2" type="module"></script>
 </body>
 </html>

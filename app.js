@@ -1635,6 +1635,10 @@ class AppStateManager {
       searchQuery: "",
       viewMode: "order"
     };
+    this.capexState = {
+      filterCategory: "all",
+      searchQuery: ""
+    };
     
     const savedUrl = localStorage.getItem("factory_sheet_url_v2");
     if (savedUrl === "none") {
@@ -2706,6 +2710,10 @@ function switchTab(tabId) {
     pageTitle.textContent = "Dò Giá Cost Đơn Hàng (Smart SKU Engine)";
     pageSubtitle.textContent = "Tự động phân tích tiền tố SKU, xác định chi phí giá vốn (Cost) và lợi nhuận cho từng đơn hàng";
     renderOrderCostInspector();
+  } else if (tabId === "capex") {
+    pageTitle.textContent = "Quản Lý Vốn Đầu Tư Máy Móc (CAPEX) & Khấu Hao Đường Thẳng";
+    pageSubtitle.textContent = "Thống kê 74 thiết bị máy móc (9.17 tỷ đ), thời hạn hoàn vốn 3 năm (36 tháng) và chi phí hao mòn cố định từng tháng";
+    renderCapexView();
   } else if (tabId === "monthly-report") {
     pageTitle.textContent = "Báo Cáo Chi Phí & Doanh Thu Từng Tháng";
     pageSubtitle.textContent = "Phân tích Biến phí (VC), Số dư đảm phí, Định phí xưởng (FC) và Lợi nhuận ròng";
@@ -4543,6 +4551,271 @@ function recalculateForecastTotals() {
 }
 
 // ==========================================================================
+// 6.4. Tab: Capex & Straight-Line Depreciation Engine (v24.1)
+// ==========================================================================
+
+/**
+ * Tính toán khấu hao đường thẳng (Straight-Line Depreciation) cho 1 thiết bị máy móc
+ * Công thức: Khấu hao tháng = Vốn đầu tư / (Số năm * 12 tháng)
+ */
+function calculateStraightLineDepreciation(machine) {
+  const years = parseFloat(machine.paybackYears) || 3;
+  const months = Math.round(years * 12);
+  const investment = parseFloat(machine.investment) || 0;
+  const monthlyDepreciation = months > 0 ? Math.round(investment / months) : 0;
+  const dailyDepreciation = Math.round(monthlyDepreciation / 26); // 26 ngày làm việc/tháng
+  const standardHours = state.settings.standardHours || 208;
+  const hourlyDepreciation = Math.round(monthlyDepreciation / standardHours); // 208 giờ công/tháng
+
+  return {
+    years,
+    months,
+    investment,
+    monthlyDepreciation,
+    yearlyDepreciation: monthlyDepreciation * 12,
+    dailyDepreciation,
+    hourlyDepreciation
+  };
+}
+
+function renderCapexView() {
+  const tbody = document.getElementById("capex-table-tbody");
+  if (!tbody) return;
+
+  const machines = state.settings.machines || [];
+  
+  // 1. Tính toán tổng toàn bộ máy móc (74 máy - 9.175.590.182 đ)
+  const totalMachines = machines.reduce((sum, m) => sum + (parseInt(m.quantity) || 1), 0);
+  const totalInvestment = machines.reduce((sum, m) => sum + (parseFloat(m.investment) || 0), 0);
+  const totalMonthly = machines.reduce((sum, m) => sum + calculateStraightLineDepreciation(m).monthlyDepreciation, 0);
+  const totalYearly = totalMonthly * 12;
+  const totalDaily = Math.round(totalMonthly / 26);
+  const standardHours = state.settings.standardHours || 208;
+  const totalHourly = Math.round(totalMonthly / standardHours);
+
+  // Update Top KPI Cards
+  const kpiTotalInv = document.getElementById("capex-kpi-total-inv");
+  if (kpiTotalInv) kpiTotalInv.textContent = formatVND(totalInvestment);
+
+  const kpiTotalMachines = document.getElementById("capex-kpi-total-machines");
+  if (kpiTotalMachines) kpiTotalMachines.textContent = `${totalMachines} thiết bị`;
+
+  const kpiMonthly = document.getElementById("capex-kpi-monthly");
+  if (kpiMonthly) kpiMonthly.textContent = formatVND(totalMonthly);
+
+  const kpiYearly = document.getElementById("capex-kpi-yearly");
+  if (kpiYearly) kpiYearly.textContent = formatVND(totalYearly);
+
+  const kpiDaily = document.getElementById("capex-kpi-daily");
+  if (kpiDaily) kpiDaily.textContent = formatVND(totalDaily);
+
+  // 2. Tính toán phân bổ 3 phân xưởng
+  const theuMachines = machines.filter(m => m.factoryType === "Thêu" || m.category === "Thêu & Laser");
+  const theuMonthly = theuMachines.reduce((sum, m) => sum + calculateStraightLineDepreciation(m).monthlyDepreciation, 0);
+  const elTheuMonthly = document.getElementById("capex-workshop-theu-monthly");
+  if (elTheuMonthly) {
+    elTheuMonthly.innerHTML = `${formatVND(theuMonthly)}<span style="font-size: 0.72rem; font-weight: 400; color: var(--text-secondary);">/tháng</span>`;
+  }
+
+  const inMachines = machines.filter(m => m.factoryType === "In" || m.category === "In, Cắt & Hoàn Thiện");
+  const inMonthly = inMachines.reduce((sum, m) => sum + calculateStraightLineDepreciation(m).monthlyDepreciation, 0);
+  const elInMonthly = document.getElementById("capex-workshop-in-monthly");
+  if (elInMonthly) {
+    elInMonthly.innerHTML = `${formatVND(inMonthly)}<span style="font-size: 0.72rem; font-weight: 400; color: var(--text-secondary);">/tháng</span>`;
+  }
+
+  const bambuMachines = machines.filter(m => m.factoryType === "In 3D" || m.category === "Máy in 3D");
+  const bambuMonthly = bambuMachines.reduce((sum, m) => sum + calculateStraightLineDepreciation(m).monthlyDepreciation, 0);
+  const elBambuMonthly = document.getElementById("capex-workshop-3d-monthly");
+  if (elBambuMonthly) {
+    elBambuMonthly.innerHTML = `${formatVND(bambuMonthly)}<span style="font-size: 0.72rem; font-weight: 400; color: var(--text-secondary);">/tháng</span>`;
+  }
+
+  // 3. Lọc danh sách máy theo Tab filter & Ô tìm kiếm
+  const activeCategory = state.capexState.filterCategory || "all";
+  const searchQuery = (state.capexState.searchQuery || "").trim().toLowerCase();
+
+  let filtered = machines.filter(m => {
+    const cat = m.category || (m.factoryType === "Thêu" ? "Thêu & Laser" : (m.factoryType === "In 3D" ? "Máy in 3D" : "In, Cắt & Hoàn Thiện"));
+    if (activeCategory !== "all" && cat !== activeCategory) {
+      return false;
+    }
+    if (searchQuery) {
+      const matchName = (m.name || "").toLowerCase().includes(searchQuery);
+      const matchId = (m.id || "").toLowerCase().includes(searchQuery);
+      const matchCat = cat.toLowerCase().includes(searchQuery);
+      if (!matchName && !matchId && !matchCat) return false;
+    }
+    return true;
+  });
+
+  // Render Table Rows
+  tbody.innerHTML = "";
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+          Không tìm thấy máy móc nào phù hợp với bộ lọc hiện tại.
+        </td>
+      </tr>
+    `;
+  } else {
+    let filteredQty = 0;
+    let filteredInv = 0;
+    let filteredMonthly = 0;
+    let filteredDaily = 0;
+    let filteredHourly = 0;
+
+    filtered.forEach((m, idx) => {
+      const dep = calculateStraightLineDepreciation(m);
+      const qty = parseInt(m.quantity) || 1;
+      filteredQty += qty;
+      filteredInv += dep.investment;
+      filteredMonthly += dep.monthlyDepreciation;
+      filteredDaily += dep.dailyDepreciation;
+      filteredHourly += dep.hourlyDepreciation;
+
+      const cat = m.category || (m.factoryType === "Thêu" ? "Thêu & Laser" : (m.factoryType === "In 3D" ? "Máy in 3D" : "In, Cắt & Hoàn Thiện"));
+      let badgeStyle = "background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);";
+      if (cat === "Thêu & Laser") {
+        badgeStyle = "background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);";
+      } else if (cat === "Máy in 3D") {
+        badgeStyle = "background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3);";
+      }
+
+      const tr = document.createElement("tr");
+      tr.style.borderBottom = "1px solid rgba(255,255,255,0.04)";
+      tr.style.transition = "background-color 0.15s ease";
+      tr.onmouseenter = () => tr.style.backgroundColor = "rgba(255,255,255,0.02)";
+      tr.onmouseleave = () => tr.style.backgroundColor = "transparent";
+
+      tr.innerHTML = `
+        <td style="padding: 0.75rem 0.6rem; text-align: center; color: var(--text-muted); font-size: 0.75rem;">${idx + 1}</td>
+        <td style="padding: 0.75rem 0.6rem;">
+          <strong style="color: #fff; font-size: 0.82rem;">${m.name}</strong>
+          ${m.unitPrice ? `<div style="font-size: 0.7rem; color: var(--text-secondary);">Đơn giá: ${formatVND(m.unitPrice)} / máy</div>` : ""}
+        </td>
+        <td style="padding: 0.75rem 0.6rem;">
+          <span style="display: inline-block; padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; ${badgeStyle}">
+            ${cat}
+          </span>
+        </td>
+        <td style="padding: 0.75rem 0.6rem; text-align: center; font-weight: 600; color: #fff;">
+          ${qty}
+        </td>
+        <td style="padding: 0.75rem 0.6rem; text-align: right; font-weight: 600; color: #e2e8f0;">
+          ${formatVND(dep.investment)}
+        </td>
+        <td style="padding: 0.75rem 0.6rem; text-align: center; font-size: 0.75rem; color: var(--text-secondary);">
+          ${dep.years} năm (${dep.months} th)
+        </td>
+        <td style="padding: 0.75rem 0.6rem; text-align: right; font-weight: 700; color: #fbbf24; font-size: 0.85rem;">
+          ${formatVND(dep.monthlyDepreciation)}
+        </td>
+        <td style="padding: 0.75rem 0.6rem; text-align: right; color: #34d399; font-size: 0.78rem;">
+          ${formatVND(dep.dailyDepreciation)}
+        </td>
+        <td style="padding: 0.75rem 0.6rem; text-align: right; color: #a78bfa; font-size: 0.78rem;">
+          ${formatVND(dep.hourlyDepreciation)}
+        </td>
+        <td style="padding: 0.75rem 0.6rem; text-align: center;">
+          <div style="display: flex; gap: 0.35rem; justify-content: center;">
+            <button type="button" class="btn btn-xs btn-primary capex-table-edit-btn" data-id="${m.id}" title="Sửa thông số hoặc cộng dồn vốn máy" style="padding: 0.2rem 0.45rem; font-size: 0.7rem; background: #4f46e5; border-color: #6366f1;">
+              ✏️ Sửa
+            </button>
+            <button type="button" class="btn btn-xs btn-danger capex-table-del-btn" data-id="${m.id}" title="Xóa máy này khỏi hệ thống" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;">
+              🗑️
+            </button>
+          </div>
+        </td>
+      `;
+
+      tr.querySelector(".capex-table-edit-btn").addEventListener("click", () => {
+        openEditCapexModal(m);
+      });
+
+      tr.querySelector(".capex-table-del-btn").addEventListener("click", () => {
+        if (confirm(`Bạn có chắc chắn muốn xóa máy móc "${m.name}" không?\n\nSau khi xóa, máy này sẽ bị gỡ bỏ khỏi hệ thống CAPEX và đồng bộ lên Cloud.`)) {
+          state.settings.machines = state.settings.machines.filter(x => x.id !== m.id);
+          
+          let productsModified = false;
+          state.products.forEach(p => {
+            if (p.paybackMachineId === m.id) {
+              p.paybackMachineId = null;
+              productsModified = true;
+            }
+          });
+          if (productsModified) {
+            state.saveProducts();
+          }
+
+          state.saveSettings(state.settings);
+          renderCapexView();
+          renderSettingsPaybackList();
+          renderCalculator();
+          recalculateForecastTotals();
+          updateDashboard();
+        }
+      });
+
+      tbody.appendChild(tr);
+    });
+
+    // Update Footers
+    const footQty = document.getElementById("capex-foot-qty");
+    if (footQty) footQty.textContent = `${filteredQty} máy`;
+
+    const footInv = document.getElementById("capex-foot-total-inv");
+    if (footInv) footInv.textContent = formatVND(filteredInv);
+
+    const footMonthly = document.getElementById("capex-foot-monthly");
+    if (footMonthly) footMonthly.textContent = formatVND(filteredMonthly);
+
+    const footDaily = document.getElementById("capex-foot-daily");
+    if (footDaily) footDaily.textContent = formatVND(filteredDaily);
+
+    const footHourly = document.getElementById("capex-foot-hourly");
+    if (footHourly) footHourly.textContent = formatVND(filteredHourly);
+  }
+
+  // Bind Toolbar Event Handlers (Only once or update state)
+  const filterBtns = document.querySelectorAll(".capex-tab-filter");
+  filterBtns.forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-cat") === activeCategory);
+    btn.onclick = () => {
+      state.capexState.filterCategory = btn.getAttribute("data-cat");
+      renderCapexView();
+    };
+  });
+
+  const searchInput = document.getElementById("capex-search-input");
+  if (searchInput && !searchInput.dataset.bound) {
+    searchInput.dataset.bound = "true";
+    searchInput.value = state.capexState.searchQuery || "";
+    searchInput.addEventListener("input", (e) => {
+      state.capexState.searchQuery = e.target.value;
+      renderCapexView();
+    });
+  }
+
+  const btnAdd = document.getElementById("btn-add-new-machine");
+  if (btnAdd && !btnAdd.dataset.bound) {
+    btnAdd.dataset.bound = "true";
+    btnAdd.addEventListener("click", () => {
+      // Chuyển sang Tab Settings mở form thêm máy hoặc mở popup
+      switchTab("settings");
+      setTimeout(() => {
+        const capexCard = document.getElementById("settings-capex-card");
+        if (capexCard) {
+          capexCard.scrollIntoView({ behavior: 'smooth' });
+          document.getElementById("capex-mach-name")?.focus();
+        }
+      }, 150);
+    });
+  }
+}
+
+// ==========================================================================
 // 6.5. Tab: Monthly Financial Report (Báo Cáo Chi Phí & Doanh Thu Từng Tháng)
 // ==========================================================================
 
@@ -4766,8 +5039,19 @@ function renderMonthlyReport(isLiveInput = false) {
     });
   }
 
-  // 3. Tính toán Tổng Chi Phí Hoạt Động (Grand Total Expenses) & Lợi Nhuận
-  const grandTotalExpenses = totalMonthlyFixedCost + totalMonthVC + totalMonthCapex;
+  // 3. Tính toán Khấu hao máy móc theo đường thẳng 3 năm (cố định theo tháng, không phụ thuộc đơn hàng)
+  let straightLineCapexMonthly = 0;
+  if (state.settings.machines) {
+    state.settings.machines.forEach(m => {
+      const cat = m.category || (m.factoryType === "Thêu" ? "Thêu & Laser" : (m.factoryType === "In 3D" ? "Máy in 3D" : "In, Cắt & Hoàn Thiện"));
+      if (filterFactory === "all" || m.factoryType === filterFactory || (filterFactory === "In" && cat.includes("In")) || (filterFactory === "Thêu" && cat.includes("Thêu"))) {
+        straightLineCapexMonthly += calculateStraightLineDepreciation(m).monthlyDepreciation;
+      }
+    });
+  }
+
+  // Tổng Chi Phí Hoạt Động (Grand Total Expenses) & Lợi Nhuận
+  const grandTotalExpenses = totalMonthlyFixedCost + totalMonthVC + straightLineCapexMonthly;
   const fixedPct = grandTotalExpenses > 0 ? Math.round((totalMonthlyFixedCost / grandTotalExpenses) * 100) : 0;
   const varPct = grandTotalExpenses > 0 ? Math.round((totalMonthVC / grandTotalExpenses) * 100) : 0;
   const capexPct = grandTotalExpenses > 0 ? Math.max(0, 100 - fixedPct - varPct) : 0;
@@ -4784,7 +5068,7 @@ function renderMonthlyReport(isLiveInput = false) {
 
   const elGrandTotalBreakdown = document.getElementById("mr-grand-total-breakdown");
   if (elGrandTotalBreakdown) {
-    elGrandTotalBreakdown.innerHTML = `Định phí: <strong style="color: #fb7185;">${formatVND(totalMonthlyFixedCost)}</strong> (${fixedPct}%) + Biến phí NVL: <strong style="color: #34d399;">${formatVND(totalMonthVC)}</strong> (${varPct}%) + Khấu hao máy: <strong style="color: #fbbf24;">${formatVND(totalMonthCapex)}</strong> (${capexPct}%)`;
+    elGrandTotalBreakdown.innerHTML = `Định phí (Lương+Điện): <strong style="color: #fb7185;">${formatVND(totalMonthlyFixedCost)}</strong> (${fixedPct}%) + Biến phí NVL: <strong style="color: #34d399;">${formatVND(totalMonthVC)}</strong> (${varPct}%) + Khấu hao đường thẳng (3 năm): <strong style="color: #fbbf24;">${formatVND(straightLineCapexMonthly)}</strong> (${capexPct}%)`;
   }
 
   const pillFixed = document.getElementById("pill-fixed-pct");
@@ -6160,6 +6444,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Dashboard buttons
   document.getElementById("btn-dashboard-go-forecast").addEventListener("click", () => switchTab("forecast"));
+  const btnGotoCapex = document.getElementById("btn-goto-capex-tab");
+  if (btnGotoCapex) {
+    btnGotoCapex.addEventListener("click", () => switchTab("capex"));
+  }
 
   // 2. Calculator triggers
   document.getElementById("btn-add-product").addEventListener("click", openCreateProductModal);
