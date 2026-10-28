@@ -104,37 +104,385 @@ const DEFAULT_SETTINGS = {
       ]
     }
   },
+  machinesVersion: "2026-10-28-capex-74mach-v1",
   machines: [
+    // 1. NHÓM THÊU & LASER (25 máy - 2.995.000.000 VNĐ)
     {
-      id: "mach-konica",
-      name: "Máy in Konica C4000",
-      investment: 150000000,
+      id: "mach-bai-mirror",
+      name: "Máy thêu Bai The Mirror (17 máy)",
+      category: "Thêu & Laser",
+      factoryType: "Thêu",
+      quantity: 17,
+      unitPrice: 110000000,
+      investment: 1870000000,
       paybackYears: 3,
-      expectedVolumePerYear: 20000,
+      expectedVolumePerYear: 30000,
       currentVolume: 12000,
-      surchargePerUnit: 2500,
+      surchargePerUnit: 20778,
       discountAfter3Years: 80,
-      unitType: "Click"
+      unitType: "Cái"
     },
     {
-      id: "mach-uvdtf",
-      name: "Máy in UV-DTF 60cm",
-      investment: 200000000,
+      id: "mach-bai-old-vision",
+      name: "Máy thêu Bai Old Vision (2 máy)",
+      category: "Thêu & Laser",
+      factoryType: "Thêu",
+      quantity: 2,
+      unitPrice: 150000000,
+      investment: 300000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 10000,
+      currentVolume: 4000,
+      surchargePerUnit: 10000,
+      discountAfter3Years: 80,
+      unitType: "Cái"
+    },
+    {
+      id: "mach-bai-vision",
+      name: "Máy thêu Bai The Vision (3 máy)",
+      category: "Thêu & Laser",
+      factoryType: "Thêu",
+      quantity: 3,
+      unitPrice: 165000000,
+      investment: 495000000,
       paybackYears: 3,
       expectedVolumePerYear: 15000,
-      currentVolume: 8000,
-      surchargePerUnit: 4444,
+      currentVolume: 6000,
+      surchargePerUnit: 11000,
+      discountAfter3Years: 80,
+      unitType: "Cái"
+    },
+    {
+      id: "mach-bai-vision-2",
+      name: "Máy thêu Bai The Vision-2 (1 máy)",
+      category: "Thêu & Laser",
+      factoryType: "Thêu",
+      quantity: 1,
+      unitPrice: 220000000,
+      investment: 220000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 8000,
+      currentVolume: 3000,
+      surchargePerUnit: 9167,
+      discountAfter3Years: 80,
+      unitType: "Cái"
+    },
+    {
+      id: "mach-laser-4060",
+      name: "Laser bàn 40 × 60 (mua mới)",
+      category: "Thêu & Laser",
+      factoryType: "Thêu",
+      quantity: 1,
+      unitPrice: 50000000,
+      investment: 50000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 10000,
+      currentVolume: 4000,
+      surchargePerUnit: 1667,
+      discountAfter3Years: 80,
+      unitType: "Lần cắt"
+    },
+    {
+      id: "mach-laser-1610",
+      name: "Laser bàn 1610 (mua lại)",
+      category: "Thêu & Laser",
+      factoryType: "Thêu",
+      quantity: 1,
+      unitPrice: 60000000,
+      investment: 60000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 10000,
+      currentVolume: 4000,
+      surchargePerUnit: 2000,
+      discountAfter3Years: 80,
+      unitType: "Lần cắt"
+    },
+
+    // 2. NHÓM IN, CẮT & HOÀN THIỆN (25 máy - 5.450.214.182 VNĐ)
+    {
+      id: "mach-dlican",
+      name: "Dlican (kèm PC + UPS)",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 1065000000,
+      investment: 1065000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 25000,
+      currentVolume: 10000,
+      surchargePerUnit: 14200,
       discountAfter3Years: 80,
       unitType: "Mét"
     },
     {
-      id: "mach-embroidery",
-      name: "Máy thêu vi tính 12 đầu",
-      investment: 360000000,
+      id: "mach-uvdtf-grando",
+      name: "UV DTF Grando (2 máy)",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 2,
+      unitPrice: 297000000,
+      investment: 594000000,
       paybackYears: 3,
-      expectedVolumePerYear: 24000,
+      expectedVolumePerYear: 20000,
+      currentVolume: 8000,
+      surchargePerUnit: 9900,
+      discountAfter3Years: 80,
+      unitType: "Mét"
+    },
+    {
+      id: "mach-pet-xkeda",
+      name: "Máy in PET Xkeda",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 270000000,
+      investment: 270000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 15000,
+      currentVolume: 5000,
+      surchargePerUnit: 6000,
+      discountAfter3Years: 80,
+      unitType: "Mét"
+    },
+    {
+      id: "mach-roland-vg3-640",
+      name: "Roland VG3-640",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 321840000,
+      investment: 321840000,
+      paybackYears: 3,
+      expectedVolumePerYear: 15000,
+      currentVolume: 6000,
+      surchargePerUnit: 7152,
+      discountAfter3Years: 80,
+      unitType: "Mét"
+    },
+    {
+      id: "mach-roland-lg-640",
+      name: "Roland LG-640 (2 máy)",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 2,
+      unitPrice: 561600000,
+      investment: 1123200000,
+      paybackYears: 3,
+      expectedVolumePerYear: 25000,
       currentVolume: 10000,
-      surchargePerUnit: 5000,
+      surchargePerUnit: 14976,
+      discountAfter3Years: 80,
+      unitType: "Mét"
+    },
+    {
+      id: "mach-jwei-graphtec",
+      name: "Máy cắt Jwei + Graphtec (Trọn bộ 2 máy)",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 2,
+      unitPrice: 100000000,
+      investment: 200000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 30000,
+      currentVolume: 12000,
+      surchargePerUnit: 2222,
+      discountAfter3Years: 80,
+      unitType: "Lần cắt"
+    },
+    {
+      id: "mach-graphtec-fc9000",
+      name: "Graphtec FC9000",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 157640000,
+      investment: 157640000,
+      paybackYears: 3,
+      expectedVolumePerYear: 25000,
+      currentVolume: 10000,
+      surchargePerUnit: 2102,
+      discountAfter3Years: 80,
+      unitType: "Lần cắt"
+    },
+    {
+      id: "mach-graphtec-ce8000-130",
+      name: "Graphtec CE8000-130",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 78840000,
+      investment: 78840000,
+      paybackYears: 3,
+      expectedVolumePerYear: 20000,
+      currentVolume: 8000,
+      surchargePerUnit: 1314,
+      discountAfter3Years: 80,
+      unitType: "Lần cắt"
+    },
+    {
+      id: "mach-graphtec-ce8000-60",
+      name: "Graphtec CE8000-60 (2 máy)",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 2,
+      unitPrice: 34020000,
+      investment: 68040000,
+      paybackYears: 3,
+      expectedVolumePerYear: 20000,
+      currentVolume: 8000,
+      surchargePerUnit: 1134,
+      discountAfter3Years: 80,
+      unitType: "Lần cắt"
+    },
+    {
+      id: "mach-graphtec-ce8000-40",
+      name: "Graphtec CE8000-40 (kèm bộ nạp tự động)",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 50024000,
+      investment: 50024000,
+      paybackYears: 3,
+      expectedVolumePerYear: 15000,
+      currentVolume: 6000,
+      surchargePerUnit: 1112,
+      discountAfter3Years: 80,
+      unitType: "Lần cắt"
+    },
+    {
+      id: "mach-in-napkin",
+      name: "Máy in Napkin",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 324000000,
+      investment: 324000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 15000,
+      currentVolume: 5000,
+      surchargePerUnit: 7200,
+      discountAfter3Years: 80,
+      unitType: "Cái"
+    },
+    {
+      id: "mach-konica",
+      name: "Máy in Konica",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 657818182,
+      investment: 657818182,
+      paybackYears: 3,
+      expectedVolumePerYear: 60000,
+      currentVolume: 25000,
+      surchargePerUnit: 3655,
+      discountAfter3Years: 80,
+      unitType: "Click"
+    },
+    {
+      id: "mach-cat-be-5",
+      name: "Máy cắt bế (5 máy)",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 5,
+      unitPrice: 55000000,
+      investment: 275000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 50000,
+      currentVolume: 20000,
+      surchargePerUnit: 1833,
+      discountAfter3Years: 80,
+      unitType: "Lần bế"
+    },
+    {
+      id: "mach-can-mang-nho",
+      name: "Máy cán màng nhỏ",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 45000000,
+      investment: 45000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 20000,
+      currentVolume: 8000,
+      surchargePerUnit: 750,
+      discountAfter3Years: 80,
+      unitType: "Lần cán"
+    },
+    {
+      id: "mach-can-mang",
+      name: "Máy cán màng",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 95000000,
+      investment: 95000000,
+      paybackYears: 3,
+      expectedVolumePerYear: 30000,
+      currentVolume: 12000,
+      surchargePerUnit: 1056,
+      discountAfter3Years: 80,
+      unitType: "Lần cán"
+    },
+    {
+      id: "mach-can-mang-cuon",
+      name: "Máy cán màng cuộn",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 38500000,
+      investment: 38500000,
+      paybackYears: 3,
+      expectedVolumePerYear: 15000,
+      currentVolume: 6000,
+      surchargePerUnit: 856,
+      discountAfter3Years: 80,
+      unitType: "Mét"
+    },
+    {
+      id: "mach-epson-roll",
+      name: "Máy in roll Epson + Roll",
+      category: "In, Cắt & Hoàn Thiện",
+      factoryType: "In",
+      quantity: 1,
+      unitPrice: 86312000,
+      investment: 86312000,
+      paybackYears: 3,
+      expectedVolumePerYear: 15000,
+      currentVolume: 6000,
+      surchargePerUnit: 1918,
+      discountAfter3Years: 80,
+      unitType: "Cuộn"
+    },
+
+    // 3. NHÓM MÁY IN 3D (24 máy - 730.376.000 VNĐ)
+    {
+      id: "mach-bambu-a1",
+      name: "Bambu Lab A1 (16 máy)",
+      category: "Máy in 3D",
+      factoryType: "In 3D",
+      quantity: 16,
+      unitPrice: 11499000,
+      investment: 183984000,
+      paybackYears: 3,
+      expectedVolumePerYear: 20000,
+      currentVolume: 8000,
+      surchargePerUnit: 3066,
+      discountAfter3Years: 80,
+      unitType: "Cái"
+    },
+    {
+      id: "mach-bambu-h2c",
+      name: "Bambu Lab H2C (8 máy)",
+      category: "Máy in 3D",
+      factoryType: "In 3D",
+      quantity: 8,
+      unitPrice: 68299000,
+      investment: 546392000,
+      paybackYears: 3,
+      expectedVolumePerYear: 15000,
+      currentVolume: 5000,
+      surchargePerUnit: 12142,
       discountAfter3Years: 80,
       unitType: "Cái"
     }
@@ -280,8 +628,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0, production: 0, qc: 0 },
     electricity: { power: 0, runTime: 0 },
     overheadPercentage: 0,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 0,
       actualSales: 0,
@@ -338,8 +686,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0, production: 0, qc: 0 },
     electricity: { power: 0, runTime: 0 },
     overheadPercentage: 0,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-konica",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 0,
       actualSales: 0,
@@ -675,8 +1023,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0, production: 0, qc: 0 },
     electricity: { power: 0, runTime: 0 },
     overheadPercentage: 0,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-graphtec-ce8000-60",
+    paybackMachineQty: 0.041667,
     forecast: {
       salesForecast: 0,
       actualSales: 0,
@@ -702,8 +1050,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0, production: 0, qc: 0 },
     electricity: { power: 0, runTime: 0 },
     overheadPercentage: 0,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-cat-be-5",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 0,
       actualSales: 0,
@@ -758,8 +1106,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0, production: 0, qc: 0 },
     electricity: { power: 0, runTime: 0 },
     overheadPercentage: 0,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-roland-lg-640",
+    paybackMachineQty: 0.003289,
     forecast: {
       salesForecast: 0,
       actualSales: 0,
@@ -787,8 +1135,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.04, qc: 0.015 },
     electricity: { power: 2.2, runTime: 0.08 },
     overheadPercentage: 6,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-roland-lg-640",
+    paybackMachineQty: 0.003289,
     forecast: {
       salesForecast: 2500,
       actualSales: 2200,
@@ -816,8 +1164,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.04, qc: 0.015 },
     electricity: { power: 2.2, runTime: 0.08 },
     overheadPercentage: 6,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-roland-lg-640",
+    paybackMachineQty: 0.003289,
     forecast: {
       salesForecast: 3000,
       actualSales: 2700,
@@ -843,8 +1191,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0, production: 0, qc: 0 },
     electricity: { power: 0, runTime: 0 },
     overheadPercentage: 0,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-graphtec-fc9000",
+    paybackMachineQty: 0.025,
     forecast: {
       salesForecast: 0,
       actualSales: 0,
@@ -872,7 +1220,7 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.03, qc: 0.01 },
     electricity: { power: 1.5, runTime: 0.05 },
     overheadPercentage: 5,
-    paybackMachineId: "mach-konica",
+    paybackMachineId: "mach-graphtec-fc9000",
     paybackMachineQty: 0.025,
     forecast: {
       salesForecast: 3500,
@@ -901,8 +1249,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.04, qc: 0.015 },
     electricity: { power: 2.2, runTime: 0.08 },
     overheadPercentage: 6,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-dlican",
+    paybackMachineQty: 0.003289,
     forecast: {
       salesForecast: 4000,
       actualSales: 3700,
@@ -931,8 +1279,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.05, qc: 0.015 },
     electricity: { power: 2.4, runTime: 0.09 },
     overheadPercentage: 6,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-dlican",
+    paybackMachineQty: 0.003289,
     forecast: {
       salesForecast: 3000,
       actualSales: 2800,
@@ -961,7 +1309,7 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.01, production: 0.08, qc: 0.02 },
     electricity: { power: 3.0, runTime: 0.12 },
     overheadPercentage: 8,
-    paybackMachineId: "mach-uvdtf",
+    paybackMachineId: "mach-uvdtf-grando",
     paybackMachineQty: 0.011905,
     forecast: {
       salesForecast: 2000,
@@ -988,8 +1336,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0, production: 0, qc: 0 },
     electricity: { power: 0, runTime: 0 },
     overheadPercentage: 0,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-uvdtf-grando",
+    paybackMachineQty: 0.011905,
     forecast: {
       salesForecast: 0,
       actualSales: 0,
@@ -1017,7 +1365,7 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.03, qc: 0.01 },
     electricity: { power: 1.5, runTime: 0.05 },
     overheadPercentage: 5,
-    paybackMachineId: "mach-konica",
+    paybackMachineId: "mach-graphtec-ce8000-130",
     paybackMachineQty: 0.033333,
     forecast: {
       salesForecast: 2000,
@@ -1044,8 +1392,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0, production: 0, qc: 0 },
     electricity: { power: 0, runTime: 0 },
     overheadPercentage: 0,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-graphtec-ce8000-130",
+    paybackMachineQty: 0.033333,
     forecast: {
       salesForecast: 0,
       actualSales: 0,
@@ -1073,7 +1421,7 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.035, qc: 0.012 },
     electricity: { power: 1.5, runTime: 0.05 },
     overheadPercentage: 5,
-    paybackMachineId: "mach-konica",
+    paybackMachineId: "mach-graphtec-ce8000-40",
     paybackMachineQty: 0.033333,
     forecast: {
       salesForecast: 2500,
@@ -1102,8 +1450,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.04, qc: 0.015 },
     electricity: { power: 2.2, runTime: 0.08 },
     overheadPercentage: 6,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-roland-vg3-640",
+    paybackMachineQty: 0.003289,
     forecast: {
       salesForecast: 3000,
       actualSales: 2800,
@@ -1129,8 +1477,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0, production: 0, qc: 0 },
     electricity: { power: 0, runTime: 0 },
     overheadPercentage: 0,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-graphtec-ce8000-40",
+    paybackMachineQty: 0.033333,
     forecast: {
       salesForecast: 0,
       actualSales: 0,
@@ -1159,8 +1507,8 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.05, qc: 0.015 },
     electricity: { power: 2.4, runTime: 0.09 },
     overheadPercentage: 6,
-    paybackMachineId: null,
-    paybackMachineQty: 0,
+    paybackMachineId: "mach-roland-vg3-640",
+    paybackMachineQty: 0.003289,
     forecast: {
       salesForecast: 4500,
       actualSales: 4100,
@@ -1182,7 +1530,7 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.05, laser: 0.02, production: 0.3, qc: 0.08 },
     electricity: { power: 1.8, runTime: 0.3 },
     overheadPercentage: 12,
-    paybackMachineId: "mach-embroidery",
+    paybackMachineId: "mach-bai-mirror",
     paybackMachineQty: 1,
     forecast: {
       salesForecast: 600,
@@ -1205,13 +1553,71 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.03, laser: 0.01, production: 0.2, qc: 0.06 },
     electricity: { power: 1.2, runTime: 0.18 },
     overheadPercentage: 8,
-    paybackMachineId: "mach-embroidery",
+    paybackMachineId: "mach-bai-vision",
     paybackMachineQty: 1,
     forecast: {
       salesForecast: 1500,
       actualSales: 1420,
       currentStock: 450,
       safetyStock: 350
+    }
+  },
+  {
+    id: "prod-3d-bambu-a1",
+    name: "Mô hình in 3D Bambu Lab A1 (FDM đa màu - Mẫu)",
+    code: "3D-BAMBU-A1",
+    category: "In 3D (3D Printing)",
+    factoryType: "In 3D",
+    profitPercentage: 25,
+    layout: {
+      preset: "custom",
+      sheetSize: "Khay 256x256mm",
+      itemSize: "Mô hình decor",
+      itemsPerSheet: 1,
+      unitType: "Cái"
+    },
+    materials: [
+      { name: "Cuộn nhựa in 3D PLA Basic Bambu (1kg)", qty: 0.1, unit: "Cuộn", price: 350000 }
+    ],
+    labor: { designer: 0.05, production: 0.1, qc: 0.03 },
+    electricity: { power: 0.35, runTime: 2.5 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-bambu-a1",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 500,
+      actualSales: 450,
+      currentStock: 50,
+      safetyStock: 100
+    }
+  },
+  {
+    id: "prod-3d-bambu-h2c",
+    name: "Chi tiết kỹ thuật in 3D Bambu Lab H2C (Chính xác cao - Mẫu)",
+    code: "3D-BAMBU-H2C",
+    category: "In 3D (3D Printing)",
+    factoryType: "In 3D",
+    profitPercentage: 25,
+    layout: {
+      preset: "custom",
+      sheetSize: "Khay 256x256mm",
+      itemSize: "Chi tiết cơ khí",
+      itemsPerSheet: 1,
+      unitType: "Cái"
+    },
+    materials: [
+      { name: "Cuộn nhựa kỹ thuật PETG/ABS Bambu (1kg)", qty: 0.15, unit: "Cuộn", price: 450000 }
+    ],
+    labor: { designer: 0.08, production: 0.15, qc: 0.05 },
+    electricity: { power: 0.5, runTime: 3.5 },
+    overheadPercentage: 10,
+    paybackMachineId: "mach-bambu-h2c",
+    paybackMachineQty: 1,
+    forecast: {
+      salesForecast: 300,
+      actualSales: 280,
+      currentStock: 30,
+      safetyStock: 60
     }
   }
 ];
@@ -1277,7 +1683,10 @@ class AppStateManager {
         }
 
         let mergedMachines = [];
-        if (Array.isArray(parsed.machines)) {
+        if (!parsed.machinesVersion || parsed.machinesVersion !== DEFAULT_SETTINGS.machinesVersion) {
+          mergedMachines = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.machines));
+          parsed.machinesVersion = DEFAULT_SETTINGS.machinesVersion;
+        } else if (Array.isArray(parsed.machines)) {
           mergedMachines = parsed.machines.map(m => ({
             paybackYears: 3,
             discountAfter3Years: 80,
@@ -1311,6 +1720,7 @@ class AppStateManager {
         return {
           ...DEFAULT_SETTINGS,
           ...parsed,
+          machinesVersion: DEFAULT_SETTINGS.machinesVersion,
           monthlyRecords: mergedMonthlyRecords,
           hr: migratedHr,
           machines: mergedMachines,
@@ -1348,7 +1758,7 @@ class AppStateManager {
           p.paybackMachineQty = mockMatch.paybackMachineQty || 1;
         }
       }
-      if (!p.layout && p.factoryType === "In") {
+      if (!p.layout && (p.factoryType === "In" || p.factoryType === "In 3D")) {
         const mockMatch = MOCK_PRODUCTS.find(mp => mp.id === p.id || mp.code === p.code);
         if (mockMatch && mockMatch.layout) {
           p.layout = { ...mockMatch.layout };
@@ -1399,7 +1809,7 @@ class AppStateManager {
       "ST-UV-DTF-04": "UV-CSTICKER-01"
     };
 
-    const CURRENT_VERSION = "v23.9_update_sku_prefixes";
+    const CURRENT_VERSION = "v24.1_update_74_machines_capex";
     const migratedVer = localStorage.getItem("factory_version_migrated");
     if (migratedVer !== CURRENT_VERSION) {
       localStorage.setItem("factory_version_migrated", CURRENT_VERSION);
@@ -1454,6 +1864,10 @@ class AppStateManager {
               if (mp.layout) parsed[existingIdx].layout = JSON.parse(JSON.stringify(mp.layout));
               parsed[existingIdx].factoryType = mp.factoryType;
               if (mp.profitPercentage) parsed[existingIdx].profitPercentage = mp.profitPercentage;
+              if (mp.paybackMachineId) {
+                parsed[existingIdx].paybackMachineId = mp.paybackMachineId;
+                parsed[existingIdx].paybackMachineQty = mp.paybackMachineQty;
+              }
             }
           });
           localStorage.setItem("factory_products_v2", JSON.stringify(parsed));
@@ -1702,10 +2116,10 @@ function calculateProductCost(product, settings) {
   let qcCost = 0;
   let laserCost = 0;
 
-  if (factoryType === "In") {
-    const desHourly = getDepartmentHourlyRate(settings.hr.In.designer, stdHours);
-    const prodHourly = getDepartmentHourlyRate(settings.hr.In.production, stdHours);
-    const qcHourly = getDepartmentHourlyRate(settings.hr.In.qc, stdHours);
+  if (factoryType === "In" || factoryType === "In 3D") {
+    const desHourly = getDepartmentHourlyRate(settings.hr?.In?.designer, stdHours);
+    const prodHourly = getDepartmentHourlyRate(settings.hr?.In?.production, stdHours);
+    const qcHourly = getDepartmentHourlyRate(settings.hr?.In?.qc, stdHours);
 
     designerCost = (product.labor?.designer || 0) * desHourly;
     productionCost = (product.labor?.production || 0) * prodHourly;
@@ -1945,6 +2359,15 @@ const PREFIX_DEFINITIONS = [
     border: "rgba(249, 115, 22, 0.35)",
     defaultCode: "CAP-EMB-02", 
     description: "Mũ lưỡi trai thêu logo 3D" 
+  },
+  { 
+    prefix: "3D-BAMBU", 
+    name: "In 3D Bambu Lab", 
+    color: "#059669", 
+    bg: "rgba(5, 150, 105, 0.15)", 
+    border: "rgba(5, 150, 105, 0.35)",
+    defaultCode: "3D-BAMBU-A1", 
+    description: "Sản phẩm in 3D Bambu Lab A1 / H2C" 
   }
 ];
 
@@ -2901,11 +3324,22 @@ function renderCalculator() {
   if (paybackSelect) {
     paybackSelect.innerHTML = `<option value="">-- Không liên kết --</option>`;
     if (state.settings.machines) {
+      const groups = {};
       state.settings.machines.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m.id;
-        opt.textContent = m.name;
-        paybackSelect.appendChild(opt);
+        const cat = m.category || (m.factoryType === "Thêu" ? "Thêu & Laser" : (m.factoryType === "In 3D" ? "Máy in 3D" : "In, Cắt & Hoàn Thiện"));
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(m);
+      });
+      Object.keys(groups).forEach(catName => {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = `📁 ${catName} (${groups[catName].length} mục)`;
+        groups[catName].forEach(m => {
+          const opt = document.createElement("option");
+          opt.value = m.id;
+          opt.textContent = `${m.name} (+${(m.surchargePerUnit || 0).toLocaleString('vi-VN')} đ/${m.unitType || 'đv'})`;
+          optgroup.appendChild(opt);
+        });
+        paybackSelect.appendChild(optgroup);
       });
     }
     paybackSelect.value = selectedProduct.paybackMachineId || "";
@@ -4645,7 +5079,56 @@ function renderSettingsPaybackList() {
     return;
   }
 
+  // Summary Banner: 74 machines - 9.175.590.182 đ
+  const totalMachinesCount = state.settings.machines.reduce((sum, m) => sum + (m.quantity || 1), 0);
+  const totalInvestment = state.settings.machines.reduce((sum, m) => sum + (m.investment || 0), 0);
+  
+  const summaryBanner = document.createElement("div");
+  summaryBanner.className = "glass-card";
+  summaryBanner.style.padding = "0.85rem 1rem";
+  summaryBanner.style.marginBottom = "1rem";
+  summaryBanner.style.background = "linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(16, 185, 129, 0.08))";
+  summaryBanner.style.border = "1px solid rgba(99, 102, 241, 0.25)";
+  summaryBanner.style.borderRadius = "8px";
+  summaryBanner.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #a5b4fc; font-weight: 600;">Tổng Quan Vốn Đầu Tư Máy Móc (CAPEX)</div>
+        <div style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-top: 0.15rem;">${formatVND(totalInvestment)} <span style="font-size: 0.78rem; font-weight: 400; color: var(--text-secondary);">/ ${totalMachinesCount} thiết bị</span></div>
+      </div>
+      <div style="display: flex; gap: 0.75rem; font-size: 0.72rem; color: var(--text-secondary);">
+        <div style="background: rgba(0,0,0,0.25); padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.06);">
+          🧵 Thêu & Laser: <strong style="color: #c084fc;">2.995.000.000 đ</strong> (25 máy)
+        </div>
+        <div style="background: rgba(0,0,0,0.25); padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.06);">
+          🖨️ In & Hoàn Thiện: <strong style="color: #38bdf8;">5.450.214.182 đ</strong> (25 máy)
+        </div>
+        <div style="background: rgba(0,0,0,0.25); padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.06);">
+          🧊 In 3D: <strong style="color: #34d399;">730.376.000 đ</strong> (24 máy)
+        </div>
+      </div>
+    </div>
+  `;
+  container.appendChild(summaryBanner);
+
+  let currentCategory = "";
+
   state.settings.machines.forEach(m => {
+    const cat = m.category || (m.factoryType === "Thêu" ? "Thêu & Laser" : (m.factoryType === "In 3D" ? "Máy in 3D" : "In, Cắt & Hoàn Thiện"));
+    if (cat !== currentCategory) {
+      currentCategory = cat;
+      const catHeader = document.createElement("div");
+      catHeader.style.fontSize = "0.78rem";
+      catHeader.style.fontWeight = "700";
+      catHeader.style.color = "#93c5fd";
+      catHeader.style.margin = "1rem 0 0.5rem 0";
+      catHeader.style.padding = "0.3rem 0.5rem";
+      catHeader.style.background = "rgba(255,255,255,0.03)";
+      catHeader.style.borderLeft = "3px solid #3b82f6";
+      catHeader.style.borderRadius = "0 4px 4px 0";
+      catHeader.textContent = `📁 Phân Xưởng: ${cat}`;
+      container.appendChild(catHeader);
+    }
     const targetVolume = (m.paybackYears || 0) * (m.expectedVolumePerYear || 0);
     const progress = Math.min(100, ((m.currentVolume || 0) / targetVolume * 100)).toFixed(1);
     
