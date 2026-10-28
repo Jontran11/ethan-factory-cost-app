@@ -1755,12 +1755,23 @@ class AppStateManager {
           p.labor = { designer: 0.03, laser: 0.01, production: 0.2, qc: 0.06 };
         }
       }
-      if (!p.paybackMachineId) {
-        const mockMatch = MOCK_PRODUCTS.find(mp => mp.id === p.id || mp.code === p.code);
-        if (mockMatch && mockMatch.paybackMachineId) {
-          p.paybackMachineId = mockMatch.paybackMachineId;
-          p.paybackMachineQty = mockMatch.paybackMachineQty || 1;
+      if (!p.paybackMachines || !Array.isArray(p.paybackMachines)) {
+        if (p.paybackMachineId) {
+          p.paybackMachines = [{ machineId: p.paybackMachineId, qty: p.paybackMachineQty !== undefined ? p.paybackMachineQty : 1 }];
+        } else {
+          const mockMatch = MOCK_PRODUCTS.find(mp => mp.id === p.id || mp.code === p.code);
+          if (mockMatch && mockMatch.paybackMachines && Array.isArray(mockMatch.paybackMachines)) {
+            p.paybackMachines = JSON.parse(JSON.stringify(mockMatch.paybackMachines));
+          } else if (mockMatch && mockMatch.paybackMachineId) {
+            p.paybackMachines = [{ machineId: mockMatch.paybackMachineId, qty: mockMatch.paybackMachineQty || 1 }];
+          } else {
+            p.paybackMachines = [];
+          }
         }
+      }
+      if (!p.paybackMachineId && p.paybackMachines && p.paybackMachines.length > 0) {
+        p.paybackMachineId = p.paybackMachines[0].machineId;
+        p.paybackMachineQty = p.paybackMachines[0].qty;
       }
       if (!p.layout && (p.factoryType === "In" || p.factoryType === "In 3D")) {
         const mockMatch = MOCK_PRODUCTS.find(mp => mp.id === p.id || mp.code === p.code);
@@ -1868,6 +1879,9 @@ class AppStateManager {
               if (mp.layout) parsed[existingIdx].layout = JSON.parse(JSON.stringify(mp.layout));
               parsed[existingIdx].factoryType = mp.factoryType;
               if (mp.profitPercentage) parsed[existingIdx].profitPercentage = mp.profitPercentage;
+              if (mp.paybackMachines && Array.isArray(mp.paybackMachines)) {
+                parsed[existingIdx].paybackMachines = JSON.parse(JSON.stringify(mp.paybackMachines));
+              }
               if (mp.paybackMachineId) {
                 parsed[existingIdx].paybackMachineId = mp.paybackMachineId;
                 parsed[existingIdx].paybackMachineQty = mp.paybackMachineQty;
@@ -2160,31 +2174,39 @@ function calculateProductCost(product, settings) {
   const profitPercentage = product.profitPercentage !== undefined ? product.profitPercentage : (settings.defaultProfitMargin !== undefined ? settings.defaultProfitMargin : 20);
   const sellerPrice = Math.round(baseCost * (1 + profitPercentage / 100));
 
-  // 7. Khấu hao máy móc 2 giai đoạn (3 năm đầu & Sau 3 năm)
+  // 7. Khấu hao máy móc 2 giai đoạn (3 năm đầu & Sau 3 năm) - Hỗ trợ phân bổ nhiều máy
   let paybackSurchargeFirst3Years = 0;
   let paybackSurchargeAfter3Years = 0;
-  let machineName = "";
+  let machineNames = [];
   let isMachineActive = false;
 
-  if (product.paybackMachineId && settings.machines) {
-    const machine = settings.machines.find(m => m.id === product.paybackMachineId);
-    if (machine) {
-      machineName = machine.name;
-      const targetVolume = (machine.paybackYears || 3) * (machine.expectedVolumePerYear || 1);
-      const unitRate = machine.surchargePerUnit || (machine.investment / targetVolume);
-      const machineQty = product.paybackMachineQty !== undefined ? product.paybackMachineQty : 1;
-      
-      paybackSurchargeFirst3Years = Math.round(machineQty * unitRate);
-      
-      // Sau 3 năm (khi đã thu hồi vốn): khấu hao giảm 80% (chỉ còn 20% phụ phí bảo trì máy)
-      const discountPct = machine.discountAfter3Years !== undefined ? machine.discountAfter3Years : 80;
-      paybackSurchargeAfter3Years = Math.round(paybackSurchargeFirst3Years * (1 - discountPct / 100));
+  const allocatedMachines = (product.paybackMachines && Array.isArray(product.paybackMachines) && product.paybackMachines.length > 0)
+    ? product.paybackMachines
+    : (product.paybackMachineId ? [{ machineId: product.paybackMachineId, qty: product.paybackMachineQty !== undefined ? product.paybackMachineQty : 1 }] : []);
 
-      if ((machine.currentVolume || 0) < targetVolume) {
-        isMachineActive = true;
+  if (settings.machines && allocatedMachines.length > 0) {
+    allocatedMachines.forEach(pm => {
+      if (!pm || !pm.machineId) return;
+      const machine = settings.machines.find(m => m.id === pm.machineId);
+      if (machine) {
+        if (!machineNames.includes(machine.name)) machineNames.push(machine.name);
+        const targetVolume = (machine.paybackYears || 3) * (machine.expectedVolumePerYear || 1);
+        const unitRate = machine.surchargePerUnit || (machine.investment / targetVolume);
+        const machineQty = pm.qty !== undefined ? pm.qty : 1;
+        
+        const itemFirst3 = Math.round(machineQty * unitRate);
+        paybackSurchargeFirst3Years += itemFirst3;
+        
+        const discountPct = machine.discountAfter3Years !== undefined ? machine.discountAfter3Years : 80;
+        paybackSurchargeAfter3Years += Math.round(itemFirst3 * (1 - discountPct / 100));
+
+        if ((machine.currentVolume || 0) < targetVolume) {
+          isMachineActive = true;
+        }
       }
-    }
+    });
   }
+  const machineName = machineNames.join(", ");
 
   // Giai đoạn 1 (3 năm đầu - khấu hao cao)
   const paybackBaseCost = baseCost + paybackSurchargeFirst3Years;
@@ -3327,35 +3349,23 @@ function renderCalculator() {
   document.getElementById("overhead-rate-percentage").value = selectedProduct.overheadPercentage !== undefined ? selectedProduct.overheadPercentage : state.settings.defaultOverhead;
   document.getElementById("profit-margin-percentage").value = selectedProduct.profitPercentage !== undefined ? selectedProduct.profitPercentage : (state.settings.defaultProfitMargin !== undefined ? state.settings.defaultProfitMargin : 20);
 
-  // Populate payback machine dropdown options
-  const paybackSelect = document.getElementById("payback-machine-select");
-  if (paybackSelect) {
-    paybackSelect.innerHTML = `<option value="">-- Không liên kết --</option>`;
-    if (state.settings.machines) {
-      const groups = {};
-      state.settings.machines.forEach(m => {
-        const cat = m.category || (m.factoryType === "Thêu" ? "Thêu & Laser" : (m.factoryType === "In 3D" ? "Máy in 3D" : "In, Cắt & Hoàn Thiện"));
-        if (!groups[cat]) groups[cat] = [];
-        groups[cat].push(m);
-      });
-      Object.keys(groups).forEach(catName => {
-        const optgroup = document.createElement("optgroup");
-        optgroup.label = `📁 ${catName} (${groups[catName].length} mục)`;
-        groups[catName].forEach(m => {
-          const opt = document.createElement("option");
-          opt.value = m.id;
-          opt.textContent = `${m.name} (+${(m.surchargePerUnit || 0).toLocaleString('vi-VN')} đ/${m.unitType || 'đv'})`;
-          optgroup.appendChild(opt);
-        });
-        paybackSelect.appendChild(optgroup);
-      });
-    }
-    paybackSelect.value = selectedProduct.paybackMachineId || "";
-  }
+  // Populate multi-machine payback rows
+  const assignedMachines = (selectedProduct.paybackMachines && Array.isArray(selectedProduct.paybackMachines) && selectedProduct.paybackMachines.length > 0)
+    ? selectedProduct.paybackMachines
+    : (selectedProduct.paybackMachineId ? [{ machineId: selectedProduct.paybackMachineId, qty: selectedProduct.paybackMachineQty !== undefined ? selectedProduct.paybackMachineQty : 1 }] : []);
+  selectedProduct.paybackMachines = assignedMachines;
+  renderProductMachineRows(assignedMachines);
 
-  const paybackQtyInput = document.getElementById("payback-machine-qty");
-  if (paybackQtyInput) {
-    paybackQtyInput.value = selectedProduct.paybackMachineQty !== undefined ? selectedProduct.paybackMachineQty : 1;
+  // Bind add machine buttons
+  const btnAddMachRow = document.getElementById("btn-add-product-machine-row");
+  if (btnAddMachRow && !btnAddMachRow.dataset.bound) {
+    btnAddMachRow.dataset.bound = "true";
+    btnAddMachRow.addEventListener("click", () => addNewProductMachineRow());
+  }
+  const btnQuickCreateMach = document.getElementById("btn-quick-create-machine");
+  if (btnQuickCreateMach && !btnQuickCreateMach.dataset.bound) {
+    btnQuickCreateMach.dataset.bound = "true";
+    btnQuickCreateMach.addEventListener("click", () => openEditCapexModal(null));
   }
 
   // Populate Imposition Layout specs for printing products
@@ -3595,6 +3605,120 @@ function addNewMaterialRow() {
   bindDynamicRowEvents();
 }
 
+function buildMachineSelectOptions(selectedId) {
+  let html = `<option value="">-- Chọn máy khấu hao --</option>`;
+  if (!state.settings.machines) return html;
+  const groups = {};
+  state.settings.machines.forEach(m => {
+    const cat = m.category || (m.factoryType === "Thêu" ? "Thêu & Laser" : (m.factoryType === "In 3D" ? "Máy in 3D" : "In, Cắt & Hoàn Thiện"));
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(m);
+  });
+  Object.keys(groups).forEach(catName => {
+    html += `<optgroup label="📁 ${catName} (${groups[catName].length} mục)">`;
+    groups[catName].forEach(m => {
+      const isSel = m.id === selectedId ? "selected" : "";
+      html += `<option value="${m.id}" ${isSel}>${m.name} (+${(m.surchargePerUnit || 0).toLocaleString('vi-VN')} đ/${m.unitType || 'đv'})</option>`;
+    });
+    html += `</optgroup>`;
+  });
+  return html;
+}
+
+function renderProductMachineRows(machinesList) {
+  const container = document.getElementById("product-machines-list-container");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!machinesList || machinesList.length === 0) {
+    container.innerHTML = `
+      <div class="product-machines-empty-state" style="padding: 0.85rem; text-align: center; color: var(--text-secondary); font-size: 0.75rem; border: 1px dashed rgba(255,255,255,0.12); border-radius: 6px; background: rgba(0,0,0,0.15);">
+        Chưa gán máy móc khấu hao nào cho sản phẩm này. Bấm <strong>"➕ Bổ Sung Máy Khấu Hao"</strong> để liên kết máy hoặc <strong>"➕ Tạo Máy Mới Vào Hệ Thống"</strong>.
+      </div>
+    `;
+    return;
+  }
+
+  machinesList.forEach((item, idx) => {
+    const row = document.createElement("div");
+    row.className = "product-machine-row glass-card";
+    row.dataset.index = idx;
+    row.style.cssText = "display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 6px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.08); flex-wrap: wrap;";
+
+    const machine = state.settings.machines?.find(m => m.id === item.machineId);
+    const unitLabel = machine ? (machine.unitType || "Cái") : "Cái";
+    const targetVol = machine ? ((machine.paybackYears || 3) * (machine.expectedVolumePerYear || 1)) : 1;
+    const unitRate = machine ? (machine.surchargePerUnit || Math.round(machine.investment / targetVol)) : 0;
+    const itemQty = item.qty !== undefined ? item.qty : 1;
+    const itemCost = Math.round(itemQty * unitRate);
+    const discountPct = machine?.discountAfter3Years !== undefined ? machine.discountAfter3Years : 80;
+    const itemCostAfter = Math.round(itemCost * (1 - discountPct / 100));
+
+    row.innerHTML = `
+      <div style="flex: 2; min-width: 220px;">
+        <select class="product-machine-select form-input calc-trigger" style="width: 100%; font-size: 0.8rem; margin: 0; background: var(--bg-input); border-color: var(--border-glass); color: var(--text-primary);">
+          ${buildMachineSelectOptions(item.machineId)}
+        </select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.35rem; flex: 1; min-width: 130px;">
+        <input type="number" step="0.0001" min="0" class="product-machine-qty form-input calc-trigger" value="${itemQty}" style="width: 85px; font-size: 0.8rem; text-align: right; margin: 0; background: var(--bg-input); border-color: var(--border-glass); color: var(--text-primary);">
+        <span class="product-machine-unit-label" style="font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap;">${unitLabel}/sp</span>
+      </div>
+      <div style="min-width: 120px; text-align: right;">
+        <span class="product-machine-cost" style="font-size: 0.82rem; font-weight: 700; color: #f59e0b;">+${formatVND(itemCost)}</span>
+        <span class="product-machine-cost-after" style="display: block; font-size: 0.68rem; color: #34d399;">(sau 3n: +${formatVND(itemCostAfter)})</span>
+      </div>
+      <div>
+        <button type="button" class="btn btn-xs btn-outline product-machine-del-btn" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 4px;" title="Xóa máy này khỏi sản phẩm">✕</button>
+      </div>
+    `;
+
+    // Listeners for select change
+    const sel = row.querySelector(".product-machine-select");
+    const qtyInput = row.querySelector(".product-machine-qty");
+    const unitEl = row.querySelector(".product-machine-unit-label");
+
+    const onRowInputChange = () => {
+      const selectedM = state.settings.machines?.find(m => m.id === sel.value);
+      if (selectedM && unitEl) {
+        unitEl.textContent = `${selectedM.unitType || 'Cái'}/sp`;
+      }
+      triggerLiveCalculation();
+    };
+
+    sel.addEventListener("change", onRowInputChange);
+    qtyInput.addEventListener("input", onRowInputChange);
+
+    // Delete row listener
+    row.querySelector(".product-machine-del-btn").addEventListener("click", () => {
+      machinesList.splice(idx, 1);
+      renderProductMachineRows(machinesList);
+      triggerLiveCalculation();
+    });
+
+    container.appendChild(row);
+  });
+}
+
+function addNewProductMachineRow(machineId = null, qty = 1) {
+  const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+  if (!selectedProduct) return;
+
+  if (!selectedProduct.paybackMachines) {
+    selectedProduct.paybackMachines = [];
+  }
+
+  const defaultMachineId = machineId || (state.settings.machines && state.settings.machines.length > 0 ? state.settings.machines[0].id : "");
+
+  selectedProduct.paybackMachines.push({
+    machineId: defaultMachineId,
+    qty: qty
+  });
+
+  renderProductMachineRows(selectedProduct.paybackMachines);
+  triggerLiveCalculation();
+}
+
 /**
  * Chạy tính toán giá trị trực tiếp dựa trên form nhập liệu hiện tại và cập nhật UI kết quả
  */
@@ -3709,78 +3833,73 @@ function triggerLiveCalculation() {
   const elBottomProfit = document.getElementById("bottom-profit-percentage");
   if (elBottomProfit) elBottomProfit.textContent = profitPercentage;
 
-  // 8. Tính khấu hao máy móc 2 giai đoạn (3 năm đầu & Sau 3 năm)
-  const paybackMachineSelect = document.getElementById("payback-machine-select");
-  const paybackMachineQty = parseFloat(document.getElementById("payback-machine-qty").value) || 0;
+  // 8. Tính khấu hao máy móc 2 giai đoạn (3 năm đầu & Sau 3 năm) - Đa máy
+  const machineRows = document.querySelectorAll("#product-machines-list-container .product-machine-row");
   const paybackSurchargeEl = document.getElementById("calc-payback-surcharge");
+  const paybackSurchargeAfter3yEl = document.getElementById("calc-payback-surcharge-after3y");
   const paybackInfoEl = document.getElementById("calc-payback-info-banner");
 
   let paybackSurchargeFirst3Years = 0;
   let paybackSurchargeAfter3Years = 0;
-  let isMachineActive = false;
+  const activeAllocatedList = [];
 
-  if (paybackMachineSelect && paybackMachineSelect.value && state.settings.machines) {
-    const machine = state.settings.machines.find(m => m.id === paybackMachineSelect.value);
-    if (machine) {
-      const targetVolume = (machine.paybackYears || 3) * (machine.expectedVolumePerYear || 1);
-      const unitRate = machine.surchargePerUnit || (machine.investment / targetVolume);
-      paybackSurchargeFirst3Years = Math.round(paybackMachineQty * unitRate);
-      
-      const discountPct = machine.discountAfter3Years !== undefined ? machine.discountAfter3Years : 80;
-      paybackSurchargeAfter3Years = Math.round(paybackSurchargeFirst3Years * (1 - discountPct / 100));
+  machineRows.forEach(row => {
+    const sel = row.querySelector(".product-machine-select");
+    const qtyInput = row.querySelector(".product-machine-qty");
+    const costBadge = row.querySelector(".product-machine-cost");
+    const costAfterBadge = row.querySelector(".product-machine-cost-after");
+    const unitLabel = row.querySelector(".product-machine-unit-label");
 
-      const helpTextEl = document.getElementById("payback-machine-unit-help");
-      if (helpTextEl) helpTextEl.textContent = `Quy đổi theo đơn vị ${machine.unitType} của máy`;
-      
-      if ((machine.currentVolume || 0) < targetVolume) {
-        isMachineActive = true;
-      }
-      
-      if (paybackInfoEl) {
-        paybackInfoEl.style.display = "block";
-        const progress = ((machine.currentVolume || 0) / targetVolume * 100).toFixed(1);
-        
-        let monthlyVolume = 0;
-        state.products.forEach(p => {
-          if (p.paybackMachineId === machine.id) {
-            const qtyInProduct = p.paybackMachineQty || 0;
-            const salesMonth = p.forecast.actualSales || 0;
-            monthlyVolume += salesMonth * qtyInProduct;
-          }
+    if (sel && sel.value && state.settings.machines) {
+      const machine = state.settings.machines.find(m => m.id === sel.value);
+      if (machine) {
+        if (unitLabel) unitLabel.textContent = `${machine.unitType || 'Cái'}/sp`;
+        const targetVolume = (machine.paybackYears || 3) * (machine.expectedVolumePerYear || 1);
+        const unitRate = machine.surchargePerUnit || (machine.investment / targetVolume);
+        const qty = parseFloat(qtyInput?.value) || 0;
+
+        const itemFirst3 = Math.round(qty * unitRate);
+        const discountPct = machine.discountAfter3Years !== undefined ? machine.discountAfter3Years : 80;
+        const itemAfter3 = Math.round(itemFirst3 * (1 - discountPct / 100));
+
+        paybackSurchargeFirst3Years += itemFirst3;
+        paybackSurchargeAfter3Years += itemAfter3;
+
+        if (costBadge) costBadge.textContent = `+${formatVND(itemFirst3)}`;
+        if (costAfterBadge) costAfterBadge.textContent = `(sau 3n: +${formatVND(itemAfter3)})`;
+
+        activeAllocatedList.push({
+          machine,
+          qty,
+          targetVolume,
+          itemFirst3,
+          itemAfter3
         });
-        
-        const annualRunRate = monthlyVolume * 12;
-        let speedHtml = "";
-        
-        if (annualRunRate > 0) {
-          const remainingVol = targetVolume - (machine.currentVolume || 0);
-          const remainingYearsTarget = remainingVol / (machine.expectedVolumePerYear || 20000);
-          const remainingYearsActual = remainingVol / annualRunRate;
-          
-          if (remainingYearsActual < remainingYearsTarget) {
-            const monthsActual = Math.round(remainingYearsActual * 12);
-            speedHtml = `<span style="display:block; margin-top: 0.2rem; color: #10b981; font-weight: 600;">🚀 Tốc độ bán thực tế: ${Math.round(annualRunRate).toLocaleString('vi-VN')} ${machine.unitType}/năm. Dự kiến hòa vốn sau ${monthsActual} tháng (Nhanh hơn kế hoạch ${remainingYearsTarget.toFixed(1)} năm)!</span>`;
-          } else {
-            speedHtml = `<span style="display:block; margin-top: 0.2rem; color: #a5b4fc;">Tốc độ bán thực tế: ${Math.round(annualRunRate).toLocaleString('vi-VN')} ${machine.unitType}/năm. Dự kiến hoàn vốn sau ${remainingYearsActual.toFixed(1)} năm.</span>`;
-          }
-        } else {
-          speedHtml = `<span style="display:block; margin-top: 0.2rem; color: var(--text-secondary);">Nhập sản lượng bán ở Tab Dự Báo để dự phóng thời gian hoàn vốn thực tế.</span>`;
-        }
-
-        paybackInfoEl.innerHTML = `
-          <strong>${machine.name}</strong>: Đã thu hồi vốn <strong>${progress}%</strong> (${(machine.currentVolume || 0).toLocaleString('vi-VN')} / ${targetVolume.toLocaleString('vi-VN')} ${machine.unitType}).
-          ${speedHtml}
-        `;
       }
     }
-  } else {
-    if (paybackInfoEl) paybackInfoEl.style.display = "none";
-    const helpTextEl = document.getElementById("payback-machine-unit-help");
-    if (helpTextEl) helpTextEl.textContent = `Đơn vị tiêu hao của máy`;
-  }
+  });
 
   if (paybackSurchargeEl) {
     paybackSurchargeEl.textContent = formatVND(paybackSurchargeFirst3Years);
+  }
+  if (paybackSurchargeAfter3yEl) {
+    paybackSurchargeAfter3yEl.textContent = formatVND(paybackSurchargeAfter3Years);
+  }
+
+  if (paybackInfoEl) {
+    if (activeAllocatedList.length > 0) {
+      paybackInfoEl.style.display = "block";
+      let bannerHtml = `<div style="font-weight: 600; margin-bottom: 0.35rem; color: #34d399;">⚙️ Phân bổ khấu hao ${activeAllocatedList.length} thiết bị máy móc vào sản phẩm:</div>`;
+      bannerHtml += `<ul style="margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.25rem;">`;
+      activeAllocatedList.forEach(item => {
+        const progress = ((item.machine.currentVolume || 0) / item.targetVolume * 100).toFixed(1);
+        bannerHtml += `<li><strong>${item.machine.name}</strong> (${item.qty} ${item.machine.unitType}/sp): <span style="color: #f59e0b; font-weight: 600;">+${formatVND(item.itemFirst3)}</span>/sp (Sau 3 năm: <span style="color: #34d399;">+${formatVND(item.itemAfter3)}</span>) — Đã thu hồi vốn: <strong>${progress}%</strong></li>`;
+      });
+      bannerHtml += `</ul>`;
+      paybackInfoEl.innerHTML = bannerHtml;
+    } else {
+      paybackInfoEl.style.display = "none";
+    }
   }
 
   // Giai đoạn 1 & Giai đoạn 2
@@ -3918,9 +4037,22 @@ function saveProductCostForm(e) {
   // Cập nhật tỷ lệ lợi nhuận
   product.profitPercentage = parseFloat(document.getElementById("profit-margin-percentage").value) || 0;
 
-  // Cập nhật cấu hình hoàn vốn máy móc
-  product.paybackMachineId = document.getElementById("payback-machine-select").value || null;
-  product.paybackMachineQty = parseFloat(document.getElementById("payback-machine-qty").value) || 0;
+  // Cập nhật cấu hình hoàn vốn máy móc (đa máy & tương thích ngược)
+  const machineRows = document.querySelectorAll("#product-machines-list-container .product-machine-row");
+  const paybackMachines = [];
+  machineRows.forEach(row => {
+    const sel = row.querySelector(".product-machine-select");
+    const qtyInput = row.querySelector(".product-machine-qty");
+    if (sel && sel.value) {
+      paybackMachines.push({
+        machineId: sel.value,
+        qty: parseFloat(qtyInput?.value) || 0
+      });
+    }
+  });
+  product.paybackMachines = paybackMachines;
+  product.paybackMachineId = paybackMachines.length > 0 ? paybackMachines[0].machineId : null;
+  product.paybackMachineQty = paybackMachines.length > 0 ? paybackMachines[0].qty : 0;
 
   // Cập nhật quy cách xếp khổ in nếu là Nhà máy In và có bật tùy chọn xếp khổ
   const hasLayoutChecked = document.getElementById("product-has-layout")?.checked;
@@ -4740,7 +4872,15 @@ function renderCapexView() {
           
           let productsModified = false;
           state.products.forEach(p => {
-            if (p.paybackMachineId === m.id) {
+            if (p.paybackMachines && Array.isArray(p.paybackMachines)) {
+              const beforeLen = p.paybackMachines.length;
+              p.paybackMachines = p.paybackMachines.filter(item => item.machineId !== m.id);
+              if (p.paybackMachines.length !== beforeLen) {
+                productsModified = true;
+                p.paybackMachineId = p.paybackMachines[0]?.machineId || null;
+                p.paybackMachineQty = p.paybackMachines[0]?.qty || 0;
+              }
+            } else if (p.paybackMachineId === m.id) {
               p.paybackMachineId = null;
               productsModified = true;
             }
@@ -4802,15 +4942,7 @@ function renderCapexView() {
   if (btnAdd && !btnAdd.dataset.bound) {
     btnAdd.dataset.bound = "true";
     btnAdd.addEventListener("click", () => {
-      // Chuyển sang Tab Settings mở form thêm máy hoặc mở popup
-      switchTab("settings");
-      setTimeout(() => {
-        const capexCard = document.getElementById("settings-capex-card");
-        if (capexCard) {
-          capexCard.scrollIntoView({ behavior: 'smooth' });
-          document.getElementById("capex-mach-name")?.focus();
-        }
-      }, 150);
+      openEditCapexModal(null);
     });
   }
 }
@@ -5418,9 +5550,16 @@ function renderSettingsPaybackList() {
     
     let monthlyVolume = 0;
     state.products.forEach(p => {
-      if (p.paybackMachineId === m.id) {
+      if (p.paybackMachines && Array.isArray(p.paybackMachines)) {
+        const match = p.paybackMachines.find(item => item.machineId === m.id);
+        if (match) {
+          const qtyInProduct = match.qty || 0;
+          const salesMonth = p.forecast ? (p.forecast.actualSales || 0) : 0;
+          monthlyVolume += salesMonth * qtyInProduct;
+        }
+      } else if (p.paybackMachineId === m.id) {
         const qtyInProduct = p.paybackMachineQty || 0;
-        const salesMonth = p.forecast.actualSales || 0;
+        const salesMonth = p.forecast ? (p.forecast.actualSales || 0) : 0;
         monthlyVolume += salesMonth * qtyInProduct;
       }
     });
@@ -5518,7 +5657,15 @@ function renderSettingsPaybackList() {
         
         let productsModified = false;
         state.products.forEach(p => {
-          if (p.paybackMachineId === m.id) {
+          if (p.paybackMachines && Array.isArray(p.paybackMachines)) {
+            const beforeLen = p.paybackMachines.length;
+            p.paybackMachines = p.paybackMachines.filter(item => item.machineId !== m.id);
+            if (p.paybackMachines.length !== beforeLen) {
+              productsModified = true;
+              p.paybackMachineId = p.paybackMachines[0]?.machineId || null;
+              p.paybackMachineQty = p.paybackMachines[0]?.qty || 0;
+            }
+          } else if (p.paybackMachineId === m.id) {
             p.paybackMachineId = null;
             productsModified = true;
           }
@@ -5554,31 +5701,49 @@ function openEditCapexModal(machine) {
   const modal = document.getElementById("modal-edit-capex");
   if (!modal) return;
 
-  document.getElementById("modal-edit-capex-id").value = machine.id;
-  document.getElementById("modal-edit-capex-name").value = machine.name;
+  const isNew = !machine;
+  const titleEl = document.getElementById("modal-edit-capex-title");
+  const submitBtn = document.getElementById("modal-edit-capex-submit-btn");
+
+  if (titleEl) {
+    titleEl.textContent = isNew ? "➕ Thêm Thiết Bị Máy Móc Mới (CAPEX)" : "Chỉnh Sửa & Cộng Dồn Vốn Máy Móc";
+  }
+  if (submitBtn) {
+    submitBtn.textContent = isNew ? "💾 Tạo Máy Mới" : "💾 Lưu Cập Nhật";
+  }
+
+  document.getElementById("modal-edit-capex-id").value = isNew ? "" : machine.id;
+  document.getElementById("modal-edit-capex-name").value = isNew ? "" : machine.name;
   
   const invInput = document.getElementById("modal-edit-capex-investment");
-  invInput.value = (machine.investment || 0).toLocaleString('vi-VN');
+  invInput.value = isNew ? "" : (machine.investment || 0).toLocaleString('vi-VN');
   maskCurrencyInput(invInput);
 
   const addInvInput = document.getElementById("modal-edit-capex-add-investment");
   addInvInput.value = "";
+  if (isNew) {
+    addInvInput.placeholder = "(Không áp dụng khi tạo mới)";
+    addInvInput.disabled = true;
+  } else {
+    addInvInput.placeholder = "Ví dụ: 100.000.000";
+    addInvInput.disabled = false;
+  }
   maskCurrencyInput(addInvInput);
 
   const yearsInput = document.getElementById("modal-edit-capex-years");
-  yearsInput.value = machine.paybackYears || 3;
+  yearsInput.value = isNew ? 3 : (machine.paybackYears || 3);
 
   const volInput = document.getElementById("modal-edit-capex-expected-vol");
-  volInput.value = machine.expectedVolumePerYear || 20000;
+  volInput.value = isNew ? 20000 : (machine.expectedVolumePerYear || 20000);
 
   const unitSelect = document.getElementById("modal-edit-capex-unit-type");
-  unitSelect.value = machine.unitType || "Cái";
+  unitSelect.value = isNew ? "Cái" : (machine.unitType || "Cái");
 
   const discInput = document.getElementById("modal-edit-capex-discount");
-  discInput.value = machine.discountAfter3Years !== undefined ? machine.discountAfter3Years : 80;
+  discInput.value = (!isNew && machine.discountAfter3Years !== undefined) ? machine.discountAfter3Years : 80;
 
   const curVolInput = document.getElementById("modal-edit-capex-current-vol");
-  curVolInput.value = machine.currentVolume || 0;
+  curVolInput.value = isNew ? 0 : (machine.currentVolume || 0);
 
   function updatePreview() {
     const curInv = parseInt((invInput.value || "0").replace(/[^0-9]/g, ""), 10) || 0;
@@ -6913,8 +7078,8 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
     editCapexForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const machId = document.getElementById("modal-edit-capex-id").value;
-      const mach = state.settings.machines?.find(m => m.id === machId);
-      if (!mach) return;
+      const mach = machId ? state.settings.machines?.find(m => m.id === machId) : null;
+      const isCreateNew = !machId;
 
       const name = document.getElementById("modal-edit-capex-name").value.trim();
       const curInv = parseInt((document.getElementById("modal-edit-capex-investment").value || "0").replace(/[^0-9]/g, ""), 10) || 0;
@@ -6934,6 +7099,62 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
       const targetVol = years * expectedVol;
       const surcharge = Math.round(totalInv / targetVol);
 
+      if (isCreateNew) {
+        const newMachId = "mach-" + Date.now();
+        const selectedProd = state.products.find(p => p.id === state.selectedProductId);
+        const factoryType = selectedProd ? selectedProd.factoryType : "In";
+        const category = factoryType === "Thêu" ? "Thêu & Laser" : (factoryType === "In 3D" ? "Máy in 3D" : "In, Cắt & Hoàn Thiện");
+
+        const newMachine = {
+          id: newMachId,
+          name: name,
+          category: category,
+          factoryType: factoryType,
+          quantity: 1,
+          unitPrice: totalInv,
+          investment: totalInv,
+          paybackYears: years,
+          expectedVolumePerYear: expectedVol,
+          currentVolume: currentVol,
+          surchargePerUnit: surcharge,
+          discountAfter3Years: discount,
+          unitType: unitType
+        };
+
+        if (!state.settings.machines) state.settings.machines = [];
+        state.settings.machines.push(newMachine);
+        state.saveSettings(state.settings);
+
+        // Auto-assign to current product if selected
+        if (selectedProd) {
+          if (!selectedProd.paybackMachines) selectedProd.paybackMachines = [];
+          selectedProd.paybackMachines.push({
+            machineId: newMachId,
+            qty: 1
+          });
+          selectedProd.paybackMachineId = selectedProd.paybackMachines[0].machineId;
+          selectedProd.paybackMachineQty = selectedProd.paybackMachines[0].qty;
+          state.saveProducts();
+        }
+
+        const modal = document.getElementById("modal-edit-capex");
+        if (modal) {
+          if (typeof modal.close === "function") modal.close();
+          else modal.removeAttribute("open");
+        }
+
+        renderSettings();
+        renderCapexView();
+        renderCalculator();
+        recalculateForecastTotals();
+        updateDashboard();
+
+        alert(`✅ Đã tạo mới thành công máy "${name}" và đưa vào hệ thống CAPEX!\n\n- Vốn đầu tư: ${formatVND(totalInv)}\n- Phụ phí khấu hao: ${formatVND(surcharge)} / ${unitType}\n\nĐã tự động liên kết máy này vào sản phẩm đang tính giá.`);
+        return;
+      }
+
+      if (!mach) return;
+
       mach.name = name;
       mach.investment = totalInv;
       mach.paybackYears = years;
@@ -6952,6 +7173,7 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
       }
 
       renderSettings();
+      renderCapexView();
       renderCalculator();
       recalculateForecastTotals();
       updateDashboard();
