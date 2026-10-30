@@ -1688,7 +1688,14 @@ class AppStateManager {
 
         let mergedMachines = [];
         if (!parsed.machinesVersion || parsed.machinesVersion !== DEFAULT_SETTINGS.machinesVersion) {
-          mergedMachines = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.machines));
+          // Bảo lưu toàn bộ máy móc do người dùng tự tạo thêm (không có trong 74 máy mặc định)
+          const customMachines = Array.isArray(parsed.machines)
+            ? parsed.machines.filter(m => !DEFAULT_SETTINGS.machines.some(dm => dm.id === m.id))
+            : [];
+          mergedMachines = [
+            ...JSON.parse(JSON.stringify(DEFAULT_SETTINGS.machines)),
+            ...customMachines
+          ];
           parsed.machinesVersion = DEFAULT_SETTINGS.machinesVersion;
         } else if (Array.isArray(parsed.machines)) {
           mergedMachines = parsed.machines.map(m => ({
@@ -1873,18 +1880,24 @@ class AppStateManager {
               parsed[existingIdx].name = mp.name;
               parsed[existingIdx].code = mp.code;
               parsed[existingIdx].category = mp.category;
-              if (mp.materials && mp.materials.length > 0) {
+              // Chỉ đồng bộ nguyên vật liệu và thông số từ MOCK nếu sản phẩm chưa có
+              if (mp.materials && mp.materials.length > 0 && (!parsed[existingIdx].materials || parsed[existingIdx].materials.length === 0)) {
                 parsed[existingIdx].materials = JSON.parse(JSON.stringify(mp.materials));
               }
-              if (mp.layout) parsed[existingIdx].layout = JSON.parse(JSON.stringify(mp.layout));
-              parsed[existingIdx].factoryType = mp.factoryType;
-              if (mp.profitPercentage) parsed[existingIdx].profitPercentage = mp.profitPercentage;
-              if (mp.paybackMachines && Array.isArray(mp.paybackMachines)) {
-                parsed[existingIdx].paybackMachines = JSON.parse(JSON.stringify(mp.paybackMachines));
-              }
-              if (mp.paybackMachineId) {
-                parsed[existingIdx].paybackMachineId = mp.paybackMachineId;
-                parsed[existingIdx].paybackMachineQty = mp.paybackMachineQty;
+              if (mp.layout && !parsed[existingIdx].layout) parsed[existingIdx].layout = JSON.parse(JSON.stringify(mp.layout));
+              if (!parsed[existingIdx].factoryType) parsed[existingIdx].factoryType = mp.factoryType;
+              if (parsed[existingIdx].profitPercentage === undefined && mp.profitPercentage) parsed[existingIdx].profitPercentage = mp.profitPercentage;
+
+              // BẢO LƯU CẤU HÌNH MÁY MÓC DO NGƯỜI DÙNG ĐÃ LƯU
+              const userHasMachines = (parsed[existingIdx].paybackMachines && Array.isArray(parsed[existingIdx].paybackMachines) && parsed[existingIdx].paybackMachines.length > 0) || parsed[existingIdx].paybackMachineId;
+              if (!userHasMachines) {
+                if (mp.paybackMachines && Array.isArray(mp.paybackMachines)) {
+                  parsed[existingIdx].paybackMachines = JSON.parse(JSON.stringify(mp.paybackMachines));
+                }
+                if (mp.paybackMachineId) {
+                  parsed[existingIdx].paybackMachineId = mp.paybackMachineId;
+                  parsed[existingIdx].paybackMachineQty = mp.paybackMachineQty;
+                }
               }
             }
           });
@@ -3420,6 +3433,13 @@ function renderCalculator() {
 }
 
 function selectProduct(id) {
+  if (state.selectedProductId && state.selectedProductId !== id) {
+    const curProd = state.products.find(p => p.id === state.selectedProductId);
+    if (curProd) {
+      syncProductMachinesFromDom(curProd);
+      state.saveProducts();
+    }
+  }
   state.selectedProductId = id;
   renderCalculator();
 }
@@ -3625,6 +3645,26 @@ function buildMachineSelectOptions(selectedId) {
   return html;
 }
 
+function syncProductMachinesFromDom(product) {
+  if (!product) return [];
+  const machineRows = document.querySelectorAll("#product-machines-list-container .product-machine-row");
+  const paybackMachines = [];
+  machineRows.forEach(row => {
+    const sel = row.querySelector(".product-machine-select");
+    const qtyInput = row.querySelector(".product-machine-qty");
+    if (sel && sel.value) {
+      paybackMachines.push({
+        machineId: sel.value,
+        qty: parseFloat(qtyInput?.value) || 0
+      });
+    }
+  });
+  product.paybackMachines = paybackMachines;
+  product.paybackMachineId = paybackMachines.length > 0 ? paybackMachines[0].machineId : null;
+  product.paybackMachineQty = paybackMachines.length > 0 ? paybackMachines[0].qty : 0;
+  return paybackMachines;
+}
+
 function renderProductMachineRows(machinesList) {
   const container = document.getElementById("product-machines-list-container");
   if (!container) return;
@@ -3673,16 +3713,27 @@ function renderProductMachineRows(machinesList) {
       </div>
     `;
 
-    // Listeners for select change
+    // Listeners for select change and input
     const sel = row.querySelector(".product-machine-select");
     const qtyInput = row.querySelector(".product-machine-qty");
     const unitEl = row.querySelector(".product-machine-unit-label");
 
     const onRowInputChange = () => {
+      item.machineId = sel.value;
+      item.qty = parseFloat(qtyInput.value) || 0;
+
       const selectedM = state.settings.machines?.find(m => m.id === sel.value);
       if (selectedM && unitEl) {
         unitEl.textContent = `${selectedM.unitType || 'Cái'}/sp`;
       }
+
+      // Tự động đồng bộ và lưu ngay vào sản phẩm đang chọn
+      const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+      if (selectedProduct) {
+        syncProductMachinesFromDom(selectedProduct);
+        state.saveProducts();
+      }
+
       triggerLiveCalculation();
     };
 
@@ -3691,7 +3742,18 @@ function renderProductMachineRows(machinesList) {
 
     // Delete row listener
     row.querySelector(".product-machine-del-btn").addEventListener("click", () => {
+      const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+      if (selectedProduct) syncProductMachinesFromDom(selectedProduct);
+
       machinesList.splice(idx, 1);
+
+      if (selectedProduct) {
+        selectedProduct.paybackMachines = machinesList;
+        selectedProduct.paybackMachineId = machinesList.length > 0 ? machinesList[0].machineId : null;
+        selectedProduct.paybackMachineQty = machinesList.length > 0 ? machinesList[0].qty : 0;
+        state.saveProducts();
+      }
+
       renderProductMachineRows(machinesList);
       triggerLiveCalculation();
     });
@@ -3704,6 +3766,9 @@ function addNewProductMachineRow(machineId = null, qty = 1) {
   const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
   if (!selectedProduct) return;
 
+  // 1. Đồng bộ các giá trị đang chọn trên DOM vào selectedProduct trước để không bị mất máy vừa chọn
+  syncProductMachinesFromDom(selectedProduct);
+
   if (!selectedProduct.paybackMachines) {
     selectedProduct.paybackMachines = [];
   }
@@ -3714,7 +3779,13 @@ function addNewProductMachineRow(machineId = null, qty = 1) {
     machineId: defaultMachineId,
     qty: qty
   });
+  selectedProduct.paybackMachineId = selectedProduct.paybackMachines[0].machineId;
+  selectedProduct.paybackMachineQty = selectedProduct.paybackMachines[0].qty;
 
+  // 2. Lưu ngay lập tức vào localStorage
+  state.saveProducts();
+
+  // 3. Render lại danh sách
   renderProductMachineRows(selectedProduct.paybackMachines);
   triggerLiveCalculation();
 }
@@ -4038,21 +4109,7 @@ function saveProductCostForm(e) {
   product.profitPercentage = parseFloat(document.getElementById("profit-margin-percentage").value) || 0;
 
   // Cập nhật cấu hình hoàn vốn máy móc (đa máy & tương thích ngược)
-  const machineRows = document.querySelectorAll("#product-machines-list-container .product-machine-row");
-  const paybackMachines = [];
-  machineRows.forEach(row => {
-    const sel = row.querySelector(".product-machine-select");
-    const qtyInput = row.querySelector(".product-machine-qty");
-    if (sel && sel.value) {
-      paybackMachines.push({
-        machineId: sel.value,
-        qty: parseFloat(qtyInput?.value) || 0
-      });
-    }
-  });
-  product.paybackMachines = paybackMachines;
-  product.paybackMachineId = paybackMachines.length > 0 ? paybackMachines[0].machineId : null;
-  product.paybackMachineQty = paybackMachines.length > 0 ? paybackMachines[0].qty : 0;
+  syncProductMachinesFromDom(product);
 
   // Cập nhật quy cách xếp khổ in nếu là Nhà máy In và có bật tùy chọn xếp khổ
   const hasLayoutChecked = document.getElementById("product-has-layout")?.checked;
@@ -7051,11 +7108,16 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
       const newMachine = {
         id: `mach-${Date.now()}`,
         name,
+        category: "In, Cắt & Hoàn Thiện",
+        factoryType: "In",
+        quantity: 1,
+        unitPrice: investment,
         investment,
         paybackYears: years,
         expectedVolumePerYear: expectedVol,
         currentVolume: 0,
         surchargePerUnit: surcharge,
+        discountAfter3Years: 80,
         unitType
       };
 
@@ -7067,6 +7129,7 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
 
       capexForm.reset();
       renderSettings();
+      renderCapexView();
       renderCalculator();
       alert(`Đã thêm thiết lập hòa vốn thành công cho máy "${name}"!`);
     });
@@ -7127,6 +7190,7 @@ ST-AN-SUA-01,Sticker Decal An Nam Sữa Mờ,4 inches,600`;
 
         // Auto-assign to current product if selected
         if (selectedProd) {
+          syncProductMachinesFromDom(selectedProd);
           if (!selectedProd.paybackMachines) selectedProd.paybackMachines = [];
           selectedProd.paybackMachines.push({
             machineId: newMachId,
