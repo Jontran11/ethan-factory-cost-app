@@ -1884,9 +1884,11 @@ class AppStateManager {
               if (mp.materials && mp.materials.length > 0 && (!parsed[existingIdx].materials || parsed[existingIdx].materials.length === 0)) {
                 parsed[existingIdx].materials = JSON.parse(JSON.stringify(mp.materials));
               }
+              if (mp.labor && !parsed[existingIdx].labor) parsed[existingIdx].labor = JSON.parse(JSON.stringify(mp.labor));
               if (mp.layout && !parsed[existingIdx].layout) parsed[existingIdx].layout = JSON.parse(JSON.stringify(mp.layout));
               if (!parsed[existingIdx].factoryType) parsed[existingIdx].factoryType = mp.factoryType;
-              if (parsed[existingIdx].profitPercentage === undefined && mp.profitPercentage) parsed[existingIdx].profitPercentage = mp.profitPercentage;
+              if (parsed[existingIdx].profitPercentage === undefined && mp.profitPercentage !== undefined) parsed[existingIdx].profitPercentage = mp.profitPercentage;
+              if (parsed[existingIdx].overheadPercentage === undefined && mp.overheadPercentage !== undefined) parsed[existingIdx].overheadPercentage = mp.overheadPercentage;
 
               // BẢO LƯU CẤU HÌNH MÁY MÓC DO NGƯỜI DÙNG ĐÃ LƯU
               const userHasMachines = (parsed[existingIdx].paybackMachines && Array.isArray(parsed[existingIdx].paybackMachines) && parsed[existingIdx].paybackMachines.length > 0) || parsed[existingIdx].paybackMachineId;
@@ -3240,10 +3242,13 @@ function renderCalculator() {
       group.products.forEach(p => {
         const card = document.createElement("div");
         card.className = `product-card-item ${state.selectedProductId === p.id ? 'selected' : ''}`;
+        card.dataset.id = p.id;
         card.setAttribute("role", "button");
         card.setAttribute("tabindex", "0");
         
-        const { baseCost, sellerPrice } = calculateProductCost(p, state.settings);
+        const { baseCost, sellerPrice, paybackBaseCost, paybackSellerPrice, paybackSurchargeFirst3Years } = calculateProductCost(p, state.settings);
+        const finalBase = paybackSurchargeFirst3Years > 0 ? paybackBaseCost : baseCost;
+        const finalSeller = paybackSurchargeFirst3Years > 0 ? paybackSellerPrice : sellerPrice;
         
         card.innerHTML = `
           <div class="product-card-item-header">
@@ -3257,8 +3262,8 @@ function renderCalculator() {
           </div>
           <div class="product-card-sku">${p.code || 'N/A'}</div>
           <div class="product-card-footer">
-            <span class="text-secondary text-xs" style="color: #34d399; font-weight: 500;">Bán: ${formatVND(sellerPrice)}</span>
-            <div class="product-card-price" style="font-size: 0.85rem;">Vốn: ${formatVND(baseCost)}</div>
+            <span class="text-secondary text-xs" style="color: #34d399; font-weight: 500;">Bán: ${formatVND(finalSeller)}</span>
+            <div class="product-card-price" style="font-size: 0.85rem;">Vốn: ${formatVND(finalBase)}</div>
           </div>
         `;
 
@@ -3437,6 +3442,13 @@ function selectProduct(id) {
     const curProd = state.products.find(p => p.id === state.selectedProductId);
     if (curProd) {
       syncProductMachinesFromDom(curProd);
+      syncProductMaterialsFromDom(curProd);
+      syncProductLaborFromDom(curProd);
+      syncProductElectricityFromDom(curProd);
+      const overheadInput = document.getElementById("overhead-rate-percentage");
+      if (overheadInput) curProd.overheadPercentage = parseFloat(overheadInput.value) || 0;
+      const profitInput = document.getElementById("profit-margin-percentage");
+      if (profitInput) curProd.profitPercentage = parseFloat(profitInput.value) || 0;
       state.saveProducts();
     }
   }
@@ -3554,31 +3566,43 @@ function renderMaterialsRows(materials) {
     
     tr.innerHTML = `
       <td>
-        <input type="text" value="${mat.name}" list="materials-catalog-datalist" placeholder="Tên vật tư (hoặc chọn từ Thư viện)..." class="form-input row-mat-name" required style="min-height:38px;">
+        <input type="text" value="${mat.name || ''}" list="materials-catalog-datalist" placeholder="Tên vật tư (hoặc chọn từ Thư viện)..." class="form-input row-mat-name" required style="min-height:38px;">
       </td>
       <td>
-        <input type="number" step="any" min="0" value="${mat.qty}" placeholder="0" class="form-input text-center row-mat-qty calc-trigger" required style="min-height:38px;">
+        <input type="number" step="any" min="0" value="${mat.qty !== undefined ? mat.qty : 1}" placeholder="0" class="form-input text-center row-mat-qty calc-trigger" required style="min-height:38px;">
       </td>
       <td>
-        <input type="text" value="${mat.unit}" placeholder="m2, cái, kg..." class="form-input text-center row-mat-unit" style="min-height:38px;">
+        <input type="text" value="${mat.unit || ''}" placeholder="m2, cái, kg..." class="form-input text-center row-mat-unit" style="min-height:38px;">
       </td>
       <td>
-        <input type="text" value="${mat.price.toLocaleString('vi-VN')}" placeholder="0" class="form-input row-mat-price currency-input calc-trigger" required style="min-height:38px;">
+        <input type="text" value="${(mat.price || 0).toLocaleString('vi-VN')}" placeholder="0" class="form-input row-mat-price currency-input calc-trigger" required style="min-height:38px;">
       </td>
       <td class="text-right font-semibold row-mat-total" style="padding: 0 0.5rem; text-align: right; min-width: 120px;">
-        ${formatVND(mat.qty * mat.price)}
+        ${formatVND((mat.qty || 0) * (mat.price || 0))}
       </td>
       <td>
-        <button type="button" class="btn-remove-row btn-remove-material">&times;</button>
+        <button type="button" class="btn-remove-row btn-remove-material" title="Xóa vật tư này">&times;</button>
       </td>
     `;
     
-    // Autocomplete lookup from materials catalog
     const nameInput = tr.querySelector(".row-mat-name");
+    const qtyInput = tr.querySelector(".row-mat-qty");
     const unitInput = tr.querySelector(".row-mat-unit");
     const priceInput = tr.querySelector(".row-mat-price");
 
+    const onMatRowChange = () => {
+      const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+      if (selectedProduct) {
+        syncProductMaterialsFromDom(selectedProduct);
+        state.saveProducts();
+      }
+      triggerLiveCalculation();
+    };
+
     if (nameInput) {
+      nameInput.addEventListener("input", onMatRowChange);
+      nameInput.addEventListener("change", onMatRowChange);
+
       const handleCatalogLookup = (e) => {
         const val = (e.target.value || "").trim().toLowerCase();
         if (!val) return;
@@ -3587,6 +3611,11 @@ function renderMaterialsRows(materials) {
         if (match) {
           if (unitInput) unitInput.value = match.unit;
           if (priceInput) priceInput.value = match.defaultPrice.toLocaleString('vi-VN');
+          const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+          if (selectedProduct) {
+            syncProductMaterialsFromDom(selectedProduct);
+            state.saveProducts();
+          }
           triggerLiveCalculation();
         }
       };
@@ -3594,10 +3623,34 @@ function renderMaterialsRows(materials) {
       nameInput.addEventListener("change", handleCatalogLookup);
     }
 
+    if (qtyInput) {
+      qtyInput.addEventListener("input", onMatRowChange);
+      qtyInput.addEventListener("change", onMatRowChange);
+    }
+
+    if (unitInput) {
+      unitInput.addEventListener("input", onMatRowChange);
+      unitInput.addEventListener("change", onMatRowChange);
+    }
+
+    if (priceInput) {
+      priceInput.addEventListener("input", onMatRowChange);
+      priceInput.addEventListener("change", onMatRowChange);
+    }
+
     // Add remove handler
     tr.querySelector(".btn-remove-material").addEventListener("click", () => {
-      materials.splice(idx, 1);
-      renderMaterialsRows(materials);
+      const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+      if (selectedProduct) {
+        syncProductMaterialsFromDom(selectedProduct);
+        selectedProduct.materials.splice(idx, 1);
+        state.saveProducts();
+        renderMaterialsRows(selectedProduct.materials);
+      } else {
+        materials.splice(idx, 1);
+        renderMaterialsRows(materials);
+      }
+      bindDynamicRowEvents();
       triggerLiveCalculation();
     });
 
@@ -3608,6 +3661,9 @@ function renderMaterialsRows(materials) {
 function addNewMaterialRow() {
   const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
   if (!selectedProduct) return;
+
+  // 1. Đồng bộ các giá trị đang có trên DOM vào selectedProduct trước để không mất dữ liệu đang gõ dở
+  syncProductMaterialsFromDom(selectedProduct);
 
   if (!selectedProduct.materials) {
     selectedProduct.materials = [];
@@ -3620,9 +3676,13 @@ function addNewMaterialRow() {
     price: 0
   });
 
+  // 2. Lưu ngay vào state và localStorage
+  state.saveProducts();
+
+  // 3. Render lại danh sách và gắn sự kiện
   renderMaterialsRows(selectedProduct.materials);
-  // Re-bind currency masking & calculator triggers to the newly added row
   bindDynamicRowEvents();
+  triggerLiveCalculation();
 }
 
 function buildMachineSelectOptions(selectedId) {
@@ -3643,6 +3703,63 @@ function buildMachineSelectOptions(selectedId) {
     html += `</optgroup>`;
   });
   return html;
+}
+
+function syncProductMaterialsFromDom(product) {
+  if (!product) return [];
+  const rows = document.querySelectorAll("#materials-tbody tr:not(.empty-materials-row)");
+  const materials = [];
+  rows.forEach(row => {
+    const name = (row.querySelector(".row-mat-name")?.value || "").trim();
+    const qty = parseFloat(row.querySelector(".row-mat-qty")?.value) || 0;
+    const unit = (row.querySelector(".row-mat-unit")?.value || "").trim() || "Cái";
+    const priceStr = row.querySelector(".row-mat-price")?.value || "0";
+    const price = parseCurrencyInput(priceStr);
+    materials.push({ name, qty, unit, price });
+  });
+  product.materials = materials;
+  return materials;
+}
+
+function syncProductLaborFromDom(product) {
+  if (!product) return;
+  product.labor = product.labor || {};
+  const factoryType = document.querySelector('input[name="factoryType"]:checked')?.value || product.factoryType;
+  if (factoryType === "In") {
+    product.labor.designer = parseFloat(document.getElementById("labor-print-designer")?.value) || 0;
+    product.labor.production = parseFloat(document.getElementById("labor-print-production")?.value) || 0;
+    product.labor.qc = parseFloat(document.getElementById("labor-print-qc")?.value) || 0;
+  } else {
+    product.labor.designer = parseFloat(document.getElementById("labor-embroid-designer")?.value) || 0;
+    product.labor.laser = parseFloat(document.getElementById("labor-embroid-laser")?.value) || 0;
+    product.labor.production = parseFloat(document.getElementById("labor-embroid-production")?.value) || 0;
+    product.labor.qc = parseFloat(document.getElementById("labor-embroid-qc")?.value) || 0;
+  }
+}
+
+function syncProductElectricityFromDom(product) {
+  if (!product) return;
+  product.electricity = product.electricity || {};
+  const powerEl = document.getElementById("utility-machine-power");
+  const timeEl = document.getElementById("utility-run-time");
+  const rateEl = document.getElementById("utility-electricity-price");
+  if (powerEl) product.electricity.power = parseFloat(powerEl.value) || 0;
+  if (timeEl) product.electricity.runTime = parseFloat(timeEl.value) || 0;
+  if (rateEl && rateEl.value) product.electricity.rate = parseCurrencyInput(rateEl.value);
+}
+
+function updateProductCardInList(product) {
+  if (!product) return;
+  const card = document.querySelector(`.product-card-item[data-id="${product.id}"]`) || document.querySelector(".product-card-item.selected");
+  if (!card) return;
+  const { baseCost, sellerPrice, paybackBaseCost, paybackSellerPrice, paybackSurchargeFirst3Years } = calculateProductCost(product, state.settings);
+  const finalBase = paybackSurchargeFirst3Years > 0 ? paybackBaseCost : baseCost;
+  const finalSeller = paybackSurchargeFirst3Years > 0 ? paybackSellerPrice : sellerPrice;
+  
+  const priceEl = card.querySelector(".product-card-price");
+  if (priceEl) priceEl.textContent = `Vốn: ${formatVND(finalBase)}`;
+  const sellerEl = card.querySelector(".product-card-footer span");
+  if (sellerEl) sellerEl.textContent = `Bán: ${formatVND(finalSeller)}`;
 }
 
 function syncProductMachinesFromDom(product) {
@@ -3794,7 +3911,27 @@ function addNewProductMachineRow(machineId = null, qty = 1) {
  * Chạy tính toán giá trị trực tiếp dựa trên form nhập liệu hiện tại và cập nhật UI kết quả
  */
 function triggerLiveCalculation() {
-  const factoryType = document.querySelector('input[name="factoryType"]:checked').value;
+  const factoryRadio = document.querySelector('input[name="factoryType"]:checked');
+  const factoryType = factoryRadio ? factoryRadio.value : "In";
+
+  // Đồng bộ và tự động lưu trạng thái sản phẩm hiện tại vào state & localStorage
+  const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+  if (selectedProduct) {
+    syncProductMaterialsFromDom(selectedProduct);
+    syncProductLaborFromDom(selectedProduct);
+    syncProductMachinesFromDom(selectedProduct);
+    syncProductElectricityFromDom(selectedProduct);
+
+    const overheadInput = document.getElementById("overhead-rate-percentage");
+    if (overheadInput) {
+      selectedProduct.overheadPercentage = parseFloat(overheadInput.value) || 0;
+    }
+    const profitInput = document.getElementById("profit-margin-percentage");
+    if (profitInput) {
+      selectedProduct.profitPercentage = parseFloat(profitInput.value) || 0;
+    }
+    state.saveProducts();
+  }
   
   // 1. Nguyên vật liệu
   let materialsCost = 0;
@@ -4050,6 +4187,11 @@ function triggerLiveCalculation() {
 
   // Đồng bộ khối tính toán đơn hàng theo quy cách xếp khổ
   updateImpositionOrderCalc();
+
+  // Cập nhật thẻ sản phẩm bên danh sách trái theo thời gian thực
+  if (selectedProduct) {
+    updateProductCardInList(selectedProduct);
+  }
 }
 
 /**
@@ -4068,48 +4210,17 @@ function saveProductCostForm(e) {
   product.category = document.getElementById("product-category").value;
   product.factoryType = document.querySelector('input[name="factoryType"]:checked').value;
 
-  // Cập nhật nguyên vật liệu
-  product.materials = [];
-  const rows = document.querySelectorAll("#materials-tbody tr:not(.empty-materials-row)");
-  rows.forEach(row => {
-    const name = row.querySelector(".row-mat-name").value;
-    const qty = parseFloat(row.querySelector(".row-mat-qty").value) || 0;
-    const unit = row.querySelector(".row-mat-unit").value;
-    const price = parseCurrencyInput(row.querySelector(".row-mat-price").value);
-    
-    if (name) {
-      product.materials.push({ name, qty, unit, price });
-    }
-  });
-
-  // Cập nhật nhân công
-  product.labor = {};
-  if (product.factoryType === "In") {
-    product.labor.designer = parseFloat(document.getElementById("labor-print-designer").value) || 0;
-    product.labor.production = parseFloat(document.getElementById("labor-print-production").value) || 0;
-    product.labor.qc = parseFloat(document.getElementById("labor-print-qc").value) || 0;
-  } else {
-    product.labor.designer = parseFloat(document.getElementById("labor-embroid-designer").value) || 0;
-    product.labor.laser = parseFloat(document.getElementById("labor-embroid-laser").value) || 0;
-    product.labor.production = parseFloat(document.getElementById("labor-embroid-production").value) || 0;
-    product.labor.qc = parseFloat(document.getElementById("labor-embroid-qc").value) || 0;
-  }
-
-  // Cập nhật điện năng
-  product.electricity = {};
-  product.electricity.power = parseFloat(document.getElementById("utility-machine-power").value) || 0;
-  product.electricity.runTime = parseFloat(document.getElementById("utility-run-time").value) || 0;
-  const customElectricity = document.getElementById("utility-electricity-price").value;
-  product.electricity.rate = customElectricity ? parseCurrencyInput(customElectricity) : null;
+  // Cập nhật nguyên vật liệu, nhân công, điện năng, máy móc
+  syncProductMaterialsFromDom(product);
+  syncProductLaborFromDom(product);
+  syncProductElectricityFromDom(product);
+  syncProductMachinesFromDom(product);
 
   // Cập nhật overhead
-  product.overheadPercentage = parseFloat(document.getElementById("overhead-rate-percentage").value);
+  product.overheadPercentage = parseFloat(document.getElementById("overhead-rate-percentage").value) || 0;
 
   // Cập nhật tỷ lệ lợi nhuận
   product.profitPercentage = parseFloat(document.getElementById("profit-margin-percentage").value) || 0;
-
-  // Cập nhật cấu hình hoàn vốn máy móc (đa máy & tương thích ngược)
-  syncProductMachinesFromDom(product);
 
   // Cập nhật quy cách xếp khổ in nếu là Nhà máy In và có bật tùy chọn xếp khổ
   const hasLayoutChecked = document.getElementById("product-has-layout")?.checked;
@@ -6688,7 +6799,40 @@ document.addEventListener("DOMContentLoaded", () => {
   // Reactivity to changes in form inputs
   document.querySelectorAll(".calculator-form-panel .calc-trigger").forEach(el => {
     el.addEventListener("input", triggerLiveCalculation);
+    el.addEventListener("change", triggerLiveCalculation);
   });
+
+  const prodNameInput = document.getElementById("product-name");
+  if (prodNameInput) {
+    prodNameInput.addEventListener("input", (e) => {
+      const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+      if (selectedProduct) {
+        selectedProduct.name = e.target.value;
+        state.saveProducts();
+        const card = document.querySelector(`.product-card-item[data-id="${selectedProduct.id}"]`) || document.querySelector(".product-card-item.selected");
+        if (card) {
+          const nameEl = card.querySelector(".product-card-name");
+          if (nameEl) nameEl.textContent = selectedProduct.name;
+        }
+      }
+    });
+  }
+
+  const prodCodeInput = document.getElementById("product-code");
+  if (prodCodeInput) {
+    prodCodeInput.addEventListener("input", (e) => {
+      const selectedProduct = state.products.find(p => p.id === state.selectedProductId);
+      if (selectedProduct) {
+        selectedProduct.code = e.target.value;
+        state.saveProducts();
+        const card = document.querySelector(`.product-card-item[data-id="${selectedProduct.id}"]`) || document.querySelector(".product-card-item.selected");
+        if (card) {
+          const skuEl = card.querySelector(".product-card-sku");
+          if (skuEl) skuEl.textContent = selectedProduct.code || 'N/A';
+        }
+      }
+    });
+  }
 
   // Watch for factory radio toggle changes
   document.querySelectorAll('input[name="factoryType"]').forEach(radio => {
