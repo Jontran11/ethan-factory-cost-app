@@ -6876,58 +6876,73 @@ function renderUsersTable() {
   });
 }
 
+function closeUserModal() {
+  const modal = document.getElementById("user-modal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
 function openCreateUserModal() {
   const modal = document.getElementById("user-modal");
   const form = document.getElementById("user-management-form");
-  if (!modal || !form) {
-    console.error("user-modal or user-management-form not found!");
+  if (!modal) {
+    alert("Không tìm thấy cửa sổ tạo người dùng!");
     return;
   }
+  if (form) form.reset();
 
-  form.reset();
-  document.getElementById("user-form-id").value = "";
-  document.getElementById("user-modal-title").textContent = "➕ Tạo Tài Khoản Người Dùng Mới";
+  const idEl = document.getElementById("user-form-id");
+  if (idEl) idEl.value = "";
+  
+  const titleEl = document.getElementById("user-modal-title");
+  if (titleEl) titleEl.textContent = "➕ Tạo Tài Khoản Người Dùng Mới";
+  
   const usernameInput = document.getElementById("user-form-username");
   if (usernameInput) {
     usernameInput.disabled = false;
     usernameInput.value = "";
+    setTimeout(() => { usernameInput.focus(); }, 100);
   }
+
   const roleSelect = document.getElementById("user-form-role");
   if (roleSelect) roleSelect.value = "sales";
   
   applyRoleToPermCheckboxes("sales");
 
-  if (typeof modal.showModal === "function") {
-    try {
-      modal.showModal();
-    } catch (e) {
-      modal.setAttribute("open", "");
-    }
-  } else {
-    modal.setAttribute("open", "");
-  }
+  modal.style.display = "flex";
 }
 
 function openEditUserModal(userId) {
   const modal = document.getElementById("user-modal");
-  const form = document.getElementById("user-management-form");
-  if (!modal || !form) return;
-
+  if (!modal) return;
   const user = (state.settings.users || []).find(u => u.id === userId);
-  if (!user) return;
+  if (!user) {
+    alert("Không tìm thấy thông tin tài khoản!");
+    return;
+  }
 
-  document.getElementById("user-form-id").value = user.id;
-  document.getElementById("user-modal-title").textContent = `✏️ Chỉnh Sửa Tài Khoản: ${user.username}`;
-  
+  const form = document.getElementById("user-management-form");
+  if (form) form.reset();
+
+  const idEl = document.getElementById("user-form-id");
+  if (idEl) idEl.value = user.id;
+
+  const titleEl = document.getElementById("user-modal-title");
+  if (titleEl) titleEl.textContent = `✏️ Chỉnh Sửa Tài Khoản: ${user.username}`;
+
   const usernameInput = document.getElementById("user-form-username");
   if (usernameInput) {
     usernameInput.value = user.username;
     usernameInput.disabled = (user.username === "admin" || user.id === "usr_admin");
   }
 
-  document.getElementById("user-form-passcode").value = user.passcode || "";
-  document.getElementById("user-form-fullname").value = user.name || "";
-  
+  const passInput = document.getElementById("user-form-passcode");
+  if (passInput) passInput.value = user.passcode || "";
+
+  const nameInput = document.getElementById("user-form-fullname");
+  if (nameInput) nameInput.value = user.name || "";
+
   const roleSelect = document.getElementById("user-form-role");
   if (roleSelect) roleSelect.value = user.role || "custom";
 
@@ -6935,11 +6950,7 @@ function openEditUserModal(userId) {
     cb.checked = (user.permissions || []).includes(cb.value);
   });
 
-  if (typeof modal.showModal === "function") {
-    modal.showModal();
-  } else {
-    modal.setAttribute("open", "");
-  }
+  modal.style.display = "flex";
 }
 
 function applyRoleToPermCheckboxes(role) {
@@ -7029,15 +7040,15 @@ function saveUserModal(e) {
     users
   });
 
-  const modal = document.getElementById("user-modal");
-  if (modal) {
-    if (typeof modal.close === "function") modal.close();
-    else modal.removeAttribute("open");
-  }
-
+  closeUserModal();
   renderUsersTable();
   alert("Lưu thông tin người dùng thành công!");
 }
+
+// Expose modal handlers to window immediately
+window.openCreateUserModal = openCreateUserModal;
+window.openEditUserModal = openEditUserModal;
+window.closeUserModal = closeUserModal;
 
 function deleteUser(userId) {
   const users = state.settings.users || [];
@@ -7270,11 +7281,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCloseUserModal = document.getElementById("btn-close-user-modal");
   const btnCancelUserModal = document.getElementById("btn-cancel-user-modal");
   const userModal = document.getElementById("user-modal");
-  const closeUserModal = () => {
-    if (!userModal) return;
-    if (typeof userModal.close === "function") userModal.close();
-    else userModal.removeAttribute("open");
-  };
   if (btnCloseUserModal) btnCloseUserModal.addEventListener("click", closeUserModal);
   if (btnCancelUserModal) btnCancelUserModal.addEventListener("click", closeUserModal);
   if (userModal) {
@@ -7282,6 +7288,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === userModal) closeUserModal();
     });
   }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeUserModal();
+  });
 
   const userForm = document.getElementById("user-management-form");
   if (userForm) {
