@@ -6815,10 +6815,10 @@ function renderUsersTable() {
   if (!tbody) return;
   tbody.innerHTML = "";
 
-  // Luôn gắn sự kiện mở modal cho nút tạo người dùng mới
+  // Luôn gắn sự kiện tạo người dùng mới
   const btnCreate = document.getElementById("btn-open-create-user-modal");
   if (btnCreate) {
-    btnCreate.onclick = openCreateUserModal;
+    btnCreate.onclick = focusCreateUser;
   }
 
   const users = state.settings.users || [];
@@ -6883,13 +6883,65 @@ function closeUserModal() {
   }
 }
 
+function resetInlineUserForm() {
+  const idEl = document.getElementById("inline-user-id");
+  const usernameEl = document.getElementById("inline-user-username");
+  const passcodeEl = document.getElementById("inline-user-passcode");
+  const nameEl = document.getElementById("inline-user-fullname");
+  const roleEl = document.getElementById("inline-user-role");
+  const titleEl = document.getElementById("inline-user-form-title");
+  const saveBtn = document.getElementById("btn-inline-user-save");
+
+  if (idEl) idEl.value = "";
+  if (usernameEl) {
+    usernameEl.value = "";
+    usernameEl.disabled = false;
+  }
+  if (passcodeEl) passcodeEl.value = "";
+  if (nameEl) nameEl.value = "";
+  if (roleEl) roleEl.value = "sales";
+  applyRoleToInlinePermCheckboxes("sales");
+
+  if (titleEl) {
+    titleEl.innerHTML = "<span>➕ Thêm Tài Khoản Người Dùng Mới</span>";
+  }
+  if (saveBtn) {
+    saveBtn.innerHTML = "💾 Lưu Người Dùng";
+    saveBtn.style.background = "linear-gradient(135deg, #10b981, #059669)";
+  }
+}
+
+function applyRoleToInlinePermCheckboxes(role) {
+  const roleDef = ROLE_DEFINITIONS[role];
+  if (!roleDef || role === "custom") return;
+  document.querySelectorAll(".inline-user-perm-checkbox").forEach(cb => {
+    cb.checked = roleDef.permissions.includes(cb.value);
+  });
+}
+
+function focusCreateUser() {
+  resetInlineUserForm();
+  const editor = document.getElementById("inline-user-editor");
+  const usernameInput = document.getElementById("inline-user-username");
+  if (editor) {
+    editor.scrollIntoView({ behavior: "smooth", block: "center" });
+    editor.style.borderColor = "#6366f1";
+    editor.style.boxShadow = "0 0 25px rgba(99, 102, 241, 0.5)";
+    setTimeout(() => {
+      editor.style.borderColor = "rgba(99, 102, 241, 0.3)";
+      editor.style.boxShadow = "0 4px 20px rgba(0,0,0,0.3)";
+    }, 1500);
+  }
+  if (usernameInput) {
+    setTimeout(() => usernameInput.focus(), 300);
+  }
+  // Đồng thời mở cả modal popup dự phòng
+  openCreateUserModal();
+}
+
 function openCreateUserModal() {
   const modal = document.getElementById("user-modal");
   const form = document.getElementById("user-management-form");
-  if (!modal) {
-    alert("Không tìm thấy cửa sổ tạo người dùng!");
-    return;
-  }
   if (form) form.reset();
 
   const idEl = document.getElementById("user-form-id");
@@ -6910,18 +6962,61 @@ function openCreateUserModal() {
   
   applyRoleToPermCheckboxes("sales");
 
-  modal.style.display = "flex";
+  if (modal) {
+    modal.style.display = "flex";
+  }
 }
 
 function openEditUserModal(userId) {
-  const modal = document.getElementById("user-modal");
-  if (!modal) return;
   const user = (state.settings.users || []).find(u => u.id === userId);
   if (!user) {
     alert("Không tìm thấy thông tin tài khoản!");
     return;
   }
 
+  // 1. Điền vào Inline Form
+  const inlineId = document.getElementById("inline-user-id");
+  const inlineUser = document.getElementById("inline-user-username");
+  const inlinePass = document.getElementById("inline-user-passcode");
+  const inlineName = document.getElementById("inline-user-fullname");
+  const inlineRole = document.getElementById("inline-user-role");
+  const inlineTitle = document.getElementById("inline-user-form-title");
+  const inlineSaveBtn = document.getElementById("btn-inline-user-save");
+
+  if (inlineId) inlineId.value = user.id;
+  if (inlineUser) {
+    inlineUser.value = user.username;
+    inlineUser.disabled = (user.username === "admin" || user.id === "usr_admin");
+  }
+  if (inlinePass) inlinePass.value = user.passcode || "";
+  if (inlineName) inlineName.value = user.name || "";
+  if (inlineRole) inlineRole.value = user.role || "custom";
+
+  document.querySelectorAll(".inline-user-perm-checkbox").forEach(cb => {
+    cb.checked = (user.permissions || []).includes(cb.value);
+  });
+
+  if (inlineTitle) {
+    inlineTitle.innerHTML = `<span>✏️ Chỉnh Sửa Tài Khoản: <strong style="color: #38bdf8;">${user.username}</strong></span>`;
+  }
+  if (inlineSaveBtn) {
+    inlineSaveBtn.innerHTML = "💾 Cập Nhật Tài Khoản";
+    inlineSaveBtn.style.background = "linear-gradient(135deg, #3b82f6, #6366f1)";
+  }
+
+  const editor = document.getElementById("inline-user-editor");
+  if (editor) {
+    editor.scrollIntoView({ behavior: "smooth", block: "center" });
+    editor.style.borderColor = "#38bdf8";
+    editor.style.boxShadow = "0 0 25px rgba(56, 189, 248, 0.4)";
+    setTimeout(() => {
+      editor.style.borderColor = "rgba(99, 102, 241, 0.3)";
+      editor.style.boxShadow = "0 4px 20px rgba(0,0,0,0.3)";
+    }, 1500);
+  }
+
+  // 2. Đồng thời điền vào Modal Popup (nếu người dùng dùng popup)
+  const modal = document.getElementById("user-modal");
   const form = document.getElementById("user-management-form");
   if (form) form.reset();
 
@@ -6950,7 +7045,9 @@ function openEditUserModal(userId) {
     cb.checked = (user.permissions || []).includes(cb.value);
   });
 
-  modal.style.display = "flex";
+  if (modal) {
+    modal.style.display = "flex";
+  }
 }
 
 function applyRoleToPermCheckboxes(role) {
@@ -6961,9 +7058,96 @@ function applyRoleToPermCheckboxes(role) {
   });
 }
 
+function saveInlineUser(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const id = (document.getElementById("inline-user-id")?.value || "").trim();
+  const username = (document.getElementById("inline-user-username")?.value || "").trim().toLowerCase();
+  const passcode = (document.getElementById("inline-user-passcode")?.value || "").trim();
+  const name = (document.getElementById("inline-user-fullname")?.value || "").trim();
+  const role = document.getElementById("inline-user-role")?.value || "custom";
+
+  if (!username) {
+    alert("Vui lòng nhập tên đăng nhập!");
+    document.getElementById("inline-user-username")?.focus();
+    return;
+  }
+  if (!passcode || passcode.length < 4) {
+    alert("Mật khẩu phải có tối thiểu 4 ký tự!");
+    document.getElementById("inline-user-passcode")?.focus();
+    return;
+  }
+  if (!name) {
+    alert("Vui lòng nhập họ tên hoặc tên bộ phận!");
+    document.getElementById("inline-user-fullname")?.focus();
+    return;
+  }
+
+  const permissions = [];
+  document.querySelectorAll(".inline-user-perm-checkbox:checked").forEach(cb => {
+    permissions.push(cb.value);
+  });
+
+  if (permissions.length === 0) {
+    alert("Vui lòng chọn ít nhất 1 quyền truy cập cho người dùng!");
+    return;
+  }
+
+  const users = state.settings.users || [];
+
+  if (id) {
+    const existing = users.find(u => u.id === id);
+    if (!existing) return;
+
+    if (existing.username !== username && users.some(u => u.id !== id && u.username.toLowerCase() === username)) {
+      alert(`Tên đăng nhập "${username}" đã tồn tại! Vui lòng chọn tên khác.`);
+      return;
+    }
+
+    existing.username = username;
+    existing.passcode = passcode;
+    existing.name = name;
+    existing.role = role;
+    existing.permissions = permissions;
+
+    const currentUser = getCurrentUser();
+    if (currentUser && (currentUser.id === id || currentUser.username === username)) {
+      setCurrentUser(existing);
+      applyUserPermissions(existing);
+    }
+    if (existing.username === "admin" || existing.id === "usr_admin") {
+      state.settings.passcode = passcode;
+    }
+  } else {
+    if (users.some(u => u.username.toLowerCase() === username)) {
+      alert(`Tên đăng nhập "${username}" đã tồn tại! Vui lòng chọn tên khác.`);
+      return;
+    }
+
+    const newUser = {
+      id: "usr_" + Date.now(),
+      username,
+      passcode,
+      name,
+      role,
+      permissions,
+      createdAt: new Date().toISOString().split("T")[0]
+    };
+    users.push(newUser);
+  }
+
+  state.saveSettings({
+    ...state.settings,
+    users
+  });
+
+  resetInlineUserForm();
+  renderUsersTable();
+  alert(`✅ Đã lưu thành công tài khoản người dùng "${username}"!`);
+}
+
 function saveUserModal(e) {
-  e.preventDefault();
-  const id = document.getElementById("user-form-id").value;
+  if (e && e.preventDefault) e.preventDefault();
+  const id = document.getElementById("user-form-id")?.value;
   const username = (document.getElementById("user-form-username")?.value || "").trim().toLowerCase();
   const passcode = (document.getElementById("user-form-passcode")?.value || "").trim();
   const name = (document.getElementById("user-form-fullname")?.value || "").trim();
@@ -6971,14 +7155,17 @@ function saveUserModal(e) {
 
   if (!username) {
     alert("Vui lòng nhập tên đăng nhập!");
+    document.getElementById("user-form-username")?.focus();
     return;
   }
   if (!passcode || passcode.length < 4) {
     alert("Mật khẩu phải có tối thiểu 4 ký tự!");
+    document.getElementById("user-form-passcode")?.focus();
     return;
   }
   if (!name) {
     alert("Vui lòng nhập họ tên hoặc tên bộ phận!");
+    document.getElementById("user-form-fullname")?.focus();
     return;
   }
 
@@ -7041,11 +7228,16 @@ function saveUserModal(e) {
   });
 
   closeUserModal();
+  resetInlineUserForm();
   renderUsersTable();
-  alert("Lưu thông tin người dùng thành công!");
+  alert(`✅ Đã lưu thành công tài khoản người dùng "${username}"!`);
 }
 
-// Expose modal handlers to window immediately
+// Expose modal and inline handlers to window immediately
+window.focusCreateUser = focusCreateUser;
+window.resetInlineUserForm = resetInlineUserForm;
+window.saveInlineUser = saveInlineUser;
+window.saveUserModal = saveUserModal;
 window.openCreateUserModal = openCreateUserModal;
 window.openEditUserModal = openEditUserModal;
 window.closeUserModal = closeUserModal;
@@ -7272,12 +7464,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // User Management Modal bindings
+  // User Management Modal & Inline Form bindings
   const btnOpenCreateUser = document.getElementById("btn-open-create-user-modal");
   if (btnOpenCreateUser) {
-    btnOpenCreateUser.addEventListener("click", openCreateUserModal);
+    btnOpenCreateUser.addEventListener("click", focusCreateUser);
   }
 
+  // Inline User Form bindings
+  const inlineUserForm = document.getElementById("inline-user-form");
+  if (inlineUserForm) {
+    inlineUserForm.addEventListener("submit", saveInlineUser);
+  }
+
+  const btnInlineReset = document.getElementById("btn-inline-user-reset");
+  if (btnInlineReset) {
+    btnInlineReset.addEventListener("click", resetInlineUserForm);
+  }
+
+  const btnInlineSave = document.getElementById("btn-inline-user-save");
+  if (btnInlineSave) {
+    btnInlineSave.addEventListener("click", saveInlineUser);
+  }
+
+  const inlineRoleSelect = document.getElementById("inline-user-role");
+  if (inlineRoleSelect) {
+    inlineRoleSelect.addEventListener("change", (e) => {
+      applyRoleToInlinePermCheckboxes(e.target.value);
+    });
+  }
+
+  document.querySelectorAll(".inline-user-perm-checkbox").forEach(cb => {
+    cb.addEventListener("change", () => {
+      if (inlineRoleSelect && inlineRoleSelect.value !== "custom") {
+        inlineRoleSelect.value = "custom";
+      }
+    });
+  });
+
+  // Modal bindings
   const btnCloseUserModal = document.getElementById("btn-close-user-modal");
   const btnCancelUserModal = document.getElementById("btn-cancel-user-modal");
   const userModal = document.getElementById("user-modal");
@@ -9409,12 +9633,20 @@ function syncOrdersToMRP() {
 }
 
 // Export user modal and application functions globally
+window.focusCreateUser = focusCreateUser;
+window.resetInlineUserForm = resetInlineUserForm;
+window.saveInlineUser = saveInlineUser;
+window.saveUserModal = saveUserModal;
 window.openCreateUserModal = openCreateUserModal;
 window.openEditUserModal = openEditUserModal;
 window.deleteUser = deleteUser;
 
 window.app = {
   switchTab,
+  focusCreateUser,
+  resetInlineUserForm,
+  saveInlineUser,
+  saveUserModal,
   openCreateUserModal,
   openEditUserModal,
   deleteUser,

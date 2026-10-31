@@ -1650,6 +1650,14 @@ body {
   justify-content: center;
 }
 
+#inline-user-editor {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#inline-user-editor:focus-within {
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.25) !important;
+}
+
 .modal-content {
   background: var(--bg-secondary);
   border: 1px solid var(--border-glass);

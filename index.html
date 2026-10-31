@@ -12,7 +12,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=25.2">
+  <link rel="stylesheet" href="style.css?v=25.3">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -1708,7 +1708,7 @@
                     <h3>👥 Quản Lý Người Dùng &amp; Phân Quyền (RBAC)</h3>
                     <span class="text-secondary">Tạo tài khoản và phân quyền hiển thị chức năng cho từng nhân sự / bộ phận</span>
                   </div>
-                  <button type="button" class="btn btn-sm btn-primary" id="btn-open-create-user-modal" onclick="window.openCreateUserModal ? window.openCreateUserModal() : (window.app && window.app.openCreateUserModal && window.app.openCreateUserModal())" style="background: linear-gradient(135deg, #3b82f6, #6366f1); border: none; font-weight: 600; padding: 0.35rem 0.75rem; cursor: pointer; position: relative; z-index: 2;">
+                  <button type="button" class="btn btn-sm btn-primary" id="btn-open-create-user-modal" onclick="window.focusCreateUser ? window.focusCreateUser() : (window.openCreateUserModal ? window.openCreateUserModal() : (window.app && window.app.openCreateUserModal && window.app.openCreateUserModal()))" style="background: linear-gradient(135deg, #3b82f6, #6366f1); border: none; font-weight: 600; padding: 0.35rem 0.75rem; cursor: pointer; position: relative; z-index: 2;">
                     ➕ Tạo Người Dùng Mới
                   </button>
                 </div>
@@ -1728,6 +1728,97 @@
                       <!-- Dynamically populated users rows -->
                     </tbody>
                   </table>
+                </div>
+
+                <!-- Inline User Creation & Editing Card -->
+                <div id="inline-user-editor" style="margin-top: 1.25rem; padding: 1.25rem; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: border-color 0.3s ease, box-shadow 0.3s ease;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <h4 id="inline-user-form-title" style="margin: 0; font-size: 0.95rem; color: #a5b4fc; display: flex; align-items: center; gap: 0.5rem;">
+                      <span>➕ Thêm Tài Khoản Người Dùng Mới</span>
+                    </h4>
+                    <span style="font-size: 0.72rem; color: var(--text-secondary);">(Điền thông tin và bấm Lưu bên dưới)</span>
+                  </div>
+
+                  <form id="inline-user-form" onsubmit="event.preventDefault(); window.saveInlineUser ? window.saveInlineUser(event) : null;">
+                    <input type="hidden" id="inline-user-id" value="">
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label for="inline-user-username" style="font-size: 0.8rem; color: #cbd5e1;">Tên đăng nhập (Username) <span style="color:#ef4444;">*</span></label>
+                        <input type="text" id="inline-user-username" class="form-input" required placeholder="vd: seller_01, ketoan" style="background: rgba(0,0,0,0.3);">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label for="inline-user-passcode" style="font-size: 0.8rem; color: #cbd5e1;">Mật khẩu (Passcode) <span style="color:#ef4444;">*</span></label>
+                        <input type="password" id="inline-user-passcode" class="form-input" required placeholder="Tối thiểu 4 ký tự" style="background: rgba(0,0,0,0.3);">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label for="inline-user-fullname" style="font-size: 0.8rem; color: #cbd5e1;">Họ tên / Bộ phận <span style="color:#ef4444;">*</span></label>
+                        <input type="text" id="inline-user-fullname" class="form-input" required placeholder="vd: Nguyễn Văn A (Kinh Doanh)" style="background: rgba(0,0,0,0.3);">
+                      </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                      <label for="inline-user-role" style="font-size: 0.8rem; color: #cbd5e1;">Vai trò mẫu (Preset Role):</label>
+                      <select id="inline-user-role" class="form-input" style="background: rgba(0,0,0,0.3); font-weight: 500;">
+                        <option value="sales">💼 Kinh Doanh / Seller (Xem Dashboard, Tính giá, Dò cost)</option>
+                        <option value="production">🏭 Quản Lý Sản Xuất (Xem &amp; sửa BOM, Dự báo mua hàng, CAPEX)</option>
+                        <option value="finance">📊 Kế Toán / Tài Chính (Xem Dashboard, Báo cáo tháng P&amp;L, CAPEX, Dò cost)</option>
+                        <option value="admin">👑 Quản Trị Viên (Toàn quyền tất cả chức năng &amp; Quản trị User)</option>
+                        <option value="viewer">👁️ Khách Xem (Chỉ xem Dashboard, Tính giá - Không sửa)</option>
+                        <option value="custom">⚙️ Tùy Chỉnh (Tự chọn các quyền bên dưới)</option>
+                      </select>
+                    </div>
+
+                    <!-- Permissions checkboxes -->
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem;">
+                      <div style="font-size: 0.78rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.5rem;">
+                        Quyền Hạn Chi Tiết Được Phép Xem / Sử Dụng:
+                      </div>
+                      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.5rem; font-size: 0.78rem;">
+                        <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+                          <input type="checkbox" class="inline-user-perm-checkbox" value="dashboard" checked>
+                          <span>📊 Dashboard Tổng Quan</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+                          <input type="checkbox" class="inline-user-perm-checkbox" value="calculator" checked>
+                          <span>💰 Tính Giá Thành (Xem)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+                          <input type="checkbox" class="inline-user-perm-checkbox" value="calculator_edit">
+                          <span>✏️ Sửa Định Mức BOM / Giá</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+                          <input type="checkbox" class="inline-user-perm-checkbox" value="forecast">
+                          <span>📦 Dự Báo Mua Hàng (MRP)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+                          <input type="checkbox" class="inline-user-perm-checkbox" value="order_cost" checked>
+                          <span>🔍 Dò Cost Đơn Hàng</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+                          <input type="checkbox" class="inline-user-perm-checkbox" value="capex">
+                          <span>⚙️ Máy Móc &amp; CAPEX</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+                          <input type="checkbox" class="inline-user-perm-checkbox" value="monthly_report">
+                          <span>📈 Báo Cáo Tháng P&amp;L</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+                          <input type="checkbox" class="inline-user-perm-checkbox" value="settings">
+                          <span>🛠️ Cấu Hình &amp; Quản Trị User</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; align-items: center;">
+                      <button type="button" class="btn btn-sm btn-outline" id="btn-inline-user-reset" onclick="window.resetInlineUserForm ? window.resetInlineUserForm() : null">
+                        Làm Mới Form
+                      </button>
+                      <button type="submit" class="btn btn-sm btn-primary" id="btn-inline-user-save" style="background: linear-gradient(135deg, #10b981, #059669); border: none; font-weight: 600; padding: 0.45rem 1.25rem; font-size: 0.85rem; cursor: pointer;">
+                        💾 Lưu Người Dùng
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
 
@@ -2483,13 +2574,12 @@ Ví dụ:
   </div>
 
   <!-- LaTeX rendering via MathJax -->
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <!-- Excel Parser via SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=25.2" type="module"></script>
+  <script src="app.js?v=25.3" type="module"></script>
 </body>
 </html>
