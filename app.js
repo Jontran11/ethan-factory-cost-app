@@ -2784,6 +2784,27 @@ function groupAndCalculateOrders(rawItems) {
 // ==========================================================================
 
 function switchTab(tabId) {
+  // Enforce Role-Based Access Control (RBAC)
+  const currentUser = typeof getCurrentUser === "function" ? getCurrentUser() : null;
+  if (currentUser && currentUser.permissions) {
+    const tabPermMap = {
+      "dashboard": "dashboard",
+      "calculator": "calculator",
+      "forecast": "forecast",
+      "order-cost": "order_cost",
+      "capex": "capex",
+      "monthly-report": "monthly_report",
+      "settings": "settings"
+    };
+    const reqPerm = tabPermMap[tabId];
+    if (reqPerm && !currentUser.permissions.includes(reqPerm)) {
+      alert("Bạn không có quyền truy cập chức năng này!");
+      const firstAllowed = Object.keys(tabPermMap).find(t => currentUser.permissions.includes(tabPermMap[t])) || "dashboard";
+      if (firstAllowed !== tabId) switchTab(firstAllowed);
+      return;
+    }
+  }
+
   state.activeTab = tabId;
   
   // Update sidebar activation
@@ -6777,12 +6798,28 @@ function applyUserPermissions(user) {
   document.querySelectorAll(".btn-remove-material, .product-machine-del-btn, .btn-card-delete").forEach(btn => {
     btn.style.display = canEditCalc ? "" : "none";
   });
+
+  // 5. Ẩn/hiện các shortcut buttons trên Dashboard
+  const btnDashForecast = document.getElementById("btn-dashboard-go-forecast");
+  if (btnDashForecast) {
+    btnDashForecast.style.display = (user.permissions && user.permissions.includes("forecast")) ? "" : "none";
+  }
+  const btnDashCapex = document.getElementById("btn-goto-capex-tab");
+  if (btnDashCapex) {
+    btnDashCapex.style.display = (user.permissions && user.permissions.includes("capex")) ? "" : "none";
+  }
 }
 
 function renderUsersTable() {
   const tbody = document.getElementById("users-table-tbody");
   if (!tbody) return;
   tbody.innerHTML = "";
+
+  // Luôn gắn sự kiện mở modal cho nút tạo người dùng mới
+  const btnCreate = document.getElementById("btn-open-create-user-modal");
+  if (btnCreate) {
+    btnCreate.onclick = openCreateUserModal;
+  }
 
   const users = state.settings.users || [];
   if (users.length === 0) {
@@ -6842,7 +6879,10 @@ function renderUsersTable() {
 function openCreateUserModal() {
   const modal = document.getElementById("user-modal");
   const form = document.getElementById("user-management-form");
-  if (!modal || !form) return;
+  if (!modal || !form) {
+    console.error("user-modal or user-management-form not found!");
+    return;
+  }
 
   form.reset();
   document.getElementById("user-form-id").value = "";
@@ -6858,7 +6898,11 @@ function openCreateUserModal() {
   applyRoleToPermCheckboxes("sales");
 
   if (typeof modal.showModal === "function") {
-    modal.showModal();
+    try {
+      modal.showModal();
+    } catch (e) {
+      modal.setAttribute("open", "");
+    }
   } else {
     modal.setAttribute("open", "");
   }
@@ -7163,20 +7207,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const typedUsername = (loginUsernameInput?.value || "").trim().toLowerCase();
     const typedPasscode = (loginPasscodeInput?.value || "").trim();
 
-    const users = state.settings.users || [];
-    let matchedUser = null;
-
-    if (typedUsername) {
-      matchedUser = users.find(u => u.username.toLowerCase() === typedUsername && u.passcode === typedPasscode);
+    if (!typedUsername) {
+      if (loginError) loginError.textContent = "Vui lòng nhập tên đăng nhập!";
+      if (loginUsernameInput) loginUsernameInput.focus();
+      return;
     }
-    
-    // Fallback: Nếu không tìm thấy hoặc người dùng chỉ gõ passcode
-    if (!matchedUser && typedPasscode) {
+    if (!typedPasscode) {
+      if (loginError) loginError.textContent = "Vui lòng nhập mật khẩu!";
+      if (loginPasscodeInput) loginPasscodeInput.focus();
+      return;
+    }
+
+    const users = state.settings.users || [];
+    let matchedUser = users.find(u => u.username.toLowerCase() === typedUsername && u.passcode === typedPasscode);
+
+    // Hỗ trợ đăng nhập master admin với passcode nếu username là admin
+    if (!matchedUser && typedUsername === "admin") {
       const masterPasscode = state.settings.passcode || "123456";
       if (typedPasscode === masterPasscode) {
-        matchedUser = users.find(u => u.username === "admin") || users[0];
-      } else {
-        matchedUser = users.find(u => u.passcode === typedPasscode);
+        matchedUser = users.find(u => u.username === "admin") || {
+          id: "usr_admin",
+          username: "admin",
+          name: "Quản Trị Viên (Admin)",
+          role: "admin",
+          passcode: masterPasscode,
+          permissions: ["dashboard", "calculator", "calculator_edit", "forecast", "order_cost", "capex", "monthly_report", "settings"]
+        };
       }
     }
 
@@ -7188,8 +7244,9 @@ document.addEventListener("DOMContentLoaded", () => {
         loginOverlay.style.display = "none";
       }, 400);
       if (loginError) loginError.textContent = "";
+      if (loginPasscodeInput) loginPasscodeInput.value = "";
     } else {
-      if (loginError) loginError.textContent = "Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng thử lại!";
+      if (loginError) loginError.textContent = "Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại!";
       if (loginPasscodeInput) {
         loginPasscodeInput.value = "";
         loginPasscodeInput.focus();
@@ -7220,6 +7277,11 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   if (btnCloseUserModal) btnCloseUserModal.addEventListener("click", closeUserModal);
   if (btnCancelUserModal) btnCancelUserModal.addEventListener("click", closeUserModal);
+  if (userModal) {
+    userModal.addEventListener("click", (e) => {
+      if (e.target === userModal) closeUserModal();
+    });
+  }
 
   const userForm = document.getElementById("user-management-form");
   if (userForm) {
@@ -9337,9 +9399,16 @@ function syncOrdersToMRP() {
   }
 }
 
-// Export application instance globally for inline button onclick bindings if any
+// Export user modal and application functions globally
+window.openCreateUserModal = openCreateUserModal;
+window.openEditUserModal = openEditUserModal;
+window.deleteUser = deleteUser;
+
 window.app = {
   switchTab,
+  openCreateUserModal,
+  openEditUserModal,
+  deleteUser,
   triggerLiveCalculation,
   renderMonthlyReport,
   exportMonthlyReportCSV,

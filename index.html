@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=25.0">
+  <link rel="stylesheet" href="style.css?v=25.1">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -25,14 +25,11 @@
       <form id="login-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
         <div class="form-group" style="text-align: left; margin-bottom: 0;">
           <label for="login-username" style="font-size: 0.8rem; color: #a5b4fc; font-weight: 500;">Tên đăng nhập (Username):</label>
-          <input type="text" id="login-username" class="form-input" placeholder="admin" value="admin" autocomplete="username" style="font-size: 0.95rem; min-height: 40px; margin-top: 0.3rem;">
+          <input type="text" id="login-username" class="form-input" required placeholder="Nhập tên đăng nhập" value="" autocomplete="username" style="font-size: 0.95rem; min-height: 40px; margin-top: 0.3rem;">
         </div>
         <div class="form-group" style="text-align: left; margin-bottom: 0;">
           <label for="login-passcode" style="font-size: 0.8rem; color: #a5b4fc; font-weight: 500;">Mật khẩu truy cập (Passcode):</label>
           <input type="password" id="login-passcode" class="form-input" required placeholder="Nhập mật khẩu" autocomplete="current-password" style="font-size: 0.95rem; min-height: 40px; margin-top: 0.3rem;">
-        </div>
-        <div style="font-size: 0.72rem; color: var(--text-muted); text-align: left; background: rgba(255,255,255,0.04); padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.08);">
-          💡 Tài khoản Admin mặc định: <strong style="color: #38bdf8;">admin</strong> / <strong style="color: #38bdf8;">123456</strong>
         </div>
         <div id="login-error-msg" style="color: #f87171; font-size: 0.8rem; min-height: 1.2rem; font-weight: 500;"></div>
         <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 42px; font-weight: 600; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">Đăng Nhập</button>
@@ -1708,7 +1705,7 @@
                     <h3>👥 Quản Lý Người Dùng &amp; Phân Quyền (RBAC)</h3>
                     <span class="text-secondary">Tạo tài khoản và phân quyền hiển thị chức năng cho từng nhân sự / bộ phận</span>
                   </div>
-                  <button type="button" class="btn btn-sm btn-primary" id="btn-open-create-user-modal" style="background: linear-gradient(135deg, #3b82f6, #6366f1); border: none; font-weight: 600; padding: 0.35rem 0.75rem;">
+                  <button type="button" class="btn btn-sm btn-primary" id="btn-open-create-user-modal" onclick="window.openCreateUserModal ? window.openCreateUserModal() : (window.app && window.app.openCreateUserModal && window.app.openCreateUserModal())" style="background: linear-gradient(135deg, #3b82f6, #6366f1); border: none; font-weight: 600; padding: 0.35rem 0.75rem; cursor: pointer; position: relative; z-index: 2;">
                     ➕ Tạo Người Dùng Mới
                   </button>
                 </div>
@@ -2391,7 +2388,7 @@ Ví dụ:
   </dialog>
 
   <!-- User Create/Edit Modal -->
-  <dialog id="user-modal" class="modal">
+  <dialog id="user-modal" class="glass-modal">
     <div class="modal-content" style="max-width: 580px; max-height: 90vh; display: flex; flex-direction: column;">
       <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
         <h3 id="user-modal-title" style="margin: 0; font-size: 1.15rem; color: #fff;">➕ Tạo Tài Khoản Người Dùng Mới</h3>
@@ -2490,6 +2487,6 @@ Ví dụ:
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=25.0" type="module"></script>
+  <script src="app.js?v=25.1" type="module"></script>
 </body>
 </html>
