@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=24.5">
+  <link rel="stylesheet" href="style.css?v=25.0">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -22,13 +22,20 @@
         <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; color: #fff; margin-bottom: 0.25rem;">FactoryCost</h2>
         <span style="font-size: 0.85rem; color: var(--text-secondary);">Hệ thống Quản lý &amp; Dự báo nội bộ</span>
       </div>
-      <form id="login-form" style="display: flex; flex-direction: column; gap: 1rem;">
-        <div class="form-group" style="text-align: left;">
-          <label for="login-passcode" style="font-size: 0.8rem; color: #a5b4fc; font-weight: 500;">Mật khẩu truy cập:</label>
-          <input type="password" id="login-passcode" class="form-input" required placeholder="Nhập passcode nội bộ" style="text-align: center; font-size: 1.1rem; letter-spacing: 0.2em; min-height: 44px; margin-top: 0.4rem;">
+      <form id="login-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <div class="form-group" style="text-align: left; margin-bottom: 0;">
+          <label for="login-username" style="font-size: 0.8rem; color: #a5b4fc; font-weight: 500;">Tên đăng nhập (Username):</label>
+          <input type="text" id="login-username" class="form-input" placeholder="admin" value="admin" autocomplete="username" style="font-size: 0.95rem; min-height: 40px; margin-top: 0.3rem;">
         </div>
-        <div id="login-error-msg" style="color: #f87171; font-size: 0.8rem; min-height: 1.2rem; font-weight: 500; margin-top: -0.5rem;"></div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 42px; font-weight: 600; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">Xác nhận</button>
+        <div class="form-group" style="text-align: left; margin-bottom: 0;">
+          <label for="login-passcode" style="font-size: 0.8rem; color: #a5b4fc; font-weight: 500;">Mật khẩu truy cập (Passcode):</label>
+          <input type="password" id="login-passcode" class="form-input" required placeholder="Nhập mật khẩu" autocomplete="current-password" style="font-size: 0.95rem; min-height: 40px; margin-top: 0.3rem;">
+        </div>
+        <div style="font-size: 0.72rem; color: var(--text-muted); text-align: left; background: rgba(255,255,255,0.04); padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.08);">
+          💡 Tài khoản Admin mặc định: <strong style="color: #38bdf8;">admin</strong> / <strong style="color: #38bdf8;">123456</strong>
+        </div>
+        <div id="login-error-msg" style="color: #f87171; font-size: 0.8rem; min-height: 1.2rem; font-weight: 500;"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 42px; font-weight: 600; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">Đăng Nhập</button>
       </form>
     </div>
   </div>
@@ -114,6 +121,12 @@
             <span class="status-dot" style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--text-secondary); display: inline-block;"></span>
             <span>Ngoại tuyến (Local)</span>
           </span>
+          <!-- Current Logged-in User Badge -->
+          <div id="current-user-badge" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.65rem; border-radius: 20px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); color: #38bdf8; font-size: 0.76rem; font-weight: 600;">
+            <span style="font-size: 0.9rem;">👤</span>
+            <span id="current-user-name">Quản Trị Viên</span>
+            <span id="current-user-role-tag" style="background: rgba(56, 189, 248, 0.2); padding: 0.1rem 0.45rem; border-radius: 10px; font-size: 0.68rem; color: #7dd3fc; margin-left: 0.15rem;">Admin</span>
+          </div>
           <div class="datetime-display" id="current-datetime">
             27/07/2026 08:55
           </div>
@@ -314,6 +327,12 @@
 
               <form id="product-cost-form" class="product-cost-form hidden">
                 <input type="hidden" id="form-product-id">
+
+                <!-- Read-only notification banner for users without edit rights -->
+                <div id="calculator-readonly-banner" style="display: none; margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; font-size: 0.8rem; align-items: center; gap: 0.5rem;">
+                  <span style="font-size: 1.1rem;">🔒</span>
+                  <span><strong>Chế độ xem giá (Chỉ đọc):</strong> Bạn có quyền xem giá vốn &amp; giá bán đề xuất nhưng không có quyền chỉnh sửa định mức sản xuất, vật tư hoặc cấu hình máy móc.</span>
+                </div>
                 
                 <div class="form-section-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
                   <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
@@ -1682,10 +1701,40 @@
             </div>
 
             <div class="settings-column">
+              <!-- User Management & Role-Based Access Control (RBAC) -->
+              <div class="dashboard-card glass" style="margin-bottom: 1.5rem;">
+                <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem;">
+                  <div>
+                    <h3>👥 Quản Lý Người Dùng &amp; Phân Quyền (RBAC)</h3>
+                    <span class="text-secondary">Tạo tài khoản và phân quyền hiển thị chức năng cho từng nhân sự / bộ phận</span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-primary" id="btn-open-create-user-modal" style="background: linear-gradient(135deg, #3b82f6, #6366f1); border: none; font-weight: 600; padding: 0.35rem 0.75rem;">
+                    ➕ Tạo Người Dùng Mới
+                  </button>
+                </div>
+
+                <div class="table-responsive" style="margin-top: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.2); overflow-x: auto;">
+                  <table class="data-table" style="font-size: 0.8rem; width: 100%; min-width: 500px;">
+                    <thead>
+                      <tr style="background: rgba(255,255,255,0.03);">
+                        <th style="padding: 0.6rem 0.75rem; text-align: left;">Tài khoản</th>
+                        <th style="padding: 0.6rem 0.75rem; text-align: left;">Họ Tên / Bộ Phận</th>
+                        <th style="padding: 0.6rem 0.75rem; text-align: left;">Vai Trò</th>
+                        <th style="padding: 0.6rem 0.75rem; text-align: left;">Quyền Xem / Sửa</th>
+                        <th style="padding: 0.6rem 0.75rem; text-align: center;">Thao Tác</th>
+                      </tr>
+                    </thead>
+                    <tbody id="users-table-tbody">
+                      <!-- Dynamically populated users rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               <!-- Security & Passcode Configuration -->
               <div class="dashboard-card glass" style="margin-bottom: 1.5rem;">
                 <div class="card-title-bar">
-                  <h3>Bảo Mật &amp; Khóa Truy Cập</h3>
+                  <h3>Bảo Mật &amp; Khóa Truy Cập (Admin Passcode)</h3>
                   <span class="text-secondary">Thay đổi mật khẩu (passcode) bảo vệ hệ thống nội bộ</span>
                 </div>
                 <form id="settings-security-form" class="settings-form">
@@ -2341,6 +2390,98 @@ Ví dụ:
     </div>
   </dialog>
 
+  <!-- User Create/Edit Modal -->
+  <dialog id="user-modal" class="modal">
+    <div class="modal-content" style="max-width: 580px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="user-modal-title" style="margin: 0; font-size: 1.15rem; color: #fff;">➕ Tạo Tài Khoản Người Dùng Mới</h3>
+        <button type="button" class="btn-close" id="btn-close-user-modal" style="background: none; border: none; font-size: 1.25rem; color: var(--text-secondary); cursor: pointer;">&times;</button>
+      </div>
+
+      <form id="user-management-form" style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; padding: 1rem 0;">
+        <input type="hidden" id="user-form-id" value="">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="user-form-username">Tên đăng nhập (Username) <span class="required">*</span></label>
+            <input type="text" id="user-form-username" class="form-input" required placeholder="vd: seller_01, ketoan" style="background: var(--bg-input);">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="user-form-passcode">Mật khẩu (Passcode) <span class="required">*</span></label>
+            <input type="password" id="user-form-passcode" class="form-input" required placeholder="Tối thiểu 4 ký tự" style="background: var(--bg-input);">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="user-form-fullname">Họ tên / Bộ phận hiển thị <span class="required">*</span></label>
+          <input type="text" id="user-form-fullname" class="form-input" required placeholder="vd: Nguyễn Văn A (Kinh Doanh)" style="background: var(--bg-input);">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="user-form-role">Vai trò mẫu (Preset Role):</label>
+          <select id="user-form-role" class="form-input" style="background: var(--bg-input); border-color: var(--border-glass); color: var(--text-primary); font-weight: 500;">
+            <option value="sales">💼 Kinh Doanh / Seller (Xem Dashboard, Tính giá, Dò cost)</option>
+            <option value="production">🏭 Quản Lý Sản Xuất (Xem &amp; sửa BOM, Dự báo mua hàng, CAPEX)</option>
+            <option value="finance">📊 Kế Toán / Tài Chính (Xem Dashboard, Báo cáo tháng P&amp;L, CAPEX, Dò cost)</option>
+            <option value="admin">👑 Quản Trị Viên (Toàn quyền tất cả chức năng &amp; Quản trị User)</option>
+            <option value="viewer">👁️ Khách Xem (Chỉ xem Dashboard, Tính giá - Không sửa)</option>
+            <option value="custom">⚙️ Tùy Chỉnh (Tự chọn các tab bên dưới)</option>
+          </select>
+        </div>
+
+        <!-- Permissions checkboxes block -->
+        <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.85rem;">
+          <div style="font-size: 0.82rem; font-weight: 600; color: #a5b4fc; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+            <span>Danh Sách Quyền Hạn Chi Tiết:</span>
+            <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: normal;">(Tự động điều chỉnh theo vai trò)</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem;">
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+              <input type="checkbox" class="user-perm-checkbox" value="dashboard" checked>
+              <span>📊 Tổng Quan (Dashboard)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+              <input type="checkbox" class="user-perm-checkbox" value="calculator" checked>
+              <span>💰 Tính Giá Thành (Xem giá)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+              <input type="checkbox" class="user-perm-checkbox" value="calculator_edit">
+              <span>✏️ Sửa Định Mức BOM / Giá Vốn</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+              <input type="checkbox" class="user-perm-checkbox" value="forecast">
+              <span>📦 Dự Báo Mua Hàng (MRP)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+              <input type="checkbox" class="user-perm-checkbox" value="order_cost" checked>
+              <span>🔍 Dò Cost Đơn Hàng</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+              <input type="checkbox" class="user-perm-checkbox" value="capex">
+              <span>⚙️ Máy Móc &amp; CAPEX</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+              <input type="checkbox" class="user-perm-checkbox" value="monthly_report">
+              <span>📈 Báo Cáo Tài Chính Tháng</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+              <input type="checkbox" class="user-perm-checkbox" value="settings">
+              <span>🛠️ Cấu Hình &amp; Quản Trị User</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.75rem;">
+          <button type="button" class="btn btn-outline" id="btn-cancel-user-modal">Hủy</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-user-submit" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+            💾 Lưu Người Dùng
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
   <!-- LaTeX rendering via MathJax -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -2349,6 +2490,6 @@ Ví dụ:
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=24.5" type="module"></script>
+  <script src="app.js?v=25.0" type="module"></script>
 </body>
 </html>

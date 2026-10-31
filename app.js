@@ -9,6 +9,51 @@
 
 const DEFAULT_GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwoheq43Jz30MQWTkDqzC6KJ7zdOKUJDlWAyk75oI39q8YNesK-NYzKqqVhyZP1oNqF/exec";
 
+const ROLE_DEFINITIONS = {
+  admin: {
+    id: "admin",
+    name: "Quản Trị Viên (Admin)",
+    badge: "👑 Admin",
+    color: "#38bdf8",
+    permissions: ["dashboard", "calculator", "calculator_edit", "forecast", "order_cost", "capex", "monthly_report", "settings"]
+  },
+  sales: {
+    id: "sales",
+    name: "Kinh Doanh / Seller",
+    badge: "💼 Sales",
+    color: "#10b981",
+    permissions: ["dashboard", "calculator", "order_cost"]
+  },
+  production: {
+    id: "production",
+    name: "Quản Lý Sản Xuất",
+    badge: "🏭 Sản Xuất",
+    color: "#f59e0b",
+    permissions: ["dashboard", "calculator", "calculator_edit", "forecast", "capex"]
+  },
+  finance: {
+    id: "finance",
+    name: "Kế Toán / Tài Chính",
+    badge: "📊 Kế Toán",
+    color: "#8b5cf6",
+    permissions: ["dashboard", "calculator", "order_cost", "capex", "monthly_report"]
+  },
+  viewer: {
+    id: "viewer",
+    name: "Khách Xem (Chỉ đọc)",
+    badge: "👁️ Khách Xem",
+    color: "#94a3b8",
+    permissions: ["dashboard", "calculator"]
+  },
+  custom: {
+    id: "custom",
+    name: "Tùy Chỉnh",
+    badge: "⚙️ Tùy Chỉnh",
+    color: "#ec4899",
+    permissions: []
+  }
+};
+
 const DEFAULT_SETTINGS = {
   hrVersion: "2026-10-20-dept-v2",
   electricityPrice: 3000,   // đ/kWh
@@ -16,6 +61,17 @@ const DEFAULT_SETTINGS = {
   standardHours: 208,       // Giờ công chuẩn/tháng
   defaultProfitMargin: 20,  // % Lợi nhuận mặc định
   passcode: "123456",       // Mật khẩu truy cập mặc định
+  users: [
+    {
+      id: "usr_admin",
+      username: "admin",
+      name: "Quản Trị Viên (Admin)",
+      passcode: "123456",
+      role: "admin",
+      permissions: ["dashboard", "calculator", "calculator_edit", "forecast", "order_cost", "capex", "monthly_report", "settings"],
+      createdAt: "2026-10-31"
+    }
+  ],
   monthlyElectricity: {
     In: 8000000,
     Thêu: 11000000
@@ -1728,6 +1784,20 @@ class AppStateManager {
           ...(parsed.monthlyRecords || {})
         };
 
+        // Khởi tạo và bảo lưu danh sách người dùng (Users)
+        let mergedUsers = parsed.users && Array.isArray(parsed.users) && parsed.users.length > 0
+          ? parsed.users
+          : JSON.parse(JSON.stringify(DEFAULT_SETTINGS.users));
+        
+        let adminUser = mergedUsers.find(u => u.username === "admin" || u.id === "usr_admin");
+        if (!adminUser) {
+          adminUser = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.users[0]));
+          mergedUsers.unshift(adminUser);
+        }
+        if (parsed.passcode && adminUser) {
+          adminUser.passcode = parsed.passcode;
+        }
+
         return {
           ...DEFAULT_SETTINGS,
           ...parsed,
@@ -1735,7 +1805,8 @@ class AppStateManager {
           monthlyRecords: mergedMonthlyRecords,
           hr: migratedHr,
           machines: mergedMachines,
-          materialsCatalog: mergedCatalog
+          materialsCatalog: mergedCatalog,
+          users: mergedUsers
         };
       } catch (e) { 
         console.error("Error parsing settings", e); 
@@ -3435,6 +3506,12 @@ function renderCalculator() {
 
   // Run calculation & update displays
   triggerLiveCalculation();
+
+  // Enforce permissions (e.g. read-only guard) for current user
+  const activeUser = getCurrentUser();
+  if (activeUser) {
+    applyUserPermissions(activeUser);
+  }
 }
 
 function selectProduct(id) {
@@ -5651,6 +5728,7 @@ function renderSettings() {
   renderSettingsPaybackList();
   renderMaterialsCatalog();
   updateMaterialsCatalogDatalist();
+  renderUsersTable();
 }
 
 function renderSettingsPaybackList() {
@@ -6581,6 +6659,370 @@ function handleSelectCatalogItemsToBOM() {
 }
 
 // ==========================================================================
+// User Management & Role-Based Access Control (RBAC)
+// ==========================================================================
+
+const PERMISSION_LABELS = {
+  dashboard: "Tổng Quan",
+  calculator: "Xem Giá Thành",
+  calculator_edit: "Sửa BOM/Giá",
+  forecast: "Dự Báo Mua Hàng",
+  order_cost: "Dò Cost Đơn",
+  capex: "Máy Móc & CAPEX",
+  monthly_report: "Báo Cáo Tháng",
+  settings: "Cấu Hình & User"
+};
+
+function getCurrentUser() {
+  try {
+    const raw = sessionStorage.getItem("factory_current_user");
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  if (sessionStorage.getItem("factory_auth") === "true") {
+    const users = state.settings.users || [];
+    const adminUser = users.find(u => u.username === "admin") || users[0];
+    return adminUser || null;
+  }
+  return null;
+}
+
+function setCurrentUser(user) {
+  if (user) {
+    sessionStorage.setItem("factory_current_user", JSON.stringify(user));
+    sessionStorage.setItem("factory_auth", "true");
+  } else {
+    sessionStorage.removeItem("factory_current_user");
+    sessionStorage.removeItem("factory_auth");
+  }
+}
+
+function applyUserPermissions(user) {
+  if (!user) return;
+
+  // 1. Cập nhật Badge người dùng trên Top Header
+  const badgeEl = document.getElementById("current-user-badge");
+  const nameEl = document.getElementById("current-user-name");
+  const tagEl = document.getElementById("current-user-role-tag");
+
+  if (badgeEl) badgeEl.style.display = "inline-flex";
+  if (nameEl) nameEl.textContent = user.name || user.username;
+  if (tagEl) {
+    const roleDef = ROLE_DEFINITIONS[user.role] || ROLE_DEFINITIONS.custom;
+    tagEl.textContent = roleDef.badge || user.role;
+    if (roleDef.color) {
+      tagEl.style.color = roleDef.color;
+      tagEl.style.background = `${roleDef.color}25`;
+    }
+  }
+
+  // 2. Phân quyền hiển thị Menu Sidebar
+  const tabPermMap = {
+    "dashboard": "dashboard",
+    "calculator": "calculator",
+    "forecast": "forecast",
+    "order-cost": "order_cost",
+    "capex": "capex",
+    "monthly-report": "monthly_report",
+    "settings": "settings"
+  };
+
+  const allowedTabs = [];
+
+  document.querySelectorAll("nav.nav-menu .nav-item[data-tab]").forEach(btn => {
+    const tabId = btn.getAttribute("data-tab");
+    const requiredPerm = tabPermMap[tabId];
+    const isAllowed = user.permissions && user.permissions.includes(requiredPerm);
+
+    if (isAllowed) {
+      btn.style.display = "flex";
+      allowedTabs.push(tabId);
+    } else {
+      btn.style.display = "none";
+    }
+  });
+
+  // 3. Nếu đang ở tab bị cấm, tự động chuyển về tab đầu tiên được phép
+  const currentTab = state.activeTab || "dashboard";
+  if (!allowedTabs.includes(currentTab)) {
+    const fallbackTab = allowedTabs.length > 0 ? allowedTabs[0] : "dashboard";
+    switchTab(fallbackTab);
+  }
+
+  // 4. Kiểm tra quyền sửa định mức Tính Giá Thành (calculator_edit)
+  const canEditCalc = user.permissions && user.permissions.includes("calculator_edit");
+  const readonlyBanner = document.getElementById("calculator-readonly-banner");
+  if (readonlyBanner) {
+    readonlyBanner.style.display = canEditCalc ? "none" : "flex";
+  }
+
+  const editControls = [
+    "btn-add-product",
+    "btn-add-material-row",
+    "btn-add-product-machine-row",
+    "btn-quick-create-machine",
+    "btn-top-delete-product",
+    "btn-delete-product",
+    "btn-sync-yield-bom"
+  ];
+  editControls.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = canEditCalc ? "" : "none";
+  });
+
+  const submitBtn = document.querySelector("#product-cost-form button[type='submit']");
+  if (submitBtn) {
+    submitBtn.style.display = canEditCalc ? "" : "none";
+  }
+
+  document.querySelectorAll(".btn-remove-material, .product-machine-del-btn, .btn-card-delete").forEach(btn => {
+    btn.style.display = canEditCalc ? "" : "none";
+  });
+}
+
+function renderUsersTable() {
+  const tbody = document.getElementById("users-table-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  const users = state.settings.users || [];
+  if (users.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 1rem; color: var(--text-secondary);">Chưa có tài khoản nào.</td></tr>`;
+    return;
+  }
+
+  const currentUser = getCurrentUser();
+
+  users.forEach((u) => {
+    const tr = document.createElement("tr");
+    tr.style.borderBottom = "1px solid rgba(255,255,255,0.04)";
+
+    const roleDef = ROLE_DEFINITIONS[u.role] || ROLE_DEFINITIONS.custom;
+    const roleBadgeColor = roleDef.color || "#38bdf8";
+
+    // Format permissions badges
+    const permsList = (u.permissions || []).map(p => {
+      const label = PERMISSION_LABELS[p] || p;
+      const isEdit = p === "calculator_edit";
+      const bg = isEdit ? "rgba(245, 158, 11, 0.2)" : "rgba(255,255,255,0.06)";
+      const color = isEdit ? "#f59e0b" : "var(--text-secondary)";
+      return `<span style="display: inline-block; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.68rem; background: ${bg}; color: ${color}; margin: 1px;">${label}</span>`;
+    }).join(" ");
+
+    const isMasterAdmin = (u.username === "admin" || u.id === "usr_admin");
+    const isCurrentLoggedIn = currentUser && (currentUser.id === u.id || currentUser.username === u.username);
+
+    tr.innerHTML = `
+      <td style="padding: 0.65rem 0.75rem; font-weight: 600; color: #fff;">
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <span>👤</span>
+          <span>${u.username}</span>
+          ${isCurrentLoggedIn ? '<span style="font-size: 0.65rem; color: #34d399; background: rgba(52, 211, 153, 0.15); padding: 0.1rem 0.35rem; border-radius: 4px;">(Bạn)</span>' : ''}
+        </div>
+      </td>
+      <td style="padding: 0.65rem 0.75rem; color: var(--text-primary); font-weight: 500;">${u.name || 'N/A'}</td>
+      <td style="padding: 0.65rem 0.75rem;">
+        <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.72rem; font-weight: 600; background: ${roleBadgeColor}20; color: ${roleBadgeColor}; border: 1px solid ${roleBadgeColor}40;">
+          ${roleDef.badge}
+        </span>
+      </td>
+      <td style="padding: 0.65rem 0.75rem; max-width: 280px; line-height: 1.5;">${permsList}</td>
+      <td style="padding: 0.65rem 0.75rem; text-align: center; white-space: nowrap;">
+        <button type="button" class="btn btn-xs btn-outline btn-edit-user" data-id="${u.id}" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); padding: 0.2rem 0.5rem; margin-right: 0.35rem;">Sửa</button>
+        ${isMasterAdmin ? '' : `<button type="button" class="btn btn-xs btn-outline btn-delete-user" data-id="${u.id}" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); padding: 0.2rem 0.5rem;">Xóa</button>`}
+      </td>
+    `;
+
+    tr.querySelector(".btn-edit-user")?.addEventListener("click", () => openEditUserModal(u.id));
+    tr.querySelector(".btn-delete-user")?.addEventListener("click", () => deleteUser(u.id));
+
+    tbody.appendChild(tr);
+  });
+}
+
+function openCreateUserModal() {
+  const modal = document.getElementById("user-modal");
+  const form = document.getElementById("user-management-form");
+  if (!modal || !form) return;
+
+  form.reset();
+  document.getElementById("user-form-id").value = "";
+  document.getElementById("user-modal-title").textContent = "➕ Tạo Tài Khoản Người Dùng Mới";
+  const usernameInput = document.getElementById("user-form-username");
+  if (usernameInput) {
+    usernameInput.disabled = false;
+    usernameInput.value = "";
+  }
+  const roleSelect = document.getElementById("user-form-role");
+  if (roleSelect) roleSelect.value = "sales";
+  
+  applyRoleToPermCheckboxes("sales");
+
+  if (typeof modal.showModal === "function") {
+    modal.showModal();
+  } else {
+    modal.setAttribute("open", "");
+  }
+}
+
+function openEditUserModal(userId) {
+  const modal = document.getElementById("user-modal");
+  const form = document.getElementById("user-management-form");
+  if (!modal || !form) return;
+
+  const user = (state.settings.users || []).find(u => u.id === userId);
+  if (!user) return;
+
+  document.getElementById("user-form-id").value = user.id;
+  document.getElementById("user-modal-title").textContent = `✏️ Chỉnh Sửa Tài Khoản: ${user.username}`;
+  
+  const usernameInput = document.getElementById("user-form-username");
+  if (usernameInput) {
+    usernameInput.value = user.username;
+    usernameInput.disabled = (user.username === "admin" || user.id === "usr_admin");
+  }
+
+  document.getElementById("user-form-passcode").value = user.passcode || "";
+  document.getElementById("user-form-fullname").value = user.name || "";
+  
+  const roleSelect = document.getElementById("user-form-role");
+  if (roleSelect) roleSelect.value = user.role || "custom";
+
+  document.querySelectorAll(".user-perm-checkbox").forEach(cb => {
+    cb.checked = (user.permissions || []).includes(cb.value);
+  });
+
+  if (typeof modal.showModal === "function") {
+    modal.showModal();
+  } else {
+    modal.setAttribute("open", "");
+  }
+}
+
+function applyRoleToPermCheckboxes(role) {
+  const roleDef = ROLE_DEFINITIONS[role];
+  if (!roleDef || role === "custom") return;
+  document.querySelectorAll(".user-perm-checkbox").forEach(cb => {
+    cb.checked = roleDef.permissions.includes(cb.value);
+  });
+}
+
+function saveUserModal(e) {
+  e.preventDefault();
+  const id = document.getElementById("user-form-id").value;
+  const username = (document.getElementById("user-form-username")?.value || "").trim().toLowerCase();
+  const passcode = (document.getElementById("user-form-passcode")?.value || "").trim();
+  const name = (document.getElementById("user-form-fullname")?.value || "").trim();
+  const role = document.getElementById("user-form-role")?.value || "custom";
+
+  if (!username) {
+    alert("Vui lòng nhập tên đăng nhập!");
+    return;
+  }
+  if (!passcode || passcode.length < 4) {
+    alert("Mật khẩu phải có tối thiểu 4 ký tự!");
+    return;
+  }
+  if (!name) {
+    alert("Vui lòng nhập họ tên hoặc tên bộ phận!");
+    return;
+  }
+
+  const permissions = [];
+  document.querySelectorAll(".user-perm-checkbox:checked").forEach(cb => {
+    permissions.push(cb.value);
+  });
+
+  if (permissions.length === 0) {
+    alert("Vui lòng chọn ít nhất 1 quyền truy cập cho người dùng!");
+    return;
+  }
+
+  const users = state.settings.users || [];
+
+  if (id) {
+    const existing = users.find(u => u.id === id);
+    if (!existing) return;
+
+    if (existing.username !== username && users.some(u => u.id !== id && u.username.toLowerCase() === username)) {
+      alert(`Tên đăng nhập "${username}" đã tồn tại! Vui lòng chọn tên khác.`);
+      return;
+    }
+
+    existing.username = username;
+    existing.passcode = passcode;
+    existing.name = name;
+    existing.role = role;
+    existing.permissions = permissions;
+
+    const currentUser = getCurrentUser();
+    if (currentUser && (currentUser.id === id || currentUser.username === username)) {
+      setCurrentUser(existing);
+      applyUserPermissions(existing);
+    }
+    if (existing.username === "admin" || existing.id === "usr_admin") {
+      state.settings.passcode = passcode;
+    }
+  } else {
+    if (users.some(u => u.username.toLowerCase() === username)) {
+      alert(`Tên đăng nhập "${username}" đã tồn tại! Vui lòng chọn tên khác.`);
+      return;
+    }
+
+    const newUser = {
+      id: "usr_" + Date.now(),
+      username,
+      passcode,
+      name,
+      role,
+      permissions,
+      createdAt: new Date().toISOString().split("T")[0]
+    };
+    users.push(newUser);
+  }
+
+  state.saveSettings({
+    ...state.settings,
+    users
+  });
+
+  const modal = document.getElementById("user-modal");
+  if (modal) {
+    if (typeof modal.close === "function") modal.close();
+    else modal.removeAttribute("open");
+  }
+
+  renderUsersTable();
+  alert("Lưu thông tin người dùng thành công!");
+}
+
+function deleteUser(userId) {
+  const users = state.settings.users || [];
+  const user = users.find(u => u.id === userId);
+  if (!user) return;
+
+  if (user.username === "admin" || user.id === "usr_admin") {
+    alert("Không thể xóa tài khoản Quản Trị Viên (Admin) gốc!");
+    return;
+  }
+
+  const currentUser = getCurrentUser();
+  if (currentUser && currentUser.id === userId) {
+    alert("Bạn không thể tự xóa tài khoản đang đăng nhập!");
+    return;
+  }
+
+  if (confirm(`Bạn có chắc chắn muốn xóa tài khoản "${user.username}" (${user.name}) không?`)) {
+    const updatedUsers = users.filter(u => u.id !== userId);
+    state.saveSettings({
+      ...state.settings,
+      users: updatedUsers
+    });
+    renderUsersTable();
+    alert("Đã xóa người dùng thành công!");
+  }
+}
+
+// ==========================================================================
 // 9. Modals & Popups for Product Creation
 // ==========================================================================
 
@@ -6701,40 +7143,102 @@ document.addEventListener("DOMContentLoaded", () => {
   // Dynamic forecast months initialization
   updateDynamicForecastMonths();
 
-  // Auth validation overlay logic
+  // Auth validation overlay & multi-user RBAC logic
   const loginForm = document.getElementById("login-form");
   const loginOverlay = document.getElementById("login-overlay");
-  const loginInput = document.getElementById("login-passcode");
+  const loginUsernameInput = document.getElementById("login-username");
+  const loginPasscodeInput = document.getElementById("login-passcode");
   const loginError = document.getElementById("login-error-msg");
 
-  if (sessionStorage.getItem("factory_auth") === "true") {
+  const activeUser = getCurrentUser();
+  if (sessionStorage.getItem("factory_auth") === "true" && activeUser) {
     loginOverlay.style.display = "none";
+    applyUserPermissions(activeUser);
   } else {
     loginOverlay.style.display = "flex";
   }
 
   loginForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const typed = loginInput.value;
-    const correctPasscode = state.settings.passcode || "123456";
-    if (typed === correctPasscode) {
-      sessionStorage.setItem("factory_auth", "true");
+    const typedUsername = (loginUsernameInput?.value || "").trim().toLowerCase();
+    const typedPasscode = (loginPasscodeInput?.value || "").trim();
+
+    const users = state.settings.users || [];
+    let matchedUser = null;
+
+    if (typedUsername) {
+      matchedUser = users.find(u => u.username.toLowerCase() === typedUsername && u.passcode === typedPasscode);
+    }
+    
+    // Fallback: Nếu không tìm thấy hoặc người dùng chỉ gõ passcode
+    if (!matchedUser && typedPasscode) {
+      const masterPasscode = state.settings.passcode || "123456";
+      if (typedPasscode === masterPasscode) {
+        matchedUser = users.find(u => u.username === "admin") || users[0];
+      } else {
+        matchedUser = users.find(u => u.passcode === typedPasscode);
+      }
+    }
+
+    if (matchedUser) {
+      setCurrentUser(matchedUser);
+      applyUserPermissions(matchedUser);
       loginOverlay.style.opacity = "0";
       setTimeout(() => {
         loginOverlay.style.display = "none";
       }, 400);
+      if (loginError) loginError.textContent = "";
     } else {
-      loginError.textContent = "Mật khẩu không chính xác. Vui lòng nhập lại!";
-      loginInput.value = "";
-      loginInput.focus();
+      if (loginError) loginError.textContent = "Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng thử lại!";
+      if (loginPasscodeInput) {
+        loginPasscodeInput.value = "";
+        loginPasscodeInput.focus();
+      }
     }
   });
 
   document.getElementById("btn-logout").addEventListener("click", () => {
     if (confirm("Bạn có muốn đăng xuất khỏi hệ thống không?")) {
-      sessionStorage.removeItem("factory_auth");
+      setCurrentUser(null);
       window.location.reload();
     }
+  });
+
+  // User Management Modal bindings
+  const btnOpenCreateUser = document.getElementById("btn-open-create-user-modal");
+  if (btnOpenCreateUser) {
+    btnOpenCreateUser.addEventListener("click", openCreateUserModal);
+  }
+
+  const btnCloseUserModal = document.getElementById("btn-close-user-modal");
+  const btnCancelUserModal = document.getElementById("btn-cancel-user-modal");
+  const userModal = document.getElementById("user-modal");
+  const closeUserModal = () => {
+    if (!userModal) return;
+    if (typeof userModal.close === "function") userModal.close();
+    else userModal.removeAttribute("open");
+  };
+  if (btnCloseUserModal) btnCloseUserModal.addEventListener("click", closeUserModal);
+  if (btnCancelUserModal) btnCancelUserModal.addEventListener("click", closeUserModal);
+
+  const userForm = document.getElementById("user-management-form");
+  if (userForm) {
+    userForm.addEventListener("submit", saveUserModal);
+  }
+
+  const roleSelect = document.getElementById("user-form-role");
+  if (roleSelect) {
+    roleSelect.addEventListener("change", (e) => {
+      applyRoleToPermCheckboxes(e.target.value);
+    });
+  }
+
+  document.querySelectorAll(".user-perm-checkbox").forEach(cb => {
+    cb.addEventListener("change", () => {
+      if (roleSelect && roleSelect.value !== "custom") {
+        roleSelect.value = "custom";
+      }
+    });
   });
 
   document.getElementById("settings-security-form").addEventListener("submit", (e) => {
@@ -6757,9 +7261,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const users = state.settings.users || [];
+    const adminUser = users.find(u => u.username === "admin" || u.id === "usr_admin");
+    if (adminUser) adminUser.passcode = newPass;
+
     state.saveSettings({
       ...state.settings,
-      passcode: newPass
+      passcode: newPass,
+      users: users
     });
     alert("Đổi mật khẩu truy cập thành công!");
     document.getElementById("settings-security-form").reset();
