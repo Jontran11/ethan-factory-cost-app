@@ -2010,9 +2010,29 @@ class AppStateManager {
           } catch (e) {}
         }
 
-        // Nếu không ép buộc (force = false) và máy hiện tại đã có dữ liệu hợp lệ: KHÔNG tự ý ghi đè
-        if (!force && this.products && this.products.length > 0) {
-          console.log("Dữ liệu trên máy đang sẵn sàng, không tự động ghi đè từ Google Sheets khi khởi động.");
+        // 1. Luôn đồng bộ danh sách người dùng (Users & RBAC) từ đám mây để mọi thành viên trên mọi thiết bị đều đăng nhập được
+        if (data.settings && Array.isArray(data.settings.users) && data.settings.users.length > 0) {
+          const localUsers = this.settings.users || [];
+          data.settings.users.forEach(cu => {
+            const idx = localUsers.findIndex(lu => lu.id === cu.id || lu.username.toLowerCase() === cu.username.toLowerCase());
+            if (idx >= 0) {
+              localUsers[idx] = { ...localUsers[idx], ...cu };
+            } else {
+              localUsers.push(cu);
+            }
+          });
+          this.settings.users = localUsers;
+          if (data.settings.passcode) {
+            this.settings.passcode = data.settings.passcode;
+          }
+          localStorage.setItem("factory_settings_v2", JSON.stringify(this.settings));
+          renderUsersTable();
+        }
+
+        // 2. Nếu không ép buộc (force = false) và máy hiện tại đã có dữ liệu sản phẩm tùy chỉnh: KHÔNG tự ý ghi đè sản phẩm
+        const hasLocalSavedProducts = !!localStorage.getItem("factory_products_v2");
+        if (!force && hasLocalSavedProducts) {
+          console.log("Dữ liệu sản phẩm trên máy đang sẵn sàng, đã đồng bộ danh sách user từ Google Sheets.");
           updateCloudStatus("synced");
           return true;
         }
@@ -2025,7 +2045,7 @@ class AppStateManager {
         })();
 
         this.products = (data.products || []).filter(p => !deletedList.includes(p.id) && !deletedList.includes(p.code));
-        this.settings = data.settings;
+        this.settings = { ...this.settings, ...data.settings };
         localStorage.setItem("factory_settings_v2", JSON.stringify(this.settings));
         localStorage.setItem("factory_products_v2", JSON.stringify(this.products));
         updateCloudStatus("synced");
@@ -7403,25 +7423,65 @@ document.addEventListener("DOMContentLoaded", () => {
     applyUserPermissions(activeUser);
   } else {
     loginOverlay.style.display = "flex";
+    // Tự động kéo danh sách tài khoản mới nhất từ đám mây (Google Sheets) về máy khi mở trang đăng nhập
+    if (state.googleSheetUrl) {
+      syncUsersFromCloud();
+    }
   }
 
-  loginForm.addEventListener("submit", (e) => {
+  async function syncUsersFromCloud() {
+    if (!state.googleSheetUrl) return false;
+    try {
+      const res = await fetch(state.googleSheetUrl);
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data && data.settings && Array.isArray(data.settings.users) && data.settings.users.length > 0) {
+        const localUsers = state.settings.users || [];
+        data.settings.users.forEach(cu => {
+          const idx = localUsers.findIndex(lu => lu.id === cu.id || lu.username.toLowerCase() === cu.username.toLowerCase());
+          if (idx >= 0) {
+            localUsers[idx] = { ...localUsers[idx], ...cu };
+          } else {
+            localUsers.push(cu);
+          }
+        });
+        state.settings.users = localUsers;
+        if (data.settings.passcode) {
+          state.settings.passcode = data.settings.passcode;
+        }
+        localStorage.setItem("factory_settings_v2", JSON.stringify(state.settings));
+        renderUsersTable();
+        return true;
+      }
+    } catch (e) {
+      console.warn("Lỗi đồng bộ danh sách user từ cloud:", e);
+    }
+    return false;
+  }
+
+  loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const typedUsername = (loginUsernameInput?.value || "").trim().toLowerCase();
     const typedPasscode = (loginPasscodeInput?.value || "").trim();
 
     if (!typedUsername) {
-      if (loginError) loginError.textContent = "Vui lòng nhập tên đăng nhập!";
+      if (loginError) {
+        loginError.style.color = "#f87171";
+        loginError.textContent = "Vui lòng nhập tên đăng nhập!";
+      }
       if (loginUsernameInput) loginUsernameInput.focus();
       return;
     }
     if (!typedPasscode) {
-      if (loginError) loginError.textContent = "Vui lòng nhập mật khẩu!";
+      if (loginError) {
+        loginError.style.color = "#f87171";
+        loginError.textContent = "Vui lòng nhập mật khẩu!";
+      }
       if (loginPasscodeInput) loginPasscodeInput.focus();
       return;
     }
 
-    const users = state.settings.users || [];
+    let users = state.settings.users || [];
     let matchedUser = users.find(u => u.username.toLowerCase() === typedUsername && u.passcode === typedPasscode);
 
     // Hỗ trợ đăng nhập master admin với passcode nếu username là admin
@@ -7439,6 +7499,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Nếu không tìm thấy trên máy (ví dụ nhân sự mới đăng nhập trên máy khác):
+    // Tự động kiểm tra trực tiếp từ Google Sheets Cloud!
+    if (!matchedUser && state.googleSheetUrl) {
+      if (loginError) {
+        loginError.style.color = "#38bdf8";
+        loginError.textContent = "⏳ Đang kết nối máy chủ để xác thực tài khoản...";
+      }
+      const syncSuccess = await syncUsersFromCloud();
+      if (syncSuccess) {
+        users = state.settings.users || [];
+        matchedUser = users.find(u => u.username.toLowerCase() === typedUsername && u.passcode === typedPasscode);
+      }
+    }
+
     if (matchedUser) {
       setCurrentUser(matchedUser);
       applyUserPermissions(matchedUser);
@@ -7449,7 +7523,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (loginError) loginError.textContent = "";
       if (loginPasscodeInput) loginPasscodeInput.value = "";
     } else {
-      if (loginError) loginError.textContent = "Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại!";
+      if (loginError) {
+        loginError.style.color = "#f87171";
+        loginError.textContent = "Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại!";
+      }
       if (loginPasscodeInput) {
         loginPasscodeInput.value = "";
         loginPasscodeInput.focus();
