@@ -1710,36 +1710,32 @@ class AppStateManager {
       try {
         const parsed = JSON.parse(saved);
         
-        // Migrate HR settings: if hrVersion is outdated, overwrite with official T9 breakdown
+        // Nạp và bảo lưu cài đặt nhân sự (HR & Payroll) - Không bao giờ tự ý xóa dữ liệu người dùng
         let migratedHr;
-        if (!parsed.hrVersion || parsed.hrVersion !== DEFAULT_SETTINGS.hrVersion) {
-          migratedHr = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.hr));
-          parsed.hrVersion = DEFAULT_SETTINGS.hrVersion;
-        } else {
-          const migrateHrDepartment = (dept, deptKey, defaultDeptList) => {
-            if (!dept || !dept[deptKey]) return defaultDeptList;
-            const data = dept[deptKey];
-            if (Array.isArray(data)) {
-              const isPlaceholder = data.length > 0 && data.some(emp => emp.name && (emp.name.startsWith("Nhân viên In -") || emp.name.startsWith("Nhân viên Thêu -")));
-              if (isPlaceholder) return defaultDeptList;
-              return data;
-            }
-            return defaultDeptList;
+        if (parsed.hr && parsed.hr.In && parsed.hr.Thêu) {
+          const sanitizeDept = (deptList, defaultList) => {
+            if (!Array.isArray(deptList)) return defaultList;
+            return deptList.map(emp => ({
+              name: emp.name || "Nhân sự",
+              salary: parseFloat(emp.salary) || 0,
+              ...(emp.code ? { code: emp.code } : {})
+            }));
           };
-
           migratedHr = {
             In: {
-              designer: migrateHrDepartment(parsed.hr?.In, 'designer', DEFAULT_SETTINGS.hr.In.designer),
-              production: migrateHrDepartment(parsed.hr?.In, 'production', DEFAULT_SETTINGS.hr.In.production),
-              qc: migrateHrDepartment(parsed.hr?.In, 'qc', DEFAULT_SETTINGS.hr.In.qc)
+              designer: sanitizeDept(parsed.hr.In.designer, DEFAULT_SETTINGS.hr.In.designer),
+              production: sanitizeDept(parsed.hr.In.production, DEFAULT_SETTINGS.hr.In.production),
+              qc: sanitizeDept(parsed.hr.In.qc, DEFAULT_SETTINGS.hr.In.qc)
             },
             Thêu: {
-              designer: migrateHrDepartment(parsed.hr?.Thêu, 'designer', DEFAULT_SETTINGS.hr.Thêu.designer),
-              laser: migrateHrDepartment(parsed.hr?.Thêu, 'laser', DEFAULT_SETTINGS.hr.Thêu.laser),
-              production: migrateHrDepartment(parsed.hr?.Thêu, 'production', DEFAULT_SETTINGS.hr.Thêu.production),
-              qc: migrateHrDepartment(parsed.hr?.Thêu, 'qc', DEFAULT_SETTINGS.hr.Thêu.qc)
+              designer: sanitizeDept(parsed.hr.Thêu.designer, DEFAULT_SETTINGS.hr.Thêu.designer),
+              laser: sanitizeDept(parsed.hr.Thêu.laser, DEFAULT_SETTINGS.hr.Thêu.laser),
+              production: sanitizeDept(parsed.hr.Thêu.production, DEFAULT_SETTINGS.hr.Thêu.production),
+              qc: sanitizeDept(parsed.hr.Thêu.qc, DEFAULT_SETTINGS.hr.Thêu.qc)
             }
           };
+        } else {
+          migratedHr = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.hr));
         }
 
         let mergedMachines = [];
@@ -2823,6 +2819,11 @@ function switchTab(tabId) {
       if (firstAllowed !== tabId) switchTab(firstAllowed);
       return;
     }
+  }
+
+  // Tự động chốt lưu dữ liệu nhân sự & cài đặt trước khi chuyển tab
+  if (typeof triggerHrAutoSave === "function") {
+    triggerHrAutoSave(true);
   }
 
   state.activeTab = tabId;
@@ -6071,6 +6072,61 @@ function openEditCapexModal(machine) {
   }
 }
 
+let hrAutoSaveTimeout = null;
+function triggerHrAutoSave(immediate = false) {
+  if (hrAutoSaveTimeout) clearTimeout(hrAutoSaveTimeout);
+  const doSave = () => {
+    state.saveSettings(state.settings);
+    updateFactoryTotalPayrollBadge("In");
+    updateFactoryTotalPayrollBadge("Thêu");
+  };
+  if (immediate) {
+    doSave();
+  } else {
+    hrAutoSaveTimeout = setTimeout(doSave, 350);
+  }
+}
+
+const HR_DEPARTMENT_OPTIONS = [
+  { factory: "In", dept: "designer", label: "Xưởng In - Designer POD" },
+  { factory: "In", dept: "production", label: "Xưởng In - Sản xuất POD" },
+  { factory: "In", dept: "qc", label: "Xưởng In - QC In" },
+  { factory: "Thêu", dept: "designer", label: "Xưởng Thêu - Designer EMB" },
+  { factory: "Thêu", dept: "laser", label: "Xưởng Thêu - Preparing Laser" },
+  { factory: "Thêu", dept: "production", label: "Xưởng Thêu - Sản xuất EMB" },
+  { factory: "Thêu", dept: "qc", label: "Xưởng Thêu - QC EMB" }
+];
+
+function transferEmployee(srcFactory, srcDept, empIdx, dstFactory, dstDept) {
+  const srcList = state.settings.hr[srcFactory]?.[srcDept];
+  const dstList = state.settings.hr[dstFactory]?.[dstDept];
+  if (!srcList || !dstList || !srcList[empIdx]) return;
+
+  const [movedEmp] = srcList.splice(empIdx, 1);
+  dstList.push(movedEmp);
+
+  triggerHrAutoSave(true);
+  renderHrAccordion("In", "hr-print-accordion-container");
+  renderHrAccordion("Thêu", "hr-emb-accordion-container");
+  updateFactoryTotalPayrollBadge("In");
+  updateFactoryTotalPayrollBadge("Thêu");
+}
+
+function moveEmployeeOrder(factoryKey, deptKey, empIdx, direction) {
+  const list = state.settings.hr[factoryKey]?.[deptKey];
+  if (!list) return;
+  const targetIdx = empIdx + direction;
+  if (targetIdx < 0 || targetIdx >= list.length) return;
+
+  const temp = list[empIdx];
+  list[empIdx] = list[targetIdx];
+  list[targetIdx] = temp;
+
+  triggerHrAutoSave(true);
+  renderHrAccordion("In", "hr-print-accordion-container");
+  renderHrAccordion("Thêu", "hr-emb-accordion-container");
+}
+
 function renderHrAccordion(factoryKey, containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = "";
@@ -6116,7 +6172,7 @@ function renderHrAccordion(factoryKey, containerId) {
         </div>
       </div>
       <div class="accordion-body hidden" id="${detailsId}" style="padding: 1rem; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.04);">
-        <div class="employee-list-scroll" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 0.25rem;">
+        <div class="employee-list-scroll" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 0.25rem;">
           <!-- Dynamic employee rows -->
         </div>
         <div style="margin-top: 0.75rem; display: flex; justify-content: flex-end;">
@@ -6147,33 +6203,98 @@ function renderHrAccordion(factoryKey, containerId) {
         return;
       }
       employees.forEach((emp, empIdx) => {
-        const row = document.createElement("div");
-        row.style.cssText = "display: flex; gap: 0.5rem; align-items: center;";
-        row.innerHTML = `
-          <input type="text" class="form-input emp-name-input" value="${emp.name}" placeholder="Họ và tên" style="flex: 2; min-height: 32px; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px;" required>
-          <input type="text" class="form-input emp-salary-input currency-input" value="${emp.salary.toLocaleString('vi-VN')}" placeholder="Lương tháng" style="flex: 1.2; min-height: 32px; font-size: 0.75rem; padding: 0.25rem 0.5rem; text-align: right; border-radius: 4px;" required>
-          <button type="button" class="btn-remove-emp" style="border: none; background: transparent; color: #ef4444; font-size: 1.2rem; cursor: pointer; padding: 0.25rem; line-height: 1;">&times;</button>
+        const rowWrapper = document.createElement("div");
+        rowWrapper.style.cssText = "display: flex; flex-direction: column; gap: 0.25rem; padding: 0.35rem 0.45rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 6px;";
+
+        const mainRow = document.createElement("div");
+        mainRow.style.cssText = "display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;";
+        mainRow.innerHTML = `
+          <input type="text" class="form-input emp-name-input" value="${emp.name}" placeholder="Họ và tên" style="flex: 2; min-width: 140px; min-height: 32px; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px;" required>
+          <input type="text" class="form-input emp-salary-input currency-input" value="${emp.salary.toLocaleString('vi-VN')}" placeholder="Lương tháng" style="flex: 1.2; min-width: 100px; min-height: 32px; font-size: 0.75rem; padding: 0.25rem 0.5rem; text-align: right; border-radius: 4px;" required>
+          
+          <div style="display: flex; align-items: center; gap: 0.2rem;">
+            ${empIdx > 0 ? `<button type="button" class="btn-move-up" title="Di chuyển lên trên" style="border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #cbd5e1; border-radius: 3px; width: 22px; height: 30px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">▲</button>` : `<div style="width: 22px;"></div>`}
+            ${empIdx < employees.length - 1 ? `<button type="button" class="btn-move-down" title="Di chuyển xuống dưới" style="border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #cbd5e1; border-radius: 3px; width: 22px; height: 30px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">▼</button>` : `<div style="width: 22px;"></div>`}
+            <button type="button" class="btn-toggle-transfer" title="Di chuyển nhân sự sang khâu/nhà máy khác" style="border: 1px solid rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border-radius: 3px; height: 30px; padding: 0 0.4rem; font-size: 0.68rem; cursor: pointer; display: flex; align-items: center; gap: 0.2rem; white-space: nowrap;">🔁 Chuyển</button>
+            <button type="button" class="btn-remove-emp" title="Xóa nhân sự" style="border: none; background: transparent; color: #ef4444; font-size: 1.2rem; cursor: pointer; padding: 0.2rem 0.35rem; line-height: 1;">&times;</button>
+          </div>
         `;
 
-        const salaryInput = row.querySelector(".emp-salary-input");
+        const transferRow = document.createElement("div");
+        transferRow.className = "transfer-row";
+        transferRow.style.cssText = "display: none; align-items: center; gap: 0.4rem; padding: 0.35rem 0.5rem; background: rgba(99, 102, 241, 0.1); border: 1px dashed rgba(99, 102, 241, 0.3); border-radius: 4px; font-size: 0.72rem;";
+        
+        const transferOptions = HR_DEPARTMENT_OPTIONS
+          .filter(d => !(d.factory === factoryKey && d.dept === deptKey))
+          .map(d => `<option value="${d.factory}:${d.dept}">${d.label}</option>`)
+          .join("");
+
+        transferRow.innerHTML = `
+          <span style="color: #a5b4fc; font-weight: 500; white-space: nowrap;">Chuyển tới:</span>
+          <select class="form-input emp-transfer-select" style="min-height: 28px; font-size: 0.72rem; padding: 0 0.35rem; flex: 1; background: rgba(15, 23, 42, 0.9); color: #fff;">
+            <option value="">-- Chọn khâu điều chuyển --</option>
+            ${transferOptions}
+          </select>
+          <button type="button" class="btn-cancel-transfer" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.75rem;">Hủy</button>
+        `;
+
+        rowWrapper.appendChild(mainRow);
+        rowWrapper.appendChild(transferRow);
+
+        const salaryInput = mainRow.querySelector(".emp-salary-input");
         maskCurrencyInput(salaryInput);
 
         salaryInput.addEventListener("input", (e) => {
           emp.salary = parseCurrencyInput(e.target.value);
           updateHeaderCount();
+          triggerHrAutoSave(false);
         });
 
-        row.querySelector(".emp-name-input").addEventListener("input", (e) => {
+        mainRow.querySelector(".emp-name-input").addEventListener("input", (e) => {
           emp.name = e.target.value;
+          triggerHrAutoSave(false);
         });
 
-        row.querySelector(".btn-remove-emp").addEventListener("click", () => {
+        mainRow.querySelector(".btn-remove-emp").addEventListener("click", () => {
           employees.splice(empIdx, 1);
           renderEmployeeRows();
           updateHeaderCount();
+          triggerHrAutoSave(true);
         });
 
-        listContainer.appendChild(row);
+        const btnUp = mainRow.querySelector(".btn-move-up");
+        if (btnUp) {
+          btnUp.addEventListener("click", () => moveEmployeeOrder(factoryKey, deptKey, empIdx, -1));
+        }
+
+        const btnDown = mainRow.querySelector(".btn-move-down");
+        if (btnDown) {
+          btnDown.addEventListener("click", () => moveEmployeeOrder(factoryKey, deptKey, empIdx, 1));
+        }
+
+        const btnTransfer = mainRow.querySelector(".btn-toggle-transfer");
+        const btnCancelTransfer = transferRow.querySelector(".btn-cancel-transfer");
+        const transferSelect = transferRow.querySelector(".emp-transfer-select");
+
+        btnTransfer.addEventListener("click", () => {
+          const isVisible = transferRow.style.display === "flex";
+          transferRow.style.display = isVisible ? "none" : "flex";
+          if (!isVisible) transferSelect.focus();
+        });
+
+        btnCancelTransfer.addEventListener("click", () => {
+          transferRow.style.display = "none";
+          transferSelect.value = "";
+        });
+
+        transferSelect.addEventListener("change", (e) => {
+          const val = e.target.value;
+          if (!val) return;
+          const [dstFactory, dstDept] = val.split(":");
+          transferEmployee(factoryKey, deptKey, empIdx, dstFactory, dstDept);
+        });
+
+        listContainer.appendChild(rowWrapper);
       });
     };
 
@@ -6209,6 +6330,7 @@ function renderHrAccordion(factoryKey, containerId) {
 
       renderEmployeeRows();
       updateHeaderCount();
+      triggerHrAutoSave(true);
       setTimeout(() => {
         listContainer.scrollTop = listContainer.scrollHeight;
       }, 50);
@@ -9717,6 +9839,9 @@ window.saveUserModal = saveUserModal;
 window.openCreateUserModal = openCreateUserModal;
 window.openEditUserModal = openEditUserModal;
 window.deleteUser = deleteUser;
+window.triggerHrAutoSave = triggerHrAutoSave;
+window.transferEmployee = transferEmployee;
+window.moveEmployeeOrder = moveEmployeeOrder;
 
 window.app = {
   switchTab,
@@ -9727,6 +9852,9 @@ window.app = {
   openCreateUserModal,
   openEditUserModal,
   deleteUser,
+  triggerHrAutoSave,
+  transferEmployee,
+  moveEmployeeOrder,
   triggerLiveCalculation,
   renderMonthlyReport,
   exportMonthlyReportCSV,
