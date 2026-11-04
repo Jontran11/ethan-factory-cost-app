@@ -593,7 +593,33 @@ const DEFAULT_SETTINGS = {
     { id: "mat-bang-keo-cham", name: "Băng keo chấm tròn 2 mặt", category: "Bao Bì & Đóng Gói", unit: "Dải", defaultPrice: 2000, factoryType: "In", notes: "Dán cố định gift card trong sổ" },
     { id: "mat-hop-nhua-card", name: "Hộp nhựa đựng bài Poker / Card (50g)", category: "Bao Bì & Đóng Gói", unit: "Hộp", defaultPrice: 25000, factoryType: "In", notes: "Hộp nhựa cứng trong suốt cao cấp" },
     { id: "mat-tui-opp", name: "Túi OPP dán miệng bọc sản phẩm", category: "Bao Bì & Đóng Gói", unit: "Cái", defaultPrice: 150, factoryType: "Chung", notes: "Túi kiếng trong suốt bảo vệ thành phẩm" },
-    { id: "mat-hop-giay-ivory", name: "Hộp giấy Ivory in offset nắp gài", category: "Bao Bì & Đóng Gói", unit: "Cái", defaultPrice: 1200, factoryType: "In", notes: "Hộp chứa bộ bài hoặc quà tặng" }
+    { id: "mat-hop-giay-ivory", name: "Hộp giấy Ivory in offset nắp gài", category: "Bao Bì & Đóng Gói", unit: "Cái", defaultPrice: 1200, factoryType: "In", notes: "Hộp chứa bộ bài hoặc quà tặng" },
+
+    // Mica & Acrylic
+    { id: "mat-mica-3mm-tam", name: "Mica trong 3mm (Tấm lớn 81×122cm)", category: "Mica & Acrylic", unit: "Tấm", defaultPrice: 825000, factoryType: "In", sheetSize: "81×122cm", notes: "Phôi Mica trong tấm lớn 810×1220mm" },
+    { id: "mat-mica-25mm-tam", name: "Mica trong 2.5mm (Tấm lớn 81×122cm)", category: "Mica & Acrylic", unit: "Tấm", defaultPrice: 700000, factoryType: "In", sheetSize: "81×122cm", notes: "Phôi Mica trong tấm lớn 810×1220mm" },
+    { id: "mat-mica-15mm-tam", name: "Mica trong 1.5mm (Tấm lớn 91.5×122cm)", category: "Mica & Acrylic", unit: "Tấm", defaultPrice: 400000, factoryType: "In", sheetSize: "91.5×122cm", notes: "Phôi Mica trong tấm lớn 915×1220mm" },
+    { id: "mat-mica-3mm-item-2in", name: "Phôi cắt Mica trong 3mm (Size 2 inch / 5cm)", category: "Mica & Acrylic", unit: "Cái", defaultPrice: 3438, factoryType: "In", notes: "Đơn giá phôi theo khổ cắt tối ưu (30 con/miếng 29×38cm)" },
+    { id: "mat-mica-3mm-item-3in", name: "Phôi cắt Mica trong 3mm (Size 3 inch / 7.5cm)", category: "Mica & Acrylic", unit: "Cái", defaultPrice: 7366, factoryType: "In", notes: "Đơn giá phôi theo khổ cắt tối ưu (28 con/miếng 38×58cm)" },
+    { id: "mat-mica-25mm-item-2in", name: "Phôi cắt Mica trong 2.5mm (Size 2 inch / 5cm)", category: "Mica & Acrylic", unit: "Cái", defaultPrice: 2917, factoryType: "In", notes: "Đơn giá phôi theo khổ cắt tối ưu (30 con/miếng 29×38cm)" },
+    { id: "mat-mica-25mm-item-3in", name: "Phôi cắt Mica trong 2.5mm (Size 3 inch / 7.5cm)", category: "Mica & Acrylic", unit: "Cái", defaultPrice: 6250, factoryType: "In", notes: "Đơn giá phôi theo khổ cắt tối ưu (28 con/miếng 38×58cm)" },
+    { id: "mat-mica-15mm-item-2in", name: "Phôi cắt Mica trong 1.5mm (Size 2 inch / 5cm)", category: "Mica & Acrylic", unit: "Cái", defaultPrice: 1667, factoryType: "In", notes: "Đơn giá phôi theo khổ cắt tối ưu (30 con/miếng 29×38cm)" },
+    { id: "mat-mica-15mm-item-3in", name: "Phôi cắt Mica trong 1.5mm (Size 3 inch / 7.5cm)", category: "Mica & Acrylic", unit: "Cái", defaultPrice: 3571, factoryType: "In", notes: "Đơn giá phôi theo khổ cắt tối ưu (28 con/miếng 38×58cm)" },
+    { id: "mat-phukien-khoen-xich", name: "Khoen móc khóa kim loại kèm dây xích", category: "Mica & Acrylic", unit: "Cái", defaultPrice: 1200, factoryType: "In", notes: "Khoen tròn mạ niken kèm xích 4 mắt gắn móc khóa" },
+    { id: "mat-in-uv-mica", name: "In UV phẳng trên Mica (CMYK + W)", category: "Lượt In & Mực", unit: "Lượt", defaultPrice: 1500, factoryType: "In", notes: "In UV phẳng 2 mặt lót trắng bảo vệ màu" },
+
+    // Phôi Rolls Sticker (Cuộn 55m)
+    { id: "mat-roll-st-phoi-r38", name: "Phôi Rolls Sticker Tròn Ø38mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 156, factoryType: "In", notes: "Cuộn 215.000đ, 25 tem/m, 1.375 tem/cuộn" },
+    { id: "mat-roll-st-phoi-r51", name: "Phôi Rolls Sticker Tròn Ø51mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 268, factoryType: "In", notes: "Cuộn 265.000đ, 18 tem/m, 990 tem/cuộn" },
+    { id: "mat-roll-st-phoi-r64", name: "Phôi Rolls Sticker Tròn Ø64mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 382, factoryType: "In", notes: "Cuộn 315.000đ, 15 tem/m, 825 tem/cuộn" },
+    { id: "mat-roll-st-phoi-r76", name: "Phôi Rolls Sticker Tròn Ø76mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 568, factoryType: "In", notes: "Cuộn 375.000đ, 12 tem/m, 660 tem/cuộn" },
+    { id: "mat-roll-st-phoi-r102", name: "Phôi Rolls Sticker Tròn Ø102mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 949, factoryType: "In", notes: "Cuộn 470.000đ, 9 tem/m, 495 tem/cuộn" },
+    { id: "mat-roll-st-phoi-s51", name: "Phôi Rolls Sticker Vuông 51×51mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 268, factoryType: "In", notes: "Cuộn 265.000đ, 18 tem/m, 990 tem/cuộn" },
+    { id: "mat-roll-st-phoi-s64", name: "Phôi Rolls Sticker Vuông 64×64mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 382, factoryType: "In", notes: "Cuộn 315.000đ, 15 tem/m, 825 tem/cuộn" },
+    { id: "mat-roll-st-phoi-s76", name: "Phôi Rolls Sticker Vuông 76×76mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 568, factoryType: "In", notes: "Cuộn 375.000đ, 12 tem/m, 660 tem/cuộn" },
+    { id: "mat-roll-st-phoi-s102", name: "Phôi Rolls Sticker Vuông 102×102mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 949, factoryType: "In", notes: "Cuộn 470.000đ, 9 tem/m, 495 tem/cuộn" },
+    { id: "mat-roll-st-phoi-rect-76x51", name: "Phôi Rolls Sticker Chữ Nhật 76×51mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 379, factoryType: "In", notes: "Cuộn 375.000đ, 18 tem/m, 990 tem/cuộn" },
+    { id: "mat-roll-st-phoi-rect-102x51", name: "Phôi Rolls Sticker Chữ Nhật 102×51mm (Cuộn 55m)", category: "Giấy & Decal", unit: "Tem", defaultPrice: 475, factoryType: "In", notes: "Cuộn 470.000đ, 18 tem/m, 990 tem/cuộn" }
   ]
 };
 
@@ -1674,6 +1700,515 @@ const MOCK_PRODUCTS = [
       actualSales: 280,
       currentStock: 30,
       safetyStock: 60
+    }
+  },
+
+  // 4. NHÓM MICA & ACRYLIC (MÓC KHÓA / STANDEE / THẺ)
+  {
+    id: "prod-mica-3mm-2in",
+    name: "Móc khóa Mica Trong 3mm (Size 2 inch / 5cm)",
+    code: "MICA-3MM-2IN",
+    category: "Mica & Acrylic (Móc Khóa / Standee)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "acrylic-keychain",
+      sheetSize: "29×38cm",
+      itemSize: "2 inch (5cm)",
+      itemsPerSheet: 30,
+      unitType: "Cái"
+    },
+    materials: [
+      { name: "Phôi cắt Mica trong 3mm (Size 2 inch / 5cm)", qty: 1, unit: "Cái", price: 3438 },
+      { name: "In UV phẳng trên Mica (CMYK + W)", qty: 1, unit: "Lượt", price: 1500 },
+      { name: "Khoen móc khóa kim loại kèm dây xích", qty: 1, unit: "Cái", price: 1200 },
+      { name: "Túi OPP dán miệng bọc sản phẩm", qty: 1, unit: "Cái", price: 150 }
+    ],
+    labor: { designer: 0.01, production: 0.05, qc: 0.02 },
+    electricity: { power: 1.5, runTime: 0.05 },
+    paybackMachineId: "mach-laser-4060",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-laser-4060", qty: 1 },
+      { machineId: "mach-dlican", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 1000,
+      actualSales: 850,
+      currentStock: 100,
+      safetyStock: 200
+    }
+  },
+  {
+    id: "prod-mica-3mm-3in",
+    name: "Móc khóa / Standee Mica Trong 3mm (Size 3 inch / 7.5cm)",
+    code: "MICA-3MM-3IN",
+    category: "Mica & Acrylic (Móc Khóa / Standee)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "acrylic-keychain",
+      sheetSize: "38×58cm",
+      itemSize: "3 inch (7.5cm)",
+      itemsPerSheet: 28,
+      unitType: "Cái"
+    },
+    materials: [
+      { name: "Phôi cắt Mica trong 3mm (Size 3 inch / 7.5cm)", qty: 1, unit: "Cái", price: 7366 },
+      { name: "In UV phẳng trên Mica (CMYK + W)", qty: 1, unit: "Lượt", price: 2000 },
+      { name: "Khoen móc khóa kim loại kèm dây xích", qty: 1, unit: "Cái", price: 1200 },
+      { name: "Túi OPP dán miệng bọc sản phẩm", qty: 1, unit: "Cái", price: 150 }
+    ],
+    labor: { designer: 0.01, production: 0.06, qc: 0.02 },
+    electricity: { power: 1.5, runTime: 0.06 },
+    paybackMachineId: "mach-laser-4060",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-laser-4060", qty: 1 },
+      { machineId: "mach-dlican", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 600,
+      actualSales: 500,
+      currentStock: 50,
+      safetyStock: 150
+    }
+  },
+  {
+    id: "prod-mica-25mm-2in",
+    name: "Móc khóa Mica Trong 2.5mm (Size 2 inch / 5cm)",
+    code: "MICA-2.5MM-2IN",
+    category: "Mica & Acrylic (Móc Khóa / Standee)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "acrylic-keychain",
+      sheetSize: "29×38cm",
+      itemSize: "2 inch (5cm)",
+      itemsPerSheet: 30,
+      unitType: "Cái"
+    },
+    materials: [
+      { name: "Phôi cắt Mica trong 2.5mm (Size 2 inch / 5cm)", qty: 1, unit: "Cái", price: 2917 },
+      { name: "In UV phẳng trên Mica (CMYK + W)", qty: 1, unit: "Lượt", price: 1500 },
+      { name: "Khoen móc khóa kim loại kèm dây xích", qty: 1, unit: "Cái", price: 1200 },
+      { name: "Túi OPP dán miệng bọc sản phẩm", qty: 1, unit: "Cái", price: 150 }
+    ],
+    labor: { designer: 0.01, production: 0.05, qc: 0.02 },
+    electricity: { power: 1.5, runTime: 0.05 },
+    paybackMachineId: "mach-laser-4060",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-laser-4060", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 800,
+      actualSales: 700,
+      currentStock: 80,
+      safetyStock: 160
+    }
+  },
+  {
+    id: "prod-mica-15mm-2in",
+    name: "Móc khóa / Thẻ Mica Trong 1.5mm (Size 2 inch / 5cm)",
+    code: "MICA-1.5MM-2IN",
+    category: "Mica & Acrylic (Móc Khóa / Standee)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "acrylic-keychain",
+      sheetSize: "29×38cm",
+      itemSize: "2 inch (5cm)",
+      itemsPerSheet: 30,
+      unitType: "Cái"
+    },
+    materials: [
+      { name: "Phôi cắt Mica trong 1.5mm (Size 2 inch / 5cm)", qty: 1, unit: "Cái", price: 1667 },
+      { name: "In UV phẳng trên Mica (CMYK + W)", qty: 1, unit: "Lượt", price: 1500 },
+      { name: "Khoen móc khóa kim loại kèm dây xích", qty: 1, unit: "Cái", price: 1200 },
+      { name: "Túi OPP dán miệng bọc sản phẩm", qty: 1, unit: "Cái", price: 150 }
+    ],
+    labor: { designer: 0.01, production: 0.04, qc: 0.02 },
+    electricity: { power: 1.5, runTime: 0.04 },
+    paybackMachineId: "mach-laser-4060",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-laser-4060", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 500,
+      actualSales: 420,
+      currentStock: 50,
+      safetyStock: 100
+    }
+  },
+
+  // 5. NHÓM ROLLS STICKER (CUỘN NHÃN DÁN - DÀI 55M)
+  {
+    id: "prod-roll-st-r38",
+    name: "Rolls Sticker Tròn Ø38mm (Cuộn 55m - 1.375 tem)",
+    code: "ROLL-ST-R38",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "Ø38mm",
+      itemsPerSheet: 1375,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Tròn Ø38mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 156 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.04, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 5000,
+      actualSales: 4500,
+      currentStock: 500,
+      safetyStock: 1000
+    }
+  },
+  {
+    id: "prod-roll-st-r51",
+    name: "Rolls Sticker Tròn Ø51mm (Cuộn 55m - 990 tem)",
+    code: "ROLL-ST-R51",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "Ø51mm",
+      itemsPerSheet: 990,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Tròn Ø51mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 268 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.055556, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 4000,
+      actualSales: 3600,
+      currentStock: 400,
+      safetyStock: 800
+    }
+  },
+  {
+    id: "prod-roll-st-r64",
+    name: "Rolls Sticker Tròn Ø64mm (Cuộn 55m - 825 tem)",
+    code: "ROLL-ST-R64",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "Ø64mm",
+      itemsPerSheet: 825,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Tròn Ø64mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 382 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.066667, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 3000,
+      actualSales: 2800,
+      currentStock: 300,
+      safetyStock: 600
+    }
+  },
+  {
+    id: "prod-roll-st-r76",
+    name: "Rolls Sticker Tròn Ø76mm (Cuộn 55m - 660 tem)",
+    code: "ROLL-ST-R76",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "Ø76mm",
+      itemsPerSheet: 660,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Tròn Ø76mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 568 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.083333, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 2500,
+      actualSales: 2200,
+      currentStock: 250,
+      safetyStock: 500
+    }
+  },
+  {
+    id: "prod-roll-st-r102",
+    name: "Rolls Sticker Tròn Ø102mm (Cuộn 55m - 495 tem)",
+    code: "ROLL-ST-R102",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "Ø102mm",
+      itemsPerSheet: 495,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Tròn Ø102mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 949 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.111111, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 2000,
+      actualSales: 1700,
+      currentStock: 200,
+      safetyStock: 400
+    }
+  },
+  {
+    id: "prod-roll-st-s51",
+    name: "Rolls Sticker Vuông 51×51mm (Cuộn 55m - 990 tem)",
+    code: "ROLL-ST-S51",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "51×51mm",
+      itemsPerSheet: 990,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Vuông 51×51mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 268 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.055556, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 3000,
+      actualSales: 2700,
+      currentStock: 300,
+      safetyStock: 600
+    }
+  },
+  {
+    id: "prod-roll-st-s64",
+    name: "Rolls Sticker Vuông 64×64mm (Cuộn 55m - 825 tem)",
+    code: "ROLL-ST-S64",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "64×64mm",
+      itemsPerSheet: 825,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Vuông 64×64mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 382 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.066667, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 2500,
+      actualSales: 2200,
+      currentStock: 250,
+      safetyStock: 500
+    }
+  },
+  {
+    id: "prod-roll-st-s76",
+    name: "Rolls Sticker Vuông 76×76mm (Cuộn 55m - 660 tem)",
+    code: "ROLL-ST-S76",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "76×76mm",
+      itemsPerSheet: 660,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Vuông 76×76mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 568 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.083333, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 2000,
+      actualSales: 1800,
+      currentStock: 200,
+      safetyStock: 400
+    }
+  },
+  {
+    id: "prod-roll-st-s102",
+    name: "Rolls Sticker Vuông 102×102mm (Cuộn 55m - 495 tem)",
+    code: "ROLL-ST-S102",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "102×102mm",
+      itemsPerSheet: 495,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Vuông 102×102mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 949 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.111111, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 1500,
+      actualSales: 1300,
+      currentStock: 150,
+      safetyStock: 300
+    }
+  },
+  {
+    id: "prod-roll-st-rect-76x51",
+    name: "Rolls Sticker Chữ Nhật 76×51mm (Cuộn 55m - 990 tem)",
+    code: "ROLL-ST-RECT-76x51",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "76×51mm",
+      itemsPerSheet: 990,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Chữ Nhật 76×51mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 379 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.055556, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 3000,
+      actualSales: 2600,
+      currentStock: 300,
+      safetyStock: 600
+    }
+  },
+  {
+    id: "prod-roll-st-rect-102x51",
+    name: "Rolls Sticker Chữ Nhật 102×51mm (Cuộn 55m - 990 tem)",
+    code: "ROLL-ST-RECT-102x51",
+    category: "Cuộn Nhãn Dán (Rolls Sticker)",
+    factoryType: "In",
+    profitPercentage: 25,
+    overheadPercentage: 10,
+    layout: {
+      preset: "roll-sticker",
+      sheetSize: "Cuộn 55m",
+      itemSize: "102×51mm",
+      itemsPerSheet: 990,
+      unitType: "Tem"
+    },
+    materials: [
+      { name: "Phôi Rolls Sticker Chữ Nhật 102×51mm (Cuộn 55m)", qty: 1, unit: "Tem", price: 475 },
+      { name: "Mực in phun Decal cuộn khổ lớn (Mực dầu/Eco-Solvent)", qty: 0.055556, unit: "Mét", price: 12000 }
+    ],
+    labor: { designer: 0.002, production: 0.015, qc: 0.005 },
+    electricity: { power: 1.2, runTime: 0.015 },
+    paybackMachineId: "mach-epson-roll",
+    paybackMachineQty: 1,
+    paybackMachines: [
+      { machineId: "mach-epson-roll", qty: 1 }
+    ],
+    forecast: {
+      salesForecast: 2500,
+      actualSales: 2100,
+      currentStock: 250,
+      safetyStock: 500
     }
   }
 ];
@@ -3212,6 +3747,8 @@ const PRODUCT_CATEGORIES = [
   { id: "calendar", name: "Lịch để bàn (Calendar)", icon: "📅", match: (c) => /lịch|calendar/i.test(c || '') },
   { id: "giftbook", name: "Sổ thẻ (Gift Card Book)", icon: "🎁", match: (c) => /sổ|gift.*card|book/i.test(c || '') },
   { id: "cards", name: "Bài in & Cards (Playing / Uno)", icon: "🃏", match: (c) => /bài|card|uno|playing/i.test(c || '') },
+  { id: "acrylic", name: "Mica & Acrylic (Móc Khóa / Standee)", icon: "💎", match: (c) => /mica|acrylic|móc khóa|standee/i.test(c || '') },
+  { id: "rollsticker", name: "Cuộn Nhãn Dán (Rolls Sticker)", icon: "📜", match: (c) => /cuộn nhãn|rolls sticker|roll sticker/i.test(c || '') },
   { id: "sticker", name: "Nhãn dán & Decal (Sticker)", icon: "🏷️", match: (c) => /nhãn|sticker|decal|uv/i.test(c || '') },
   { id: "embroidery", name: "Thêu vi tính & May mặc", icon: "🧵", match: (c) => /thêu|thời trang|phụ kiện|áo|mũ|hoodie/i.test(c || '') },
 ];
