@@ -649,6 +649,10 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.02, production: 0.15, qc: 0.05 },
     electricity: { power: 2.5, runTime: 0.2 },
     overheadPercentage: 10,
+    paybackMachines: [
+      { machineId: "mach-konica", qty: 1 },
+      { machineId: "mach-cat-be-5", qty: 1 }
+    ],
     paybackMachineId: "mach-konica",
     paybackMachineQty: 1,
     forecast: {
@@ -683,6 +687,11 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.02, production: 0.12, qc: 0.04 },
     electricity: { power: 2.5, runTime: 0.15 },
     overheadPercentage: 10,
+    paybackMachines: [
+      { machineId: "mach-konica", qty: 1 },
+      { machineId: "mach-cat-be-5", qty: 1 },
+      { machineId: "mach-bambu-a1", qty: 1 }
+    ],
     paybackMachineId: "mach-konica",
     paybackMachineQty: 1,
     forecast: {
@@ -741,6 +750,10 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.02, production: 0.15, qc: 0.05 },
     electricity: { power: 2.5, runTime: 0.2 },
     overheadPercentage: 10,
+    paybackMachines: [
+      { machineId: "mach-konica", qty: 1 },
+      { machineId: "mach-cat-be-5", qty: 1 }
+    ],
     paybackMachineId: "mach-konica",
     paybackMachineQty: 1,
     forecast: {
@@ -779,7 +792,7 @@ const MOCK_PRODUCTS = [
   },
   {
     id: "prod-giftcard-5p-matte",
-    name: "Sổ Thẻ Gift Card Book (5 trang - Bìa Mờ)",
+    name: "Gift Card Book (5 trang - Bìa Mờ)",
     code: "GCB-05P-MATTE",
     category: "Sổ thẻ (Gift Card Book)",
     factoryType: "In",
@@ -814,7 +827,7 @@ const MOCK_PRODUCTS = [
   },
   {
     id: "prod-giftcard-5p-holo",
-    name: "Sổ Thẻ Gift Card Book (5 trang - Bìa Hologram)",
+    name: "Gift Card Book (5 trang - Bìa Hologram)",
     code: "GCB-05P-HOLO",
     category: "Sổ thẻ (Gift Card Book)",
     factoryType: "In",
@@ -849,7 +862,7 @@ const MOCK_PRODUCTS = [
   },
   {
     id: "prod-giftcard-10p-matte",
-    name: "Sổ Thẻ Quà Tặng Gift Card Book (10 trang - Bìa Mờ)",
+    name: "Gift Card Book (10 trang - Bìa Mờ)",
     code: "GCB-10P-MATTE",
     category: "Sổ thẻ (Gift Card Book)",
     factoryType: "In",
@@ -884,7 +897,7 @@ const MOCK_PRODUCTS = [
   },
   {
     id: "prod-giftcard-10p-holo",
-    name: "Sổ Thẻ Quà Tặng Gift Card Book (10 trang - Bìa Hologram)",
+    name: "Gift Card Book (10 trang - Bìa Hologram)",
     code: "GCB-10P-HOLO",
     category: "Sổ thẻ (Gift Card Book)",
     factoryType: "In",
@@ -919,7 +932,7 @@ const MOCK_PRODUCTS = [
   },
   {
     id: "prod-giftcard-15p-matte",
-    name: "Sổ Thẻ Gift Card Book (15 trang - Bìa Mờ)",
+    name: "Gift Card Book (15 trang - Bìa Mờ)",
     code: "GCB-15P-MATTE",
     category: "Sổ thẻ (Gift Card Book)",
     factoryType: "In",
@@ -954,7 +967,7 @@ const MOCK_PRODUCTS = [
   },
   {
     id: "prod-giftcard-15p-holo",
-    name: "Sổ Thẻ Gift Card Book (15 trang - Bìa Hologram)",
+    name: "Gift Card Book (15 trang - Bìa Hologram)",
     code: "GCB-15P-HOLO",
     category: "Sổ thẻ (Gift Card Book)",
     factoryType: "In",
@@ -989,7 +1002,7 @@ const MOCK_PRODUCTS = [
   },
   {
     id: "prod-giftcard-20p-matte",
-    name: "Sổ Thẻ Gift Card Book (20 trang - Bìa Mờ)",
+    name: "Gift Card Book (20 trang - Bìa Mờ)",
     code: "GCB-20P-MATTE",
     category: "Sổ thẻ (Gift Card Book)",
     factoryType: "In",
@@ -1024,7 +1037,7 @@ const MOCK_PRODUCTS = [
   },
   {
     id: "prod-giftcard-20p-holo",
-    name: "Sổ Thẻ Quà Tặng Gift Card Book (20 trang - Bìa Hologram)",
+    name: "Gift Card Book (20 trang - Bìa Hologram)",
     code: "GCB-20P-HOLO",
     category: "Sổ thẻ (Gift Card Book)",
     factoryType: "In",
@@ -1161,6 +1174,11 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.03, qc: 0.01 },
     electricity: { power: 1.5, runTime: 0.05 },
     overheadPercentage: 5,
+    paybackMachines: [
+      { machineId: "mach-konica", qty: 0.025 },
+      { machineId: "mach-cat-be-5", qty: 1 },
+      { machineId: "mach-can-mang", qty: 1 }
+    ],
     paybackMachineId: "mach-konica",
     paybackMachineQty: 0.025,
     forecast: {
@@ -1217,6 +1235,10 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.04, qc: 0.015 },
     electricity: { power: 2.2, runTime: 0.08 },
     overheadPercentage: 6,
+    paybackMachines: [
+      { machineId: "mach-roland-lg-640", qty: 0.003289 },
+      { machineId: "mach-graphtec-fc9000", qty: 1 }
+    ],
     paybackMachineId: "mach-roland-lg-640",
     paybackMachineQty: 0.003289,
     forecast: {
@@ -1246,6 +1268,10 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.04, qc: 0.015 },
     electricity: { power: 2.2, runTime: 0.08 },
     overheadPercentage: 6,
+    paybackMachines: [
+      { machineId: "mach-roland-lg-640", qty: 0.003289 },
+      { machineId: "mach-graphtec-fc9000", qty: 1 }
+    ],
     paybackMachineId: "mach-roland-lg-640",
     paybackMachineQty: 0.003289,
     forecast: {
@@ -1331,6 +1357,10 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.04, qc: 0.015 },
     electricity: { power: 2.2, runTime: 0.08 },
     overheadPercentage: 6,
+    paybackMachines: [
+      { machineId: "mach-dlican", qty: 0.003289 },
+      { machineId: "mach-graphtec-fc9000", qty: 1 }
+    ],
     paybackMachineId: "mach-dlican",
     paybackMachineQty: 0.003289,
     forecast: {
@@ -1361,8 +1391,13 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.005, production: 0.05, qc: 0.015 },
     electricity: { power: 2.4, runTime: 0.09 },
     overheadPercentage: 6,
-    paybackMachineId: "mach-dlican",
-    paybackMachineQty: 0.003289,
+    paybackMachines: [
+      { machineId: "mach-roland-vg3-640", qty: 1 },
+      { machineId: "mach-can-mang-cuon", qty: 1 },
+      { machineId: "mach-graphtec-fc9000", qty: 1 }
+    ],
+    paybackMachineId: "mach-roland-vg3-640",
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 3000,
       actualSales: 2800,
@@ -1391,8 +1426,12 @@ const MOCK_PRODUCTS = [
     labor: { designer: 0.01, production: 0.08, qc: 0.02 },
     electricity: { power: 3.0, runTime: 0.12 },
     overheadPercentage: 8,
+    paybackMachines: [
+      { machineId: "mach-uvdtf-grando", qty: 1 },
+      { machineId: "mach-graphtec-ce8000-60", qty: 1 }
+    ],
     paybackMachineId: "mach-uvdtf-grando",
-    paybackMachineQty: 0.011905,
+    paybackMachineQty: 1,
     forecast: {
       salesForecast: 2000,
       actualSales: 1850,
@@ -2403,15 +2442,19 @@ class AppStateManager {
       "MICA-1.5MM-2IN": "MICA-1.5MM"
     };
 
-    const CURRENT_VERSION = "v25.7_reorder_pricing_variants";
+    const CURRENT_VERSION = "v26.0_update_10_products_machines";
     const migratedVer = localStorage.getItem("factory_version_migrated");
     if (migratedVer !== CURRENT_VERSION) {
       localStorage.setItem("factory_version_migrated", CURRENT_VERSION);
       let customProducts = [];
       const saved = localStorage.getItem("factory_products_v2");
+      let existingCustomVariantsMap = {};
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
+          parsed.forEach(p => {
+            if (p.customVariants) existingCustomVariantsMap[p.id] = p.customVariants;
+          });
           customProducts = parsed.filter(p => !deletedIds.includes(p.id) && (p.code ? !deletedIds.includes(p.code) : true) && p.id !== 'prod-4' && p.id !== 'prod-5' && !MOCK_PRODUCTS.some(mp => mp.id === p.id || (p.code && mp.code === p.code) || (p.code && SKU_MIGRATION_MAP[p.code] === mp.code)));
           customProducts.forEach(p => {
             if (p.code && SKU_MIGRATION_MAP[p.code]) p.code = SKU_MIGRATION_MAP[p.code];
@@ -2422,6 +2465,11 @@ class AppStateManager {
         ...JSON.parse(JSON.stringify(MOCK_PRODUCTS)).filter(mp => !deletedIds.includes(mp.id) && (mp.code ? !deletedIds.includes(mp.code) : true)),
         ...customProducts
       ];
+      freshProducts.forEach(p => {
+        if (existingCustomVariantsMap[p.id]) {
+          p.customVariants = existingCustomVariantsMap[p.id];
+        }
+      });
       localStorage.setItem("factory_products_v2", JSON.stringify(freshProducts));
       return freshProducts.map(processProduct);
     }
@@ -4890,6 +4938,11 @@ function getProductVariantList(product, currentMatCost) {
       { size: '5 Mét dài', factor: 5.0, note: "Cuộn 5 mét", matCost: Math.round(currentMatCost * 5.0) },
       { size: '10 Mét dài', factor: 10.0, note: "Cuộn 10 mét", matCost: Math.round(currentMatCost * 10.0) },
       { size: '50 Mét (Cuộn)', factor: 50.0, note: "Nguyên cuộn 50m", matCost: Math.round(currentMatCost * 50.0) }
+    ];
+  } else if (name.includes("lịch") || cat.includes("lịch") || name.includes("gift card") || cat.includes("gift card") || name.includes("playing cards") || cat.includes("playing cards") || name.includes("bài in") || cat.includes("bài in") || name.includes("bộ bài")) {
+    // Nhóm Lịch Để Bàn, Gift Card Book, Bộ Bài Playing Cards: Chỉ có duy nhất 1 size Chuẩn
+    list = [
+      { size: 'Tiêu chuẩn', factor: 1.0, note: "Quy cách chuẩn hoàn thiện - Mặc định", isDefault: true, matCost: currentMatCost }
     ];
   } else {
     list = [
