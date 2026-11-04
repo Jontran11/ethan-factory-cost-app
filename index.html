@@ -12,7 +12,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=25.6">
+  <link rel="stylesheet" href="style.css?v=25.7">
 </head>
 <body>
   <!-- Access Protection Login Overlay -->
@@ -389,343 +389,403 @@
                   </div>
                 </div>
 
-                <!-- Section: Quy Cách Xếp Khổ In (Imposition Layout) - Hiển thị tùy theo sản phẩm -->
-                <div class="cost-section" id="layout-control-container" style="background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
-                  <!-- Header with Checkbox Toggle -->
-                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                <!-- ======================================================== -->
+                <!-- PHẦN 1: CHI PHÍ VẬN HÀNH & KHẤU HAO CHUNG (ÁP DỤNG MỌI SIZE) -->
+                <!-- ======================================================== -->
+                <div style="background: rgba(99, 102, 241, 0.03); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(99, 102, 241, 0.15); padding-bottom: 0.65rem; flex-wrap: wrap; gap: 0.5rem;">
                     <div>
-                      <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #818cf8; font-weight: 600; font-size: 0.95rem; margin: 0;">
-                        <input type="checkbox" id="product-has-layout" class="calc-trigger" style="width: 17px; height: 17px; accent-color: #6366f1; cursor: pointer;">
-                        <span>📐 Quy Cách Xếp Khổ In (Imposition Layout)</span>
-                      </label>
-                      <p class="text-secondary" style="font-size: 0.72rem; margin: 0.2rem 0 0 1.6rem;">
-                        Bật cấu hình này nếu sản phẩm in ấn cần chia con trên khổ phôi (Decal, Bài, Lịch, Cuộn...). Tắt nếu tính định mức trực tiếp.
+                      <h4 style="color: #818cf8; font-size: 0.95rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <span>⚙️</span> PHẦN 1: CHI PHÍ VẬN HÀNH &amp; KHẤU HAO CHUNG (CỐ ĐỊNH CHO MỌI SIZE)
+                      </h4>
+                      <p style="font-size: 0.72rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">
+                        Gồm nhân công trực tiếp, chi phí quản lý phân bổ và khấu hao máy móc. Chi phí này là chi phí nền cố định cho 1 con hàng.
                       </p>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                      <span class="badge-factory-type" id="product-layout-status-badge" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 4px;">
-                        Đang áp dụng
-                      </span>
-                      <span class="badge-factory-type" id="imposition-unit-badge" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 4px;">Khổ Tờ (Sheet)</span>
+                    <div style="text-align: right; background: rgba(56, 189, 248, 0.08); padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.25);">
+                      <span style="font-size: 0.7rem; color: #a5b4fc; text-transform: uppercase; font-weight: 600;">Tổng Vận Hành Chung:</span>
+                      <div style="font-size: 1.15rem; font-weight: 700; color: #38bdf8;">₫<span id="calc-shared-ops-cost">0</span> <span style="font-size: 0.72rem; color: #34d399; font-weight: normal;" id="calc-shared-ops-after3y-label">(Sau 3n: ₫<span id="calc-shared-ops-cost-after3y">0</span>)</span></div>
                     </div>
                   </div>
 
-                  <!-- Details Container: Visible only when product-has-layout is checked -->
-                  <div id="imposition-layout-details">
-                    <!-- Form Grid: 4 fields for imposition specs -->
-                    <div class="form-grid-4" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.75rem; margin-bottom: 0.85rem; margin-top: 0.75rem;">
-                      <!-- 1. Preset Quy Cách Khổ Nhanh -->
-                      <div class="form-group" style="margin-bottom: 0;">
-                        <label for="layout-preset" style="font-size: 0.75rem; color: #a5b4fc;">Mẫu quy cách nhanh:</label>
-                        <select id="layout-preset" class="form-input" style="min-height: 38px; font-size: 0.78rem; background: var(--bg-input);">
-                          <option value="">-- Tùy chỉnh tự do --</option>
-                          <option value="decal-33x48">Decal Sữa/Trong (Khổ 33x48cm)</option>
-                          <option value="decal-33x35">Decal Bạc/Kraft (Khổ 33x35.4cm)</option>
-                          <option value="decal-cuon-127">Decal Cuộn Khổ 1.27m (Siêu trong, Bạc, Holo, Proton)</option>
-                          <option value="decal-cuon-120">Decal Cuộn Khổ 1.2m/1.22m (Vàng bóng, Mccal)</option>
-                          <option value="uv-dtf-roll">UV-DTF Cuộn (Khổ 0.62 x 1m - Vùng in 55x90cm)</option>
-                          <option value="skin-card">Skin Card ATM (Khổ 33x48cm)</option>
-                          <option value="playing-cards">Bài Playing Cards (Khổ 33x48cm - 3 tờ/bộ)</option>
-                          <option value="calendar-a4">Lịch Để Bàn A4 (Khổ A4 - 13 tờ/quyển)</option>
-                          <option value="gift-card-book">Sổ Thẻ Gift Card Book (Khổ 33x48cm)</option>
-                          <option value="hop-giay">Hộp Giấy Ivory (Khổ 33x48cm - 4 hộp/tờ)</option>
-                        </select>
-                      </div>
-
-                      <!-- 2. Khổ vật tư in -->
-                      <div class="form-group" style="margin-bottom: 0;">
-                        <label for="layout-sheet-size" style="font-size: 0.75rem; color: #a5b4fc;">Kích thước khổ phôi in:</label>
-                        <input type="text" id="layout-sheet-size" placeholder="Ví dụ: 33x48cm hoặc 1.27 x 1m" class="form-input" style="min-height: 38px; font-size: 0.78rem;">
-                      </div>
-
-                      <!-- 3. Kích thước con hàng (Size/Variation) -->
-                      <div class="form-group" style="margin-bottom: 0;">
-                        <label for="layout-item-size" style="font-size: 0.75rem; color: #a5b4fc;">Kích thước con (Item Size):</label>
-                        <div style="display: flex; gap: 0.35rem;">
-                          <select id="layout-item-size-select" class="form-input" style="min-height: 38px; font-size: 0.78rem; max-width: 110px; background: var(--bg-input);">
-                            <option value="1.5 inch">1.5 inch</option>
-                            <option value="2.0 inch" selected>2.0 inch</option>
-                            <option value="3.0 inch">3.0 inch</option>
-                            <option value="4.0 inch">4.0 inch</option>
-                            <option value="5.0 inch">5.0 inch</option>
-                            <option value="6.0 inch">6.0 inch</option>
-                            <option value="7.0 inch">7.0 inch</option>
-                            <option value="8.0 inch">8.0 inch</option>
-                            <option value="9.0 inch">9.0 inch</option>
-                            <option value="10.0 inch">10.0 inch</option>
-                            <option value="12.0 inch">12.0 inch</option>
-                            <option value="14.0 inch">14.0 inch</option>
-                            <option value="16.0 inch">16.0 inch</option>
-                            <option value="18.0 inch">18.0 inch</option>
-                            <option value="20.0 inch">20.0 inch</option>
-                            <option value="25.0 inch">25.0 inch</option>
-                            <option value="30.0 inch">30.0 inch</option>
-                            <option value="custom">Tùy chọn...</option>
-                          </select>
-                          <input type="text" id="layout-item-size" value="2.0 inch" placeholder="Size" class="form-input" style="min-height: 38px; font-size: 0.78rem; flex: 1;">
+                  <!-- 1. Labor Cost Section -->
+                  <div class="cost-section" style="margin-bottom: 1.25rem;">
+                    <h4>1. Chi Phí Nhân Công Trực Tiếp (Direct Labor)</h4>
+                    
+                    <!-- Conditional Labor Input for Printing Factory -->
+                    <div class="factory-labor-block active-for-print" id="labor-print-block">
+                      <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label for="labor-print-designer">Khâu Thiết Kế (Designer POD) - Số giờ/SP</label>
+                          <input type="text" inputmode="decimal" id="labor-print-designer" value="0.01" class="form-input calc-trigger">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Lương/Giờ</label>
+                          <div class="calculated-box" id="rate-print-designer" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Thành tiền</label>
+                          <div class="calculated-box" id="cost-print-designer" style="min-height:48px; font-weight: 600;">₫0</div>
                         </div>
                       </div>
 
-                      <!-- 4. Số con (items) trên 1 khổ -->
-                      <div class="form-group" style="margin-bottom: 0;">
-                        <label for="layout-items-per-sheet" style="font-size: 0.75rem; color: #a5b4fc;">Số con trên 1 khổ (Yield):</label>
-                        <input type="number" step="0.001" min="0.001" id="layout-items-per-sheet" value="40" class="form-input font-bold" style="min-height: 38px; font-size: 0.95rem; color: #38bdf8; text-align: center;">
+                      <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label for="labor-print-production">Khâu Sản Xuất (In POD) - Số giờ/SP</label>
+                          <input type="text" inputmode="decimal" id="labor-print-production" value="0.1" class="form-input calc-trigger">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Lương/Giờ</label>
+                          <div class="calculated-box" id="rate-print-production" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Thành tiền</label>
+                          <div class="calculated-box" id="cost-print-production" style="min-height:48px; font-weight: 600;">₫0</div>
+                        </div>
+                      </div>
+
+                      <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label for="labor-print-qc">Khâu Kiểm Hàng (QC In) - Số giờ/SP</label>
+                          <input type="text" inputmode="decimal" id="labor-print-qc" value="0.05" class="form-input calc-trigger">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Lương/Giờ</label>
+                          <div class="calculated-box" id="rate-print-qc" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Thành tiền</label>
+                          <div class="calculated-box" id="cost-print-qc" style="min-height:48px; font-weight: 600;">₫0</div>
+                        </div>
+                      </div>
+
+                      <div class="section-summary-row" style="margin-top: 0.5rem;">
+                        <span>Tổng tiền công khâu In:</span>
+                        <strong id="calc-labor-print-cost">₫0</strong>
                       </div>
                     </div>
 
-                    <!-- Sync Yield to BOM Row Action -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.25); border-radius: 6px; border: 1px dashed rgba(255,255,255,0.08);">
-                      <div style="font-size: 0.74rem; color: var(--text-secondary);">
-                        ℹ️ Định mức tiêu hao 1 sản phẩm: <strong id="layout-unit-consumption" style="color: #34d399;">0.025</strong> <span id="layout-unit-label">Tờ</span> / con (= 1 ÷ <span id="layout-yield-label">40</span> con/khổ)
+                    <!-- Conditional Labor Input for Embroidery Factory -->
+                    <div class="factory-labor-block active-for-embroid" id="labor-embroid-block" style="display: none;">
+                      <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label for="labor-embroid-designer">Thiết kế thêu (Designer EMB) - Số giờ/SP</label>
+                          <input type="text" inputmode="decimal" id="labor-embroid-designer" value="0.02" class="form-input calc-trigger">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Lương/Giờ</label>
+                          <div class="calculated-box" id="rate-embroid-designer" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Thành tiền</label>
+                          <div class="calculated-box" id="cost-embroid-designer" style="min-height:48px; font-weight: 600;">₫0</div>
+                        </div>
                       </div>
-                      <button type="button" class="btn btn-xs btn-outline" id="btn-sync-yield-to-bom" style="border-color: #34d399; color: #34d399; display: inline-flex; align-items: center; gap: 0.3rem;">
-                        <span>⚡</span> Cập nhật hệ số vào Bảng Vật Tư bên dưới
-                      </button>
+
+                      <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label for="labor-embroid-laser">Chuẩn bị Laser (Preparing Laser) - Số giờ/SP</label>
+                          <input type="text" inputmode="decimal" id="labor-embroid-laser" value="0.01" class="form-input calc-trigger">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Lương/Giờ</label>
+                          <div class="calculated-box" id="rate-embroid-laser" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Thành tiền</label>
+                          <div class="calculated-box" id="cost-embroid-laser" style="min-height:48px; font-weight: 600;">₫0</div>
+                        </div>
+                      </div>
+
+                      <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label for="labor-embroid-production">Vận hành máy (Production EMB) - Số giờ/SP</label>
+                          <input type="text" inputmode="decimal" id="labor-embroid-production" value="0.15" class="form-input calc-trigger">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Lương/Giờ</label>
+                          <div class="calculated-box" id="rate-embroid-production" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Thành tiền</label>
+                          <div class="calculated-box" id="cost-embroid-production" style="min-height:48px; font-weight: 600;">₫0</div>
+                        </div>
+                      </div>
+
+                      <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label for="labor-embroid-qc">Kiểm hàng thêu (QC EMB) - Số giờ/SP</label>
+                          <input type="text" inputmode="decimal" id="labor-embroid-qc" value="0.05" class="form-input calc-trigger">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Lương/Giờ</label>
+                          <div class="calculated-box" id="rate-embroid-qc" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.5rem;">
+                          <label>Thành tiền</label>
+                          <div class="calculated-box" id="cost-embroid-qc" style="min-height:48px; font-weight: 600;">₫0</div>
+                        </div>
+                      </div>
+
+                      <div class="section-summary-row" style="margin-top: 0.5rem;">
+                        <span>Tổng tiền công khâu Thêu:</span>
+                        <strong id="calc-labor-embroid-cost">₫0</strong>
+                      </div>
                     </div>
                   </div>
 
-                  <!-- Disabled Message: Visible only when product-has-layout is UNCHECKED -->
-                  <div id="imposition-layout-disabled-msg" style="display: none; padding: 0.75rem 1rem; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 6px; font-size: 0.78rem; color: var(--text-muted); text-align: center;">
-                    Sản phẩm này không cấu hình xếp khổ in. Định mức vật tư được tính trực tiếp theo từng đơn vị sản phẩm (Cái / Con / Hộp).
-                  </div>
-                </div>
-
-                <!-- Part 1: Raw Materials Cost Section -->
-                <div class="cost-section">
-                  <div class="section-title-bar">
-                    <h4>1. Nguyên Vật Liệu Trực Tiếp (Direct Materials)</h4>
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                      <button type="button" class="btn btn-xs btn-outline" id="btn-open-material-catalog" style="border-color: #6366f1; color: #a5b4fc; background: rgba(99, 102, 241, 0.1);">
-                        📚 Chọn từ Thư viện
-                      </button>
-                      <button type="button" class="btn btn-xs btn-outline" id="btn-add-material-row">
-                        + Thêm dòng trống
-                      </button>
-                    </div>
-                  </div>
-                  <div class="table-responsive">
-                    <table class="inputs-table" id="materials-table">
-                      <thead>
-                        <tr>
-                          <th>Tên vật tư / Phụ liệu</th>
-                          <th width="120">Số lượng (Qty)</th>
-                          <th width="120">Đơn vị</th>
-                          <th width="160">Đơn giá (₫)</th>
-                          <th width="160">Thành tiền (₫)</th>
-                          <th width="50"></th>
-                        </tr>
-                      </thead>
-                      <tbody id="materials-tbody">
-                        <!-- Materials rows will be dynamically appended here -->
-                      </tbody>
-                    </table>
-                  </div>
-                  <div class="section-summary-row">
-                    <span>Tổng chi phí nguyên vật liệu:</span>
-                    <strong id="summary-materials-cost">₫0</strong>
-                  </div>
-                </div>
-
-                <!-- Part 2: Labor Cost Section -->
-                <div class="cost-section">
-                  <h4>2. Chi Phí Nhân Công Trực Tiếp (Direct Labor)</h4>
-                  
-                  <!-- Conditional Labor Input for Printing Factory -->
-                  <div class="factory-labor-block active-for-print" id="labor-print-block">
-                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label for="labor-print-designer">Khâu Thiết Kế (Designer POD) - Số giờ/SP</label>
-                        <input type="number" step="0.001" min="0" id="labor-print-designer" value="0.01" class="form-input calc-trigger">
+                  <!-- 2. Factory Overheads -->
+                  <div class="cost-section" style="margin-bottom: 1.25rem;">
+                    <h4>2. Chi Phí Quản Lý Phân Bổ (Factory Overheads - Định Phí)</h4>
+                    <div class="form-grid-3">
+                      <div class="form-group">
+                        <label for="overhead-rate-percentage">Tỷ lệ phân bổ chi phí chung (%)</label>
+                        <input type="text" inputmode="decimal" id="overhead-rate-percentage" value="10" class="form-input calc-trigger">
+                        <span class="help-text">Phần trăm định phí quản lý chung tính trên Tổng Biến Phí</span>
                       </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Lương/Giờ</label>
-                        <div class="calculated-box" id="rate-print-designer" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
+                      <div class="form-group">
+                        <!-- Spacer -->
                       </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Thành tiền</label>
-                        <div class="calculated-box" id="cost-print-designer" style="min-height:48px; font-weight: 600;">₫0</div>
+                      <div class="form-group">
+                        <label>Thành tiền định phí phân bổ</label>
+                        <div class="calculated-box" id="calc-overhead-cost" style="color: #fb7185;">₫0</div>
                       </div>
-                    </div>
-
-                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label for="labor-print-production">Khâu Sản Xuất (In POD) - Số giờ/SP</label>
-                        <input type="number" step="0.001" min="0" id="labor-print-production" value="0.1" class="form-input calc-trigger">
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Lương/Giờ</label>
-                        <div class="calculated-box" id="rate-print-production" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Thành tiền</label>
-                        <div class="calculated-box" id="cost-print-production" style="min-height:48px; font-weight: 600;">₫0</div>
-                      </div>
-                    </div>
-
-                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label for="labor-print-qc">Khâu Kiểm Hàng (QC In) - Số giờ/SP</label>
-                        <input type="number" step="0.001" min="0" id="labor-print-qc" value="0.05" class="form-input calc-trigger">
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Lương/Giờ</label>
-                        <div class="calculated-box" id="rate-print-qc" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Thành tiền</label>
-                        <div class="calculated-box" id="cost-print-qc" style="min-height:48px; font-weight: 600;">₫0</div>
-                      </div>
-                    </div>
-
-                    <div class="section-summary-row" style="margin-top: 0.5rem;">
-                      <span>Tổng tiền công khâu In:</span>
-                      <strong id="calc-labor-print-cost">₫0</strong>
                     </div>
                   </div>
 
-                  <!-- Conditional Labor Input for Embroidery Factory -->
-                  <div class="factory-labor-block active-for-embroid" id="labor-embroid-block" style="display: none;">
-                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label for="labor-embroid-designer">Thiết kế thêu (Designer EMB) - Số giờ/SP</label>
-                        <input type="number" step="0.001" min="0" id="labor-embroid-designer" value="0.02" class="form-input calc-trigger">
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Lương/Giờ</label>
-                        <div class="calculated-box" id="rate-embroid-designer" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Thành tiền</label>
-                        <div class="calculated-box" id="cost-embroid-designer" style="min-height:48px; font-weight: 600;">₫0</div>
-                      </div>
-                    </div>
-
-                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label for="labor-embroid-laser">Chuẩn bị Laser (Preparing Laser) - Số giờ/SP</label>
-                        <input type="number" step="0.001" min="0" id="labor-embroid-laser" value="0.01" class="form-input calc-trigger">
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Lương/Giờ</label>
-                        <div class="calculated-box" id="rate-embroid-laser" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Thành tiền</label>
-                        <div class="calculated-box" id="cost-embroid-laser" style="min-height:48px; font-weight: 600;">₫0</div>
-                      </div>
-                    </div>
-
-                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label for="labor-embroid-production">Vận hành máy (Production EMB) - Số giờ/SP</label>
-                        <input type="number" step="0.001" min="0" id="labor-embroid-production" value="0.15" class="form-input calc-trigger">
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Lương/Giờ</label>
-                        <div class="calculated-box" id="rate-embroid-production" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Thành tiền</label>
-                        <div class="calculated-box" id="cost-embroid-production" style="min-height:48px; font-weight: 600;">₫0</div>
-                      </div>
-                    </div>
-
-                    <div class="form-grid-3" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 0.75rem;">
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label for="labor-embroid-qc">Kiểm hàng thêu (QC EMB) - Số giờ/SP</label>
-                        <input type="number" step="0.001" min="0" id="labor-embroid-qc" value="0.05" class="form-input calc-trigger">
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Lương/Giờ</label>
-                        <div class="calculated-box" id="rate-embroid-qc" style="min-height:48px; font-size: 0.85rem; color: var(--text-secondary);">₫0</div>
-                      </div>
-                      <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label>Thành tiền</label>
-                        <div class="calculated-box" id="cost-embroid-qc" style="min-height:48px; font-weight: 600;">₫0</div>
-                      </div>
-                    </div>
-
-                    <div class="section-summary-row" style="margin-top: 0.5rem;">
-                      <span>Tổng tiền công khâu Thêu:</span>
-                      <strong id="calc-labor-embroid-cost">₫0</strong>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Part 3: Utility & Electricity Cost Section -->
-                <div class="cost-section" style="opacity: 0.85;">
-                  <h4 style="display: flex; align-items: center; justify-content: space-between;">
-                    <span>3. Chi Phí Điện Năng (Utility/Electricity Cost)</span>
-                    <span style="font-size: 0.7rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.15); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: normal;">Chuyển vào Định Phí Xưởng Hàng Tháng</span>
-                  </h4>
-                  <div style="font-size: 0.74rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.08); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; border-left: 3px solid #6366f1;">
-                    ℹ️ <strong>Lưu ý:</strong> Hiện tại nhà máy chưa có công suất thực tế từng máy, nên điện năng trực tiếp trên sản phẩm được <strong>bỏ qua (tính 0₫)</strong>. Toàn bộ tiền điện xưởng (19tr/tháng) được đưa vào <strong>Báo Cáo Định Phí Xưởng Hàng Tháng</strong>.
-                  </div>
-                  <div class="form-grid-3">
-                    <div class="form-group">
-                      <label for="utility-machine-power">Công suất máy (kW)</label>
-                      <input type="number" step="0.1" min="0" id="utility-machine-power" value="0" class="form-input calc-trigger">
-                    </div>
-                    <div class="form-group">
-                      <label for="utility-run-time">Thời gian sản xuất 1 sản phẩm (Giờ)</label>
-                      <input type="number" step="0.05" min="0" id="utility-run-time" value="0" class="form-input calc-trigger">
-                    </div>
-                    <div class="form-group">
-                      <label>Thành tiền điện trực tiếp</label>
-                      <div class="calculated-box" id="calc-electricity-cost" style="color: var(--text-muted);">₫0</div>
-                      <input type="hidden" id="utility-electricity-price" value="0">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Part 4: Factory Overheads -->
-                <div class="cost-section">
-                  <h4>4. Chi Phí Quản Lý Phân Bổ (Factory Overheads - Định Phí)</h4>
-                  <div class="form-grid-3">
-                    <div class="form-group">
-                      <label for="overhead-rate-percentage">Tỷ lệ phân bổ chi phí chung (%)</label>
-                      <input type="number" step="0.5" min="0" id="overhead-rate-percentage" value="10" class="form-input calc-trigger">
-                      <span class="help-text">Phần trăm định phí quản lý chung tính trên Tổng Biến Phí</span>
-                    </div>
-                    <div class="form-group">
-                      <!-- Spacer -->
-                    </div>
-                    <div class="form-group">
-                      <label>Thành tiền định phí phân bổ</label>
-                      <div class="calculated-box" id="calc-overhead-cost" style="color: #fb7185;">₫0</div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Part 5: CapEx Amortization Surcharge (Multi-Machine) -->
-                <div class="cost-section" style="background: rgba(245, 158, 11, 0.02); border: 1px dashed rgba(245, 158, 11, 0.25); padding: 1.25rem; border-radius: 8px; margin-top: 1rem;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
-                    <h4 style="color: #f59e0b; font-size: 0.85rem; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
-                      <span>⚙️</span> 5. Khấu Hao Máy Móc Trên Sản Phẩm (Bổ Sung Nhiều Máy)
+                  <!-- 3. Utility & Electricity Cost Section -->
+                  <div class="cost-section" style="opacity: 0.85; margin-bottom: 1.25rem;">
+                    <h4 style="display: flex; align-items: center; justify-content: space-between;">
+                      <span>3. Chi Phí Điện Năng (Utility/Electricity Cost)</span>
+                      <span style="font-size: 0.7rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.15); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: normal;">Chuyển vào Định Phí Xưởng Hàng Tháng</span>
                     </h4>
-                    <div style="display: flex; gap: 0.5rem;">
-                      <button type="button" class="btn btn-xs btn-outline" id="btn-quick-create-machine" style="font-size: 0.72rem; padding: 0.25rem 0.6rem; color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
-                        ➕ Tạo Máy Mới Vào Hệ Thống
-                      </button>
-                      <button type="button" class="btn btn-xs btn-primary" id="btn-add-product-machine-row" style="font-size: 0.72rem; padding: 0.25rem 0.6rem; background: #d97706; border-color: #f59e0b;">
-                        ➕ Bổ Sung Máy Khấu Hao
-                      </button>
+                    <div style="font-size: 0.74rem; color: #a5b4fc; background: rgba(99, 102, 241, 0.08); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; border-left: 3px solid #6366f1;">
+                      ℹ️ <strong>Lưu ý:</strong> Hiện tại nhà máy chưa có công suất thực tế từng máy, nên điện năng trực tiếp trên sản phẩm được <strong>bỏ qua (tính 0₫)</strong>. Toàn bộ tiền điện xưởng (19tr/tháng) được đưa vào <strong>Báo Cáo Định Phí Xưởng Hàng Tháng</strong>.
+                    </div>
+                    <div class="form-grid-3">
+                      <div class="form-group">
+                        <label for="utility-machine-power">Công suất máy (kW)</label>
+                        <input type="text" inputmode="decimal" id="utility-machine-power" value="0" class="form-input calc-trigger">
+                      </div>
+                      <div class="form-group">
+                        <label for="utility-run-time">Thời gian sản xuất 1 sản phẩm (Giờ)</label>
+                        <input type="text" inputmode="decimal" id="utility-run-time" value="0" class="form-input calc-trigger">
+                      </div>
+                      <div class="form-group">
+                        <label>Thành tiền điện trực tiếp</label>
+                        <div class="calculated-box" id="calc-electricity-cost" style="color: var(--text-muted);">₫0</div>
+                        <input type="hidden" id="utility-electricity-price" value="0">
+                      </div>
                     </div>
                   </div>
-                  <p style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
-                    Gán một hoặc nhiều thiết bị máy móc tham gia sản xuất sản phẩm này (ví dụ: máy in + máy cán màng + máy cắt bế). Phụ phí khấu hao sẽ được tự động cộng dồn.
-                  </p>
-                  <div id="product-machines-list-container" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
-                    <!-- Dynamic product machine rows -->
+
+                  <!-- 4. CapEx Amortization Surcharge (Multi-Machine) -->
+                  <div class="cost-section" style="background: rgba(245, 158, 11, 0.02); border: 1px dashed rgba(245, 158, 11, 0.25); padding: 1.25rem; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                      <h4 style="color: #f59e0b; font-size: 0.85rem; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                        <span>⚙️</span> 4. Khấu Hao Máy Móc Trên Sản Phẩm (Bổ Sung Nhiều Máy)
+                      </h4>
+                      <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="btn btn-xs btn-outline" id="btn-quick-create-machine" style="font-size: 0.72rem; padding: 0.25rem 0.6rem; color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
+                          ➕ Tạo Máy Mới Vào Hệ Thống
+                        </button>
+                        <button type="button" class="btn btn-xs btn-primary" id="btn-add-product-machine-row" style="font-size: 0.72rem; padding: 0.25rem 0.6rem; background: #d97706; border-color: #f59e0b;">
+                          ➕ Bổ Sung Máy Khấu Hao
+                        </button>
+                      </div>
+                    </div>
+                    <p style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                      Gán một hoặc nhiều thiết bị máy móc tham gia sản xuất sản phẩm này (ví dụ: máy in + máy cán màng + máy cắt bế). Phụ phí khấu hao sẽ được tự động cộng dồn.
+                    </p>
+                    <div id="product-machines-list-container" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
+                      <!-- Dynamic product machine rows -->
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.85rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; flex-wrap: wrap; gap: 0.5rem;">
+                      <span style="font-size: 0.78rem; color: var(--text-secondary);">Tổng phụ phí khấu hao máy móc (3 năm đầu):</span>
+                      <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+                        <span style="font-size: 0.75rem; color: #a5b4fc;" id="calc-payback-after-3y-label">Sau 3 năm (giảm 80%): <strong style="color: #34d399;" id="calc-payback-surcharge-after3y">₫0</strong></span>
+                        <strong class="font-bold" style="color: #f59e0b; font-size: 1.15rem;" id="calc-payback-surcharge">₫0</strong>
+                      </div>
+                    </div>
+                    <div id="calc-payback-info-banner" style="display: none; margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); color: #34d399; font-size: 0.72rem; border-radius: 4px;"></div>
                   </div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.85rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; flex-wrap: wrap; gap: 0.5rem;">
-                    <span style="font-size: 0.78rem; color: var(--text-secondary);">Tổng phụ phí khấu hao máy móc (3 năm đầu):</span>
-                    <div style="display: flex; align-items: baseline; gap: 0.75rem;">
-                      <span style="font-size: 0.75rem; color: #a5b4fc;" id="calc-payback-after-3y-label">Sau 3 năm (giảm 80%): <strong style="color: #34d399;" id="calc-payback-surcharge-after3y">₫0</strong></span>
-                      <strong class="font-bold" style="color: #f59e0b; font-size: 1.15rem;" id="calc-payback-surcharge">₫0</strong>
+                </div>
+
+                <!-- ======================================================== -->
+                <!-- PHẦN 2: NGUYÊN VẬT LIỆU TRỰC TIẾP & ĐỊNH MỨC BIẾN THỂ -->
+                <!-- ======================================================== -->
+                <div style="background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(16, 185, 129, 0.15); padding-bottom: 0.65rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <div>
+                      <h4 style="color: #34d399; font-size: 0.95rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <span>📦</span> PHẦN 2: NGUYÊN VẬT LIỆU TRỰC TIẾP &amp; ĐỊNH MỨC BIẾN THỂ (SIZE 2", 3",...)
+                      </h4>
+                      <p style="font-size: 0.72rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">
+                        Giá nguyên vật liệu tiêu hao biến thiên theo từng kích thước. Sau khi cộng với chi phí vận hành ở trên sẽ cho ra bảng giá thành hoàn chỉnh ở dưới cùng.
+                      </p>
                     </div>
                   </div>
-                  <div id="calc-payback-info-banner" style="display: none; margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); color: #34d399; font-size: 0.72rem; border-radius: 4px;"></div>
+
+                  <!-- Section: Quy Cách Xếp Khổ In (Imposition Layout) - Hiển thị tùy theo sản phẩm -->
+                  <div class="cost-section" id="layout-control-container" style="background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem;">
+                    <!-- Header with Checkbox Toggle -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                      <div>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #818cf8; font-weight: 600; font-size: 0.95rem; margin: 0;">
+                          <input type="checkbox" id="product-has-layout" class="calc-trigger" style="width: 17px; height: 17px; accent-color: #6366f1; cursor: pointer;">
+                          <span>📐 Quy Cách Xếp Khổ In (Imposition Layout)</span>
+                        </label>
+                        <p class="text-secondary" style="font-size: 0.72rem; margin: 0.2rem 0 0 1.6rem;">
+                          Bật cấu hình này nếu sản phẩm in ấn cần chia con trên khổ phôi (Decal, Bài, Lịch, Cuộn...). Tắt nếu tính định mức trực tiếp.
+                        </p>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="badge-factory-type" id="product-layout-status-badge" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 4px;">
+                          Đang áp dụng
+                        </span>
+                        <span class="badge-factory-type" id="imposition-unit-badge" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 4px;">Khổ Tờ (Sheet)</span>
+                      </div>
+                    </div>
+
+                    <!-- Details Container: Visible only when product-has-layout is checked -->
+                    <div id="imposition-layout-details">
+                      <!-- Form Grid: 4 fields for imposition specs -->
+                      <div class="form-grid-4" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.75rem; margin-bottom: 0.85rem; margin-top: 0.75rem;">
+                        <!-- 1. Preset Quy Cách Khổ Nhanh -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                          <label for="layout-preset" style="font-size: 0.75rem; color: #a5b4fc;">Mẫu quy cách nhanh:</label>
+                          <select id="layout-preset" class="form-input" style="min-height: 38px; font-size: 0.78rem; background: var(--bg-input);">
+                            <option value="">-- Tùy chỉnh tự do --</option>
+                            <option value="decal-33x48">Decal Sữa/Trong (Khổ 33x48cm)</option>
+                            <option value="decal-33x35">Decal Bạc/Kraft (Khổ 33x35.4cm)</option>
+                            <option value="decal-cuon-127">Decal Cuộn Khổ 1.27m (Siêu trong, Bạc, Holo, Proton)</option>
+                            <option value="decal-cuon-120">Decal Cuộn Khổ 1.2m/1.22m (Vàng bóng, Mccal)</option>
+                            <option value="uv-dtf-roll">UV-DTF Cuộn (Khổ 0.62 x 1m - Vùng in 55x90cm)</option>
+                            <option value="skin-card">Skin Card ATM (Khổ 33x48cm)</option>
+                            <option value="playing-cards">Bài Playing Cards (Khổ 33x48cm - 3 tờ/bộ)</option>
+                            <option value="calendar-a4">Lịch Để Bàn A4 (Khổ A4 - 13 tờ/quyển)</option>
+                            <option value="gift-card-book">Sổ Thẻ Gift Card Book (Khổ 33x48cm)</option>
+                            <option value="hop-giay">Hộp Giấy Ivory (Khổ 33x48cm - 4 hộp/tờ)</option>
+                          </select>
+                        </div>
+
+                        <!-- 2. Khổ vật tư in -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                          <label for="layout-sheet-size" style="font-size: 0.75rem; color: #a5b4fc;">Kích thước khổ phôi in:</label>
+                          <input type="text" id="layout-sheet-size" placeholder="Ví dụ: 33x48cm hoặc 1.27 x 1m" class="form-input" style="min-height: 38px; font-size: 0.78rem;">
+                        </div>
+
+                        <!-- 3. Kích thước con hàng (Size/Variation) -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                          <label for="layout-item-size" style="font-size: 0.75rem; color: #a5b4fc;">Kích thước con (Item Size):</label>
+                          <div style="display: flex; gap: 0.35rem;">
+                            <select id="layout-item-size-select" class="form-input" style="min-height: 38px; font-size: 0.78rem; max-width: 110px; background: var(--bg-input);">
+                              <option value="1.5 inch">1.5 inch</option>
+                              <option value="2.0 inch" selected>2.0 inch</option>
+                              <option value="3.0 inch">3.0 inch</option>
+                              <option value="4.0 inch">4.0 inch</option>
+                              <option value="5.0 inch">5.0 inch</option>
+                              <option value="6.0 inch">6.0 inch</option>
+                              <option value="7.0 inch">7.0 inch</option>
+                              <option value="8.0 inch">8.0 inch</option>
+                              <option value="9.0 inch">9.0 inch</option>
+                              <option value="10.0 inch">10.0 inch</option>
+                              <option value="12.0 inch">12.0 inch</option>
+                              <option value="14.0 inch">14.0 inch</option>
+                              <option value="16.0 inch">16.0 inch</option>
+                              <option value="18.0 inch">18.0 inch</option>
+                              <option value="20.0 inch">20.0 inch</option>
+                              <option value="25.0 inch">25.0 inch</option>
+                              <option value="30.0 inch">30.0 inch</option>
+                              <option value="custom">Tùy chọn...</option>
+                            </select>
+                            <input type="text" id="layout-item-size" value="2.0 inch" placeholder="Size" class="form-input" style="min-height: 38px; font-size: 0.78rem; flex: 1;">
+                          </div>
+                        </div>
+
+                        <!-- 4. Số con (items) trên 1 khổ -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                          <label for="layout-items-per-sheet" style="font-size: 0.75rem; color: #a5b4fc;">Số con trên 1 khổ (Yield):</label>
+                          <input type="text" inputmode="decimal" id="layout-items-per-sheet" value="40" class="form-input font-bold" style="min-height: 38px; font-size: 0.95rem; color: #38bdf8; text-align: center;">
+                        </div>
+                      </div>
+
+                      <!-- Sync Yield to BOM Row Action -->
+                      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.25); border-radius: 6px; border: 1px dashed rgba(255,255,255,0.08);">
+                        <div style="font-size: 0.74rem; color: var(--text-secondary);">
+                          ℹ️ Định mức tiêu hao 1 sản phẩm: <strong id="layout-unit-consumption" style="color: #34d399;">0.025</strong> <span id="layout-unit-label">Tờ</span> / con (= 1 ÷ <span id="layout-yield-label">40</span> con/khổ)
+                        </div>
+                        <button type="button" class="btn btn-xs btn-outline" id="btn-sync-yield-to-bom" style="border-color: #34d399; color: #34d399; display: inline-flex; align-items: center; gap: 0.3rem;">
+                          <span>⚡</span> Cập nhật hệ số vào Bảng Vật Tư bên dưới
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Disabled Message: Visible only when product-has-layout is UNCHECKED -->
+                    <div id="imposition-layout-disabled-msg" style="display: none; padding: 0.75rem 1rem; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 6px; font-size: 0.78rem; color: var(--text-muted); text-align: center;">
+                      Sản phẩm này không cấu hình xếp khổ in. Định mức vật tư được tính trực tiếp theo từng đơn vị sản phẩm (Cái / Con / Hộp).
+                    </div>
+                  </div>
+
+                  <!-- Raw Materials Cost Section -->
+                  <div class="cost-section">
+                    <div class="section-title-bar">
+                      <h4>Nguyên Vật Liệu Trực Tiếp (Direct Materials)</h4>
+                      <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button type="button" class="btn btn-xs btn-outline" id="btn-open-material-catalog" style="border-color: #6366f1; color: #a5b4fc; background: rgba(99, 102, 241, 0.1);">
+                          📚 Chọn từ Thư viện
+                        </button>
+                        <button type="button" class="btn btn-xs btn-outline" id="btn-add-material-row">
+                          + Thêm dòng trống
+                        </button>
+                      </div>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="inputs-table" id="materials-table">
+                        <thead>
+                          <tr>
+                            <th>Tên vật tư / Phụ liệu</th>
+                            <th width="120">Số lượng (Qty)</th>
+                            <th width="120">Đơn vị</th>
+                            <th width="160">Đơn giá (₫)</th>
+                            <th width="160">Thành tiền (₫)</th>
+                            <th width="50"></th>
+                          </tr>
+                        </thead>
+                        <tbody id="materials-tbody">
+                          <!-- Materials rows will be dynamically appended here -->
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="section-summary-row">
+                      <span>Tổng chi phí nguyên vật liệu:</span>
+                      <strong id="summary-materials-cost">₫0</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ======================================================== -->
+                <!-- PHẦN 3: BẢNG MA TRẬN GIÁ HOÀN CHỈNH TỔNG HỢP CÁC KÍCH THƯỚC (DƯỚI CÙNG) -->
+                <!-- ======================================================== -->
+                <div class="cost-section" id="variant-matrix-section" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem;">
+                    <div>
+                      <h4 style="color: #38bdf8; font-size: 0.95rem; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                        <span>📐</span> BẢNG GIÁ THEO KÍCH THƯỚC BIẾN THỂ (ĐÃ CỘNG NHÂN CÔNG + QUẢN LÝ + KHẤU HAO + NVL)
+                      </h4>
+                      <p style="font-size: 0.72rem; color: var(--text-secondary); margin: 0.2rem 0 0 0;">
+                        Bảng tổng hợp chi phí toàn diện cho từng kích thước biến thể (Mặc định: <strong>2 inches</strong>). Bấm vào kích thước để xem giá chi tiết.
+                      </p>
+                    </div>
+                    <div id="variant-size-pills-container" style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                      <!-- Dynamic size pills: 1.5", 2.0" (Active), 3.0", 4.0", 5.0"... -->
+                    </div>
+                  </div>
+
+                  <!-- Variant Matrix Table Container -->
+                  <div class="table-responsive" id="variant-matrix-table-container">
+                    <!-- Populated dynamically by renderVariantPricingMatrix() in app.js -->
+                  </div>
                 </div>
 
                 <!-- 3-Pillar Cost Classification Summary Cards -->
@@ -1889,7 +1949,13 @@ function doGet(e) {
   var dbSheet = ss.getSheetByName("_DB_STORAGE_");
   var val = "";
   if (dbSheet) {
-    val = dbSheet.getRange("A1").getValue();
+    var lastRow = dbSheet.getLastRow();
+    if (lastRow > 0) {
+      var chunks = dbSheet.getRange(1, 1, lastRow, 1).getValues();
+      for (var i = 0; i < chunks.length; i++) {
+        val += (chunks[i][0] || "");
+      }
+    }
   }
   if (!val) {
     var sheets = ss.getSheets();
@@ -1921,12 +1987,20 @@ function doPost(e) {
     var data = JSON.parse(json);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     
-    // 1. Lưu backup JSON an toàn vào tab riêng _DB_STORAGE_
+    // 1. Lưu backup JSON an toàn vào tab riêng _DB_STORAGE_ theo từng block 40.000 ký tự (vượt qua giới hạn 50k ký tự của 1 ô tính)
     var dbSheet = ss.getSheetByName("_DB_STORAGE_");
     if (!dbSheet) {
       dbSheet = ss.insertSheet("_DB_STORAGE_");
     }
-    dbSheet.getRange("A1").setValue(json);
+    dbSheet.clear();
+    var CHUNK_SIZE = 40000;
+    var rows = [];
+    for (var i = 0; i < json.length; i += CHUNK_SIZE) {
+      rows.push([json.substring(i, i + CHUNK_SIZE)]);
+    }
+    if (rows.length > 0) {
+      dbSheet.getRange(1, 1, rows.length, 1).setValues(rows);
+    }
     
     // 2. Tự động đồng bộ trực tiếp vào tab 3_KHAU_HAO_MAY
     if (data.settings && data.settings.machines) {
@@ -2586,6 +2660,6 @@ Ví dụ:
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Application script -->
-  <script src="app.js?v=25.6" type="module"></script>
+  <script src="app.js?v=25.7" type="module"></script>
 </body>
 </html>

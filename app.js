@@ -1703,11 +1703,11 @@ const MOCK_PRODUCTS = [
     }
   },
 
-  // 4. NHÓM MICA & ACRYLIC (MÓC KHÓA / STANDEE / THẺ)
+  // 4. NHÓM MICA & ACRYLIC (MÓC KHÓA / STANDEE / THẺ) - GOM NHÓM THEO ĐỘ DÀY (MẶC ĐỊNH SIZE 2 INCHES)
   {
-    id: "prod-mica-3mm-2in",
-    name: "Móc khóa Mica Trong 3mm (Size 2 inch / 5cm)",
-    code: "MICA-3MM-2IN",
+    id: "prod-mica-3mm",
+    name: "Móc khóa / Thẻ Mica Trong 3mm (Acrylic)",
+    code: "MICA-3MM",
     category: "Mica & Acrylic (Móc Khóa / Standee)",
     factoryType: "In",
     profitPercentage: 25,
@@ -1734,52 +1734,16 @@ const MOCK_PRODUCTS = [
       { machineId: "mach-dlican", qty: 1 }
     ],
     forecast: {
-      salesForecast: 1000,
-      actualSales: 850,
-      currentStock: 100,
-      safetyStock: 200
+      salesForecast: 1600,
+      actualSales: 1350,
+      currentStock: 150,
+      safetyStock: 350
     }
   },
   {
-    id: "prod-mica-3mm-3in",
-    name: "Móc khóa / Standee Mica Trong 3mm (Size 3 inch / 7.5cm)",
-    code: "MICA-3MM-3IN",
-    category: "Mica & Acrylic (Móc Khóa / Standee)",
-    factoryType: "In",
-    profitPercentage: 25,
-    overheadPercentage: 10,
-    layout: {
-      preset: "acrylic-keychain",
-      sheetSize: "38×58cm",
-      itemSize: "3 inch (7.5cm)",
-      itemsPerSheet: 28,
-      unitType: "Cái"
-    },
-    materials: [
-      { name: "Phôi cắt Mica trong 3mm (Size 3 inch / 7.5cm)", qty: 1, unit: "Cái", price: 7366 },
-      { name: "In UV phẳng trên Mica (CMYK + W)", qty: 1, unit: "Lượt", price: 2000 },
-      { name: "Khoen móc khóa kim loại kèm dây xích", qty: 1, unit: "Cái", price: 1200 },
-      { name: "Túi OPP dán miệng bọc sản phẩm", qty: 1, unit: "Cái", price: 150 }
-    ],
-    labor: { designer: 0.01, production: 0.06, qc: 0.02 },
-    electricity: { power: 1.5, runTime: 0.06 },
-    paybackMachineId: "mach-laser-4060",
-    paybackMachineQty: 1,
-    paybackMachines: [
-      { machineId: "mach-laser-4060", qty: 1 },
-      { machineId: "mach-dlican", qty: 1 }
-    ],
-    forecast: {
-      salesForecast: 600,
-      actualSales: 500,
-      currentStock: 50,
-      safetyStock: 150
-    }
-  },
-  {
-    id: "prod-mica-25mm-2in",
-    name: "Móc khóa Mica Trong 2.5mm (Size 2 inch / 5cm)",
-    code: "MICA-2.5MM-2IN",
+    id: "prod-mica-25mm",
+    name: "Móc khóa / Thẻ Mica Trong 2.5mm (Acrylic)",
+    code: "MICA-2.5MM",
     category: "Mica & Acrylic (Móc Khóa / Standee)",
     factoryType: "In",
     profitPercentage: 25,
@@ -1812,9 +1776,9 @@ const MOCK_PRODUCTS = [
     }
   },
   {
-    id: "prod-mica-15mm-2in",
-    name: "Móc khóa / Thẻ Mica Trong 1.5mm (Size 2 inch / 5cm)",
-    code: "MICA-1.5MM-2IN",
+    id: "prod-mica-15mm",
+    name: "Móc khóa / Thẻ Mica Trong 1.5mm (Acrylic)",
+    code: "MICA-1.5MM",
     category: "Mica & Acrylic (Móc Khóa / Standee)",
     factoryType: "In",
     profitPercentage: 25,
@@ -2218,7 +2182,9 @@ class AppStateManager {
     this.settings = this.loadSettings();
     this.products = this.loadProducts();
     this.activeTab = "dashboard";
-    this.selectedProductId = null;
+    const savedSelectedId = localStorage.getItem("factory_selected_product_id");
+    const foundSelected = savedSelectedId && this.products.some(p => p.id === savedSelectedId);
+    this.selectedProductId = foundSelected ? savedSelectedId : (this.products.length > 0 ? this.products[0].id : null);
     this.orderCostState = {
       rawRows: [],
       filterPrefix: "all",
@@ -2408,7 +2374,7 @@ class AppStateManager {
     const getDeletedProductIds = () => {
       try {
         const raw = localStorage.getItem("factory_deleted_product_ids");
-        return raw ? JSON.parse(raw) : [];
+        return raw ? JSON.parse(raw).filter(Boolean) : [];
       } catch (e) {
         return [];
       }
@@ -2430,10 +2396,14 @@ class AppStateManager {
       "ST-CUON-HOLO-127": "CSTICKER-HOLO-127",
       "ST-CUON-MCCAL-120": "STICKER-MCCAL-120",
       "ST-CUON-PROTON-127": "CLEAR-CSTICKER-PROTON-127",
-      "ST-UV-DTF-04": "UV-CSTICKER-01"
+      "ST-UV-DTF-04": "UV-CSTICKER-01",
+      "MICA-3MM-2IN": "MICA-3MM",
+      "MICA-3MM-3IN": "MICA-3MM",
+      "MICA-2.5MM-2IN": "MICA-2.5MM",
+      "MICA-1.5MM-2IN": "MICA-1.5MM"
     };
 
-    const CURRENT_VERSION = "v24.1_update_74_machines_capex";
+    const CURRENT_VERSION = "v25.7_reorder_pricing_variants";
     const migratedVer = localStorage.getItem("factory_version_migrated");
     if (migratedVer !== CURRENT_VERSION) {
       localStorage.setItem("factory_version_migrated", CURRENT_VERSION);
@@ -2442,14 +2412,14 @@ class AppStateManager {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          customProducts = parsed.filter(p => !deletedIds.includes(p.id) && !deletedIds.includes(p.code) && p.id !== 'prod-4' && p.id !== 'prod-5' && !MOCK_PRODUCTS.some(mp => mp.id === p.id || mp.code === p.code || SKU_MIGRATION_MAP[p.code] === mp.code));
+          customProducts = parsed.filter(p => !deletedIds.includes(p.id) && (p.code ? !deletedIds.includes(p.code) : true) && p.id !== 'prod-4' && p.id !== 'prod-5' && !MOCK_PRODUCTS.some(mp => mp.id === p.id || (p.code && mp.code === p.code) || (p.code && SKU_MIGRATION_MAP[p.code] === mp.code)));
           customProducts.forEach(p => {
-            if (SKU_MIGRATION_MAP[p.code]) p.code = SKU_MIGRATION_MAP[p.code];
+            if (p.code && SKU_MIGRATION_MAP[p.code]) p.code = SKU_MIGRATION_MAP[p.code];
           });
         } catch (e) {}
       }
       const freshProducts = [
-        ...JSON.parse(JSON.stringify(MOCK_PRODUCTS)).filter(mp => !deletedIds.includes(mp.id) && !deletedIds.includes(mp.code)),
+        ...JSON.parse(JSON.stringify(MOCK_PRODUCTS)).filter(mp => !deletedIds.includes(mp.id) && (mp.code ? !deletedIds.includes(mp.code) : true)),
         ...customProducts
       ];
       localStorage.setItem("factory_products_v2", JSON.stringify(freshProducts));
@@ -2462,19 +2432,19 @@ class AppStateManager {
         let parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           // Strictly filter out any deleted products
-          parsed = parsed.filter(p => !deletedIds.includes(p.id) && !deletedIds.includes(p.code));
+          parsed = parsed.filter(p => !deletedIds.includes(p.id) && (p.code ? !deletedIds.includes(p.code) : true));
 
           // Migrate SKU codes
           parsed.forEach(p => {
-            if (SKU_MIGRATION_MAP[p.code]) p.code = SKU_MIGRATION_MAP[p.code];
+            if (p.code && SKU_MIGRATION_MAP[p.code]) p.code = SKU_MIGRATION_MAP[p.code];
           });
 
           // Ensure new mock products are automatically merged ONLY if not deleted
           MOCK_PRODUCTS.forEach(mp => {
-            if (deletedIds.includes(mp.id) || deletedIds.includes(mp.code)) {
+            if (deletedIds.includes(mp.id) || (mp.code && deletedIds.includes(mp.code))) {
               return; // Explicitly deleted by user, do not resurrect
             }
-            const existingIdx = parsed.findIndex(p => p.id === mp.id || p.code === mp.code || SKU_MIGRATION_MAP[p.code] === mp.code);
+            const existingIdx = parsed.findIndex(p => p.id === mp.id || (p.code && mp.code === p.code) || (p.code && SKU_MIGRATION_MAP[p.code] === mp.code));
             if (existingIdx === -1) {
               parsed.push(JSON.parse(JSON.stringify(mp)));
             } else {
@@ -2571,11 +2541,23 @@ class AppStateManager {
         const deletedList = (() => {
           try {
             const raw = localStorage.getItem("factory_deleted_product_ids");
-            return raw ? JSON.parse(raw) : [];
+            return raw ? JSON.parse(raw).filter(Boolean) : [];
           } catch (e) { return []; }
         })();
 
-        this.products = (data.products || []).filter(p => !deletedList.includes(p.id) && !deletedList.includes(p.code));
+        const cloudProducts = (data.products || []).filter(p => !deletedList.includes(p.id) && (p.code ? !deletedList.includes(p.code) : true));
+        
+        // Smart merge: Bảo toàn tất cả sản phẩm tự tạo trên máy mà Cloud chưa có
+        const localProducts = this.products || [];
+        const mergedProducts = [...cloudProducts];
+        localProducts.forEach(lp => {
+          const exists = mergedProducts.some(cp => cp.id === lp.id || (lp.code && cp.code === lp.code));
+          if (!exists && !deletedList.includes(lp.id) && (lp.code ? !deletedList.includes(lp.code) : true)) {
+            mergedProducts.push(lp);
+          }
+        });
+
+        this.products = mergedProducts;
         this.settings = { ...this.settings, ...data.settings };
         localStorage.setItem("factory_settings_v2", JSON.stringify(this.settings));
         localStorage.setItem("factory_products_v2", JSON.stringify(this.products));
@@ -2642,7 +2624,8 @@ class AppStateManager {
     localStorage.removeItem("factory_deleted_product_ids");
     this.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
     this.products = JSON.parse(JSON.stringify(MOCK_PRODUCTS));
-    this.selectedProductId = null;
+    localStorage.removeItem("factory_selected_product_id");
+    this.selectedProductId = this.products.length > 0 ? this.products[0].id : null;
     this.saveSettings(this.settings);
     this.saveProducts();
   }
@@ -2662,6 +2645,17 @@ function formatVND(value) {
     .format(value)
     .replace('₫', '')
     .trim() + ' ₫';
+}
+
+/**
+ * Chuyển đổi chuỗi số (hỗ trợ cả dấu chấm . và dấu phẩy ,) sang số thực float
+ */
+function parseLocaleFloat(value) {
+  if (typeof value === 'number') return isNaN(value) ? 0 : value;
+  if (!value) return 0;
+  const str = String(value).trim().replace(',', '.');
+  const num = parseFloat(str);
+  return isNaN(num) ? 0 : num;
 }
 
 /**
@@ -2759,7 +2753,7 @@ function getElectricityRateForFactory(factoryType, settings, products) {
  */
 function calculateProductCost(product, settings) {
   // 1. Nguyên vật liệu trực tiếp (Direct Materials)
-  const materialsCost = (product.materials || []).reduce((sum, item) => sum + ((parseFloat(item.qty) || 0) * (parseFloat(item.price) || 0)), 0);
+  const materialsCost = (product.materials || []).reduce((sum, item) => sum + ((parseLocaleFloat(item.qty) || 0) * (parseFloat(item.price) || 0)), 0);
 
   // 2. Nhân công trực tiếp (Direct Labor)
   let laborCost = 0;
@@ -2782,10 +2776,10 @@ function calculateProductCost(product, settings) {
 
     laborCost = designerCost + productionCost + qcCost;
   } else {
-    const desHourly = getDepartmentHourlyRate(settings.hr.Thêu.designer, stdHours);
-    const laserHourly = getDepartmentHourlyRate(settings.hr.Thêu.laser, stdHours);
-    const prodHourly = getDepartmentHourlyRate(settings.hr.Thêu.production, stdHours);
-    const qcHourly = getDepartmentHourlyRate(settings.hr.Thêu.qc, stdHours);
+    const desHourly = getDepartmentHourlyRate(settings.hr?.Thêu?.designer, stdHours);
+    const laserHourly = getDepartmentHourlyRate(settings.hr?.Thêu?.laser, stdHours);
+    const prodHourly = getDepartmentHourlyRate(settings.hr?.Thêu?.production, stdHours);
+    const qcHourly = getDepartmentHourlyRate(settings.hr?.Thêu?.qc, stdHours);
 
     designerCost = (product.labor?.designer || 0) * desHourly;
     laserCost = (product.labor?.laser || 0) * laserHourly;
@@ -2829,7 +2823,7 @@ function calculateProductCost(product, settings) {
         if (!machineNames.includes(machine.name)) machineNames.push(machine.name);
         const targetVolume = (machine.paybackYears || 3) * (machine.expectedVolumePerYear || 1);
         const unitRate = machine.surchargePerUnit || (machine.investment / targetVolume);
-        const machineQty = pm.qty !== undefined ? pm.qty : 1;
+        const machineQty = pm.qty !== undefined ? parseLocaleFloat(pm.qty) : 1;
         
         const itemFirst3 = Math.round(machineQty * unitRate);
         paybackSurchargeFirst3Years += itemFirst3;
@@ -4102,13 +4096,18 @@ function selectProduct(id) {
       syncProductLaborFromDom(curProd);
       syncProductElectricityFromDom(curProd);
       const overheadInput = document.getElementById("overhead-rate-percentage");
-      if (overheadInput) curProd.overheadPercentage = parseFloat(overheadInput.value) || 0;
+      if (overheadInput) curProd.overheadPercentage = parseLocaleFloat(overheadInput.value) || 0;
       const profitInput = document.getElementById("profit-margin-percentage");
-      if (profitInput) curProd.profitPercentage = parseFloat(profitInput.value) || 0;
+      if (profitInput) curProd.profitPercentage = parseLocaleFloat(profitInput.value) || 0;
       state.saveProducts();
     }
   }
   state.selectedProductId = id;
+  if (id) {
+    localStorage.setItem("factory_selected_product_id", id);
+  } else {
+    localStorage.removeItem("factory_selected_product_id");
+  }
   renderCalculator();
 }
 
@@ -4225,7 +4224,7 @@ function renderMaterialsRows(materials) {
         <input type="text" value="${mat.name || ''}" list="materials-catalog-datalist" placeholder="Tên vật tư (hoặc chọn từ Thư viện)..." class="form-input row-mat-name" required style="min-height:38px;">
       </td>
       <td>
-        <input type="number" step="any" min="0" value="${mat.qty !== undefined ? mat.qty : 1}" placeholder="0" class="form-input text-center row-mat-qty calc-trigger" required style="min-height:38px;">
+        <input type="text" inputmode="decimal" value="${mat.qty !== undefined ? mat.qty : 1}" placeholder="0" class="form-input text-center row-mat-qty calc-trigger" required style="min-height:38px;">
       </td>
       <td>
         <input type="text" value="${mat.unit || ''}" placeholder="m2, cái, kg..." class="form-input text-center row-mat-unit" style="min-height:38px;">
@@ -4367,7 +4366,7 @@ function syncProductMaterialsFromDom(product) {
   const materials = [];
   rows.forEach(row => {
     const name = (row.querySelector(".row-mat-name")?.value || "").trim();
-    const qty = parseFloat(row.querySelector(".row-mat-qty")?.value) || 0;
+    const qty = parseLocaleFloat(row.querySelector(".row-mat-qty")?.value) || 0;
     const unit = (row.querySelector(".row-mat-unit")?.value || "").trim() || "Cái";
     const priceStr = row.querySelector(".row-mat-price")?.value || "0";
     const price = parseCurrencyInput(priceStr);
@@ -4382,14 +4381,14 @@ function syncProductLaborFromDom(product) {
   product.labor = product.labor || {};
   const factoryType = document.querySelector('input[name="factoryType"]:checked')?.value || product.factoryType;
   if (factoryType === "In") {
-    product.labor.designer = parseFloat(document.getElementById("labor-print-designer")?.value) || 0;
-    product.labor.production = parseFloat(document.getElementById("labor-print-production")?.value) || 0;
-    product.labor.qc = parseFloat(document.getElementById("labor-print-qc")?.value) || 0;
+    product.labor.designer = parseLocaleFloat(document.getElementById("labor-print-designer")?.value) || 0;
+    product.labor.production = parseLocaleFloat(document.getElementById("labor-print-production")?.value) || 0;
+    product.labor.qc = parseLocaleFloat(document.getElementById("labor-print-qc")?.value) || 0;
   } else {
-    product.labor.designer = parseFloat(document.getElementById("labor-embroid-designer")?.value) || 0;
-    product.labor.laser = parseFloat(document.getElementById("labor-embroid-laser")?.value) || 0;
-    product.labor.production = parseFloat(document.getElementById("labor-embroid-production")?.value) || 0;
-    product.labor.qc = parseFloat(document.getElementById("labor-embroid-qc")?.value) || 0;
+    product.labor.designer = parseLocaleFloat(document.getElementById("labor-embroid-designer")?.value) || 0;
+    product.labor.laser = parseLocaleFloat(document.getElementById("labor-embroid-laser")?.value) || 0;
+    product.labor.production = parseLocaleFloat(document.getElementById("labor-embroid-production")?.value) || 0;
+    product.labor.qc = parseLocaleFloat(document.getElementById("labor-embroid-qc")?.value) || 0;
   }
 }
 
@@ -4399,8 +4398,8 @@ function syncProductElectricityFromDom(product) {
   const powerEl = document.getElementById("utility-machine-power");
   const timeEl = document.getElementById("utility-run-time");
   const rateEl = document.getElementById("utility-electricity-price");
-  if (powerEl) product.electricity.power = parseFloat(powerEl.value) || 0;
-  if (timeEl) product.electricity.runTime = parseFloat(timeEl.value) || 0;
+  if (powerEl) product.electricity.power = parseLocaleFloat(powerEl.value) || 0;
+  if (timeEl) product.electricity.runTime = parseLocaleFloat(timeEl.value) || 0;
   if (rateEl && rateEl.value) product.electricity.rate = parseCurrencyInput(rateEl.value);
 }
 
@@ -4428,7 +4427,7 @@ function syncProductMachinesFromDom(product) {
     if (sel && sel.value) {
       paybackMachines.push({
         machineId: sel.value,
-        qty: parseFloat(qtyInput?.value) || 0
+        qty: parseLocaleFloat(qtyInput?.value) || 0
       });
     }
   });
@@ -4474,7 +4473,7 @@ function renderProductMachineRows(machinesList) {
         </select>
       </div>
       <div style="display: flex; align-items: center; gap: 0.35rem; flex: 1; min-width: 130px;">
-        <input type="number" step="0.0001" min="0" class="product-machine-qty form-input calc-trigger" value="${itemQty}" style="width: 85px; font-size: 0.8rem; text-align: right; margin: 0; background: var(--bg-input); border-color: var(--border-glass); color: var(--text-primary);">
+        <input type="text" inputmode="decimal" class="product-machine-qty form-input calc-trigger" value="${itemQty}" style="width: 85px; font-size: 0.8rem; text-align: right; margin: 0; background: var(--bg-input); border-color: var(--border-glass); color: var(--text-primary);">
         <span class="product-machine-unit-label" style="font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap;">${unitLabel}/sp</span>
       </div>
       <div style="min-width: 120px; text-align: right;">
@@ -4493,7 +4492,7 @@ function renderProductMachineRows(machinesList) {
 
     const onRowInputChange = () => {
       item.machineId = sel.value;
-      item.qty = parseFloat(qtyInput.value) || 0;
+      item.qty = parseLocaleFloat(qtyInput.value) || 0;
 
       const selectedM = state.settings.machines?.find(m => m.id === sel.value);
       if (selectedM && unitEl) {
@@ -4580,11 +4579,11 @@ function triggerLiveCalculation() {
 
     const overheadInput = document.getElementById("overhead-rate-percentage");
     if (overheadInput) {
-      selectedProduct.overheadPercentage = parseFloat(overheadInput.value) || 0;
+      selectedProduct.overheadPercentage = parseLocaleFloat(overheadInput.value) || 0;
     }
     const profitInput = document.getElementById("profit-margin-percentage");
     if (profitInput) {
-      selectedProduct.profitPercentage = parseFloat(profitInput.value) || 0;
+      selectedProduct.profitPercentage = parseLocaleFloat(profitInput.value) || 0;
     }
     state.saveProducts();
   }
@@ -4598,7 +4597,7 @@ function triggerLiveCalculation() {
     const priceInput = row.querySelector(".row-mat-price");
     
     if (qtyInput && priceInput) {
-      const qty = parseFloat(qtyInput.value) || 0;
+      const qty = parseLocaleFloat(qtyInput.value) || 0;
       const price = parseCurrencyInput(priceInput.value);
       
       const total = qty * price;
@@ -4614,13 +4613,13 @@ function triggerLiveCalculation() {
   const stdHours = state.settings.standardHours || 208;
 
   if (factoryType === "In") {
-    const desHourly = getDepartmentHourlyRate(state.settings.hr.In.designer, stdHours);
-    const prodHourly = getDepartmentHourlyRate(state.settings.hr.In.production, stdHours);
-    const qcHourly = getDepartmentHourlyRate(state.settings.hr.In.qc, stdHours);
+    const desHourly = getDepartmentHourlyRate(state.settings.hr?.In?.designer, stdHours);
+    const prodHourly = getDepartmentHourlyRate(state.settings.hr?.In?.production, stdHours);
+    const qcHourly = getDepartmentHourlyRate(state.settings.hr?.In?.qc, stdHours);
 
-    const desHours = parseFloat(document.getElementById("labor-print-designer").value) || 0;
-    const prodHours = parseFloat(document.getElementById("labor-print-production").value) || 0;
-    const qcHours = parseFloat(document.getElementById("labor-print-qc").value) || 0;
+    const desHours = parseLocaleFloat(document.getElementById("labor-print-designer").value) || 0;
+    const prodHours = parseLocaleFloat(document.getElementById("labor-print-production").value) || 0;
+    const qcHours = parseLocaleFloat(document.getElementById("labor-print-qc").value) || 0;
 
     const desCost = desHours * desHourly;
     const prodCost = prodHours * prodHourly;
@@ -4637,15 +4636,15 @@ function triggerLiveCalculation() {
     laborCost = desCost + prodCost + qcCost;
     document.getElementById("calc-labor-print-cost").textContent = formatVND(laborCost);
   } else {
-    const desHourly = getDepartmentHourlyRate(state.settings.hr.Thêu.designer, stdHours);
-    const laserHourly = getDepartmentHourlyRate(state.settings.hr.Thêu.laser, stdHours);
-    const prodHourly = getDepartmentHourlyRate(state.settings.hr.Thêu.production, stdHours);
-    const qcHourly = getDepartmentHourlyRate(state.settings.hr.Thêu.qc, stdHours);
+    const desHourly = getDepartmentHourlyRate(state.settings.hr?.Thêu?.designer, stdHours);
+    const laserHourly = getDepartmentHourlyRate(state.settings.hr?.Thêu?.laser, stdHours);
+    const prodHourly = getDepartmentHourlyRate(state.settings.hr?.Thêu?.production, stdHours);
+    const qcHourly = getDepartmentHourlyRate(state.settings.hr?.Thêu?.qc, stdHours);
 
-    const desHours = parseFloat(document.getElementById("labor-embroid-designer").value) || 0;
-    const laserHours = parseFloat(document.getElementById("labor-embroid-laser").value) || 0;
-    const prodHours = parseFloat(document.getElementById("labor-embroid-production").value) || 0;
-    const qcHours = parseFloat(document.getElementById("labor-embroid-qc").value) || 0;
+    const desHours = parseLocaleFloat(document.getElementById("labor-embroid-designer").value) || 0;
+    const laserHours = parseLocaleFloat(document.getElementById("labor-embroid-laser").value) || 0;
+    const prodHours = parseLocaleFloat(document.getElementById("labor-embroid-production").value) || 0;
+    const qcHours = parseLocaleFloat(document.getElementById("labor-embroid-qc").value) || 0;
 
     const desCost = desHours * desHourly;
     const laserCost = laserHours * laserHourly;
@@ -4675,25 +4674,21 @@ function triggerLiveCalculation() {
   const variableCost = Math.round(materialsCost + laborCost);
 
   // 5. Chi phí quản lý chung phân bổ (Overheads - Định phí tính theo % Biến phí)
-  const overheadPercentage = parseFloat(document.getElementById("overhead-rate-percentage").value) || 0;
+  const overheadPercentage = parseLocaleFloat(document.getElementById("overhead-rate-percentage").value) || 0;
   const overheadCost = Math.round(variableCost * (overheadPercentage / 100));
   const elOvh = document.getElementById("calc-overhead-cost");
   if (elOvh) elOvh.textContent = formatVND(overheadCost);
 
-  // 6. Tổng Base Cost cơ bản
+  // 6. Tổng Base Cost cơ bản (chưa gồm khấu hao máy)
   const baseCost = variableCost + overheadCost;
   const elBaseCost = document.getElementById("calculated-base-cost");
   if (elBaseCost) elBaseCost.textContent = baseCost.toLocaleString('vi-VN');
-  const elStickyBase = document.getElementById("sticky-base-cost");
-  if (elStickyBase) elStickyBase.textContent = baseCost.toLocaleString('vi-VN');
 
   // 7. Giá bán đề xuất tiêu chuẩn
-  const profitPercentage = parseFloat(document.getElementById("profit-margin-percentage").value) || 0;
+  const profitPercentage = parseLocaleFloat(document.getElementById("profit-margin-percentage").value) || 0;
   const sellerPrice = Math.round(baseCost * (1 + profitPercentage / 100));
   const elSellerPrice = document.getElementById("calculated-seller-price");
   if (elSellerPrice) elSellerPrice.textContent = sellerPrice.toLocaleString('vi-VN');
-  const elStickySeller = document.getElementById("sticky-seller-price");
-  if (elStickySeller) elStickySeller.textContent = sellerPrice.toLocaleString('vi-VN');
   const elBottomProfit = document.getElementById("bottom-profit-percentage");
   if (elBottomProfit) elBottomProfit.textContent = profitPercentage;
 
@@ -4720,7 +4715,7 @@ function triggerLiveCalculation() {
         if (unitLabel) unitLabel.textContent = `${machine.unitType || 'Cái'}/sp`;
         const targetVolume = (machine.paybackYears || 3) * (machine.expectedVolumePerYear || 1);
         const unitRate = machine.surchargePerUnit || (machine.investment / targetVolume);
-        const qty = parseFloat(qtyInput?.value) || 0;
+        const qty = parseLocaleFloat(qtyInput?.value) || 0;
 
         const itemFirst3 = Math.round(qty * unitRate);
         const discountPct = machine.discountAfter3Years !== undefined ? machine.discountAfter3Years : 80;
@@ -4766,6 +4761,15 @@ function triggerLiveCalculation() {
     }
   }
 
+  // TỔNG CHI PHÍ VẬN HÀNH CHUNG (Áp dụng cho mọi size: Nhân công + Quản lý phân bổ + Khấu hao máy móc)
+  const sharedOpsCost = laborCost + overheadCost + paybackSurchargeFirst3Years;
+  const sharedOpsCostAfter3y = laborCost + overheadCost + paybackSurchargeAfter3Years;
+
+  const elSharedOps = document.getElementById("calc-shared-ops-cost");
+  if (elSharedOps) elSharedOps.textContent = formatVND(sharedOpsCost);
+  const elSharedOpsAfter = document.getElementById("calc-shared-ops-cost-after3y");
+  if (elSharedOpsAfter) elSharedOpsAfter.textContent = formatVND(sharedOpsCostAfter3y);
+
   // Giai đoạn 1 & Giai đoạn 2
   const paybackBaseCost = baseCost + paybackSurchargeFirst3Years;
   const paybackSellerPrice = Math.round(paybackBaseCost * (1 + profitPercentage / 100));
@@ -4775,6 +4779,12 @@ function triggerLiveCalculation() {
 
   const contributionMargin = paybackSellerPrice - variableCost;
   const marginRatio = paybackSellerPrice > 0 ? Math.round((contributionMargin / paybackSellerPrice) * 100) : 0;
+
+  // Hiển thị trực tiếp mức giá trọn gói đã gồm khấu hao máy móc làm mức giá chính trên Sticky Header
+  const elStickyBase = document.getElementById("sticky-base-cost");
+  if (elStickyBase) elStickyBase.textContent = paybackBaseCost.toLocaleString('vi-VN');
+  const elStickySeller = document.getElementById("sticky-seller-price");
+  if (elStickySeller) elStickySeller.textContent = paybackSellerPrice.toLocaleString('vi-VN');
 
   // 9. Cập nhật 3 Thẻ Phân Loại Chi Phí (Cost Classification Pillars)
   const elSumVC = document.getElementById("calc-summary-variable-cost");
@@ -4812,11 +4822,11 @@ function triggerLiveCalculation() {
   if (paybackSurchargeFirst3Years > 0) {
     if (stickyPaybackBaseCostBadge) {
       stickyPaybackBaseCostBadge.style.display = "inline";
-      stickyPaybackBaseCostBadge.textContent = `(3 năm đầu: ₫${paybackBaseCost.toLocaleString('vi-VN')})`;
+      stickyPaybackBaseCostBadge.textContent = `(Vốn chưa máy: ₫${baseCost.toLocaleString('vi-VN')})`;
     }
     if (stickyPaybackSellerPriceBadge) {
       stickyPaybackSellerPriceBadge.style.display = "inline";
-      stickyPaybackSellerPriceBadge.textContent = `(3 năm đầu: ₫${paybackSellerPrice.toLocaleString('vi-VN')})`;
+      stickyPaybackSellerPriceBadge.textContent = `(Bán chưa máy: ₫${sellerPrice.toLocaleString('vi-VN')})`;
     }
   } else {
     if (stickyPaybackBaseCostBadge) stickyPaybackBaseCostBadge.style.display = "none";
@@ -4841,6 +4851,9 @@ function triggerLiveCalculation() {
     document.getElementById("breakdown-overhead").textContent = "₫0 (0%)";
   }
 
+  // Render BẢNG MA TRẬN GIÁ HOÀN CHỈNH TỔNG HỢP CÁC KÍCH THƯỚC (DƯỚI CÙNG)
+  renderVariantPricingMatrix(selectedProduct, materialsCost, sharedOpsCost, sharedOpsCostAfter3y, profitPercentage);
+
   // Đồng bộ khối tính toán đơn hàng theo quy cách xếp khổ
   updateImpositionOrderCalc();
 
@@ -4849,6 +4862,199 @@ function triggerLiveCalculation() {
     updateProductCardInList(selectedProduct);
   }
 }
+
+// Biến lưu trạng thái kích cỡ đang chọn trong bảng ma trận giá biến thể
+let currentSelectedVariantIndex = 1; // Mặc định kích cỡ 2.0 inches (index 1)
+
+/**
+ * Trả về danh sách kích cỡ biến thể phù hợp theo chủng loại sản phẩm
+ * Mặc định sản phẩm chuẩn là 2.0 inches (index 1)
+ */
+function getProductVariantList(product, currentMatCost) {
+  if (!product) return [];
+
+  const name = (product.name || "").toLowerCase();
+  const cat = (product.category || "").toLowerCase();
+
+  // 1. Nhóm Sticker, Decal (Kiss Cut, Die Cut) - Tính theo diện tích & định mức decal
+  if (name.includes("sticker") || cat.includes("sticker") || name.includes("decal")) {
+    return [
+      { size: '1.5"', factor: (1.5 * 1.5) / (2 * 2), note: "Nhỏ (3.8cm)", matCost: Math.round(currentMatCost * 0.5625) },
+      { size: '2.0"', factor: 1.0, note: "Chuẩn phổ thông (5cm) - Mặc định", isDefault: true, matCost: currentMatCost },
+      { size: '2.5"', factor: (2.5 * 2.5) / (2 * 2), note: "Vừa (6.3cm)", matCost: Math.round(currentMatCost * 1.5625) },
+      { size: '3.0"', factor: (3.0 * 3.0) / (2 * 2), note: "Lớn (7.6cm)", matCost: Math.round(currentMatCost * 2.25) },
+      { size: '4.0"', factor: (4.0 * 4.0) / (2 * 2), note: "Đại (10.2cm)", matCost: Math.round(currentMatCost * 4.0) },
+      { size: '5.0"', factor: (5.0 * 5.0) / (2 * 2), note: "Cực đại (12.7cm)", matCost: Math.round(currentMatCost * 6.25) }
+    ];
+  }
+
+  // 2. Nhóm UV DTF (Dán đa chất liệu)
+  if (name.includes("uv dtf") || cat.includes("uv dtf")) {
+    return [
+      { size: '1.5"', factor: (1.5 * 1.5) / (2 * 2), note: "Nhỏ (3.8cm)", matCost: Math.round(currentMatCost * 0.5625) },
+      { size: '2.0"', factor: 1.0, note: "Chuẩn phổ thông (5cm) - Mặc định", isDefault: true, matCost: currentMatCost },
+      { size: '2.5"', factor: (2.5 * 2.5) / (2 * 2), note: "Vừa (6.3cm)", matCost: Math.round(currentMatCost * 1.5625) },
+      { size: '3.0"', factor: (3.0 * 3.0) / (2 * 2), note: "Lớn (7.6cm)", matCost: Math.round(currentMatCost * 2.25) },
+      { size: '4.0"', factor: (4.0 * 4.0) / (2 * 2), note: "Đại (10.2cm)", matCost: Math.round(currentMatCost * 4.0) },
+      { size: '5.0"', factor: (5.0 * 5.0) / (2 * 2), note: "Cực đại (12.7cm)", matCost: Math.round(currentMatCost * 6.25) }
+    ];
+  }
+
+  // 3. Nhóm Mica Acrylic (Móc khoá, Standee) - Có phụ kiện móc khoá cố định (~1.000₫)
+  if (name.includes("mica") || cat.includes("mica") || name.includes("acrylic") || cat.includes("acrylic")) {
+    const fixedAccCost = Math.min(1000, Math.round(currentMatCost * 0.2));
+    const variableSheetCost = Math.max(0, currentMatCost - fixedAccCost);
+
+    return [
+      { size: '1.5"', factor: 0.5625, note: "Móc khoá mini (3.8cm)", matCost: Math.round(variableSheetCost * 0.5625 + fixedAccCost) },
+      { size: '2.0"', factor: 1.0, note: "Chuẩn móc khoá (5cm) - Mặc định", isDefault: true, matCost: currentMatCost },
+      { size: '2.5"', factor: 1.5625, note: "Móc khoá vừa (6.3cm)", matCost: Math.round(variableSheetCost * 1.5625 + fixedAccCost) },
+      { size: '3.0"', factor: 2.25, note: "Standee/Huy hiệu (7.6cm)", matCost: Math.round(variableSheetCost * 2.25 + fixedAccCost) },
+      { size: '4.0"', factor: 4.0, note: "Standee để bàn (10.2cm)", matCost: Math.round(variableSheetCost * 4.0 + fixedAccCost) },
+      { size: '5.0"', factor: 6.25, note: "Standee lớn (12.7cm)", matCost: Math.round(variableSheetCost * 6.25 + fixedAccCost) }
+    ];
+  }
+
+  // 4. Nhóm Cuộn DTF / Rolls (Mét dài)
+  if (name.includes("roll") || name.includes("cuộn") || cat.includes("roll") || cat.includes("cuộn")) {
+    return [
+      { size: '50cm x 1m', factor: 0.5, note: "Nửa mét", matCost: Math.round(currentMatCost * 0.5) },
+      { size: '1 Mét dài', factor: 1.0, note: "Khổ chuẩn 1 mét - Mặc định", isDefault: true, matCost: currentMatCost },
+      { size: '5 Mét dài', factor: 5.0, note: "Cuộn 5 mét", matCost: Math.round(currentMatCost * 5.0) },
+      { size: '10 Mét dài', factor: 10.0, note: "Cuộn 10 mét", matCost: Math.round(currentMatCost * 10.0) },
+      { size: '50 Mét (Cuộn)', factor: 50.0, note: "Nguyên cuộn 50m", matCost: Math.round(currentMatCost * 50.0) }
+    ];
+  }
+
+  // 5. Mặc định cho các sản phẩm khác (Áo thun, thêu, nón...)
+  return [
+    { size: 'Size S / Nhỏ', factor: 0.9, note: "Kích cỡ nhỏ", matCost: Math.round(currentMatCost * 0.9) },
+    { size: 'Tiêu chuẩn', factor: 1.0, note: "Kích thước chuẩn - Mặc định", isDefault: true, matCost: currentMatCost },
+    { size: 'Size L / Lớn', factor: 1.15, note: "Kích cỡ lớn", matCost: Math.round(currentMatCost * 1.15) },
+    { size: 'Size XL / Đại', factor: 1.3, note: "Kích cỡ đại", matCost: Math.round(currentMatCost * 1.3) }
+  ];
+}
+
+/**
+ * Render bảng ma trận giá biến thể tổng hợp dưới chân trang
+ */
+function renderVariantPricingMatrix(product, currentMatCost, sharedOpsCost, sharedOpsCostAfter3y, profitPercentage) {
+  const container = document.getElementById("variant-matrix-section");
+  const pillsContainer = document.getElementById("variant-size-pills-container");
+  const tableContainer = document.getElementById("variant-matrix-table-container");
+
+  if (!container || !pillsContainer || !tableContainer) return;
+
+  if (!product) {
+    container.style.display = "none";
+    return;
+  }
+
+  container.style.display = "block";
+
+  const variants = getProductVariantList(product, currentMatCost);
+  if (!variants || variants.length === 0) {
+    container.style.display = "none";
+    return;
+  }
+
+  if (currentSelectedVariantIndex >= variants.length) {
+    currentSelectedVariantIndex = variants.findIndex(v => v.isDefault) !== -1 ? variants.findIndex(v => v.isDefault) : 0;
+  }
+
+  // 1. Render Variant Pills
+  pillsContainer.innerHTML = "";
+  variants.forEach((v, idx) => {
+    const isSelected = idx === currentSelectedVariantIndex;
+    const pill = document.createElement("button");
+    pill.type = "button";
+    pill.className = `btn btn-sm ${isSelected ? 'btn-primary' : 'btn-outline-secondary'}`;
+    pill.style.cssText = `border-radius: 9999px; padding: 0.35rem 0.85rem; font-size: 0.82rem; font-weight: ${isSelected ? '600' : '400'}; transition: all 0.2s ease;`;
+    pill.innerHTML = `<strong>${v.size}</strong> <span style="opacity: 0.8; font-size: 0.75rem;">${v.isDefault ? '(Chuẩn)' : ''}</span>`;
+    
+    pill.addEventListener("click", () => {
+      currentSelectedVariantIndex = idx;
+      renderVariantPricingMatrix(product, currentMatCost, sharedOpsCost, sharedOpsCostAfter3y, profitPercentage);
+    });
+
+    pillsContainer.appendChild(pill);
+  });
+
+  // 2. Render Variant Pricing Table
+  let html = `
+    <div class="table-responsive" style="margin-top: 0.5rem;">
+      <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.85rem;">
+        <thead class="table-light text-secondary" style="font-size: 0.8rem; text-transform: uppercase;">
+          <tr>
+            <th style="min-width: 130px;">Kích cỡ / Quy cách</th>
+            <th style="min-width: 140px;">Ghi chú ứng dụng</th>
+            <th class="text-end" style="min-width: 120px;">NVL Trực Tiếp</th>
+            <th class="text-end" style="min-width: 140px;">Vận Hành Chung</th>
+            <th class="text-end" style="min-width: 130px; background: rgba(59, 130, 246, 0.05); font-weight: 700;">Tổng Giá Vốn</th>
+            <th class="text-end" style="min-width: 140px; background: rgba(16, 185, 129, 0.08); font-weight: 700; color: #059669;">Giá Bán (+${profitPercentage}%)</th>
+            <th class="text-end" style="min-width: 130px; color: #10b981;">Sau 3 năm</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  variants.forEach((v, idx) => {
+    const isSelected = idx === currentSelectedVariantIndex;
+    const isDefault = v.isDefault;
+
+    // Chi phí biến thể: NVL biến thể + Vận hành chung cố định (Nhân công + Quản lý phân bổ + Khấu hao máy)
+    const variantMat = v.matCost;
+    const variantTotalCost = Math.round(variantMat + sharedOpsCost);
+    const variantSellerPrice = Math.round(variantTotalCost * (1 + profitPercentage / 100));
+    const variantTotalCostAfter3y = Math.round(variantMat + sharedOpsCostAfter3y);
+    const variantSellerPriceAfter3y = Math.round(variantTotalCostAfter3y * (1 + profitPercentage / 100));
+
+    const rowBg = isSelected 
+      ? 'background: rgba(59, 130, 246, 0.12); font-weight: 600;' 
+      : (isDefault ? 'background: rgba(245, 158, 11, 0.04);' : '');
+
+    html += `
+      <tr style="${rowBg} cursor: pointer;" onclick="window.setMatrixVariantIndex(${idx})">
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge ${isDefault ? 'bg-primary' : 'bg-secondary'}" style="font-size: 0.78rem;">${v.size}</span>
+            ${isDefault ? '<span class="badge bg-warning text-dark" style="font-size: 0.65rem;">MẶC ĐỊNH</span>' : ''}
+            ${isSelected ? '<i class="bi bi-check-circle-fill text-primary" style="font-size: 0.9rem;"></i>' : ''}
+          </div>
+        </td>
+        <td class="text-muted" style="font-size: 0.8rem;">${v.note || ''}</td>
+        <td class="text-end text-secondary font-monospace">${formatVND(variantMat)}</td>
+        <td class="text-end text-secondary font-monospace">${formatVND(sharedOpsCost)}</td>
+        <td class="text-end font-monospace" style="background: rgba(59, 130, 246, 0.06); font-weight: 700; color: #1d4ed8;">
+          ${formatVND(variantTotalCost)}
+        </td>
+        <td class="text-end font-monospace" style="background: rgba(16, 185, 129, 0.1); font-weight: 700; color: #047857; font-size: 0.92rem;">
+          ${formatVND(variantSellerPrice)}
+        </td>
+        <td class="text-end font-monospace text-muted" style="font-size: 0.8rem;">
+          ${formatVND(variantSellerPriceAfter3y)}
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size: 0.78rem; color: #64748b; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+      <span>💡 <em>Chi phí Vận Hành Chung (${formatVND(sharedOpsCost)}) bao gồm Nhân công trực tiếp + Định phí quản lý phân bổ + Khấu hao máy móc, được giữ nguyên cho tất cả các size.</em></span>
+      <span>Tỷ suất LN: <strong>+${profitPercentage}%</strong></span>
+    </div>
+  `;
+
+  tableContainer.innerHTML = html;
+}
+
+window.setMatrixVariantIndex = function(idx) {
+  currentSelectedVariantIndex = idx;
+  triggerLiveCalculation();
+};
 
 /**
  * Lưu dữ liệu của sản phẩm đang chỉnh sửa
@@ -4935,6 +5141,11 @@ function deleteProductById(productId) {
     // 3. Update selectedProductId: switch to first available product or null
     if (state.selectedProductId === productId) {
       state.selectedProductId = state.products.length > 0 ? state.products[0].id : null;
+      if (state.selectedProductId) {
+        localStorage.setItem("factory_selected_product_id", state.selectedProductId);
+      } else {
+        localStorage.removeItem("factory_selected_product_id");
+      }
     }
 
     // 4. Save and sync
@@ -8011,6 +8222,7 @@ function handleCreateProductSubmit(e) {
   state.products.push(newProduct);
   state.saveProducts();
   state.selectedProductId = newId;
+  localStorage.setItem("factory_selected_product_id", newId);
 
   closeCreateProductModal();
   switchTab("calculator");
