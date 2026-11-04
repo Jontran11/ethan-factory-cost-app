@@ -4859,9 +4859,11 @@ function getProductVariantList(product, currentMatCost) {
   const cat = (product.category || "").toLowerCase();
   const code = (product.code || "").toLowerCase();
 
+  let list = [];
+
   // 1. Nhóm Sticker UV-DTF (hoặc Decal / Sticker in ấn nói chung)
   if (name.includes("uv-dtf") || name.includes("uv dtf") || code.includes("uv-csticker") || name.includes("sticker") || cat.includes("sticker") || name.includes("decal")) {
-    return [
+    list = [
       { size: '1.5"', factor: (1.5 * 1.5) / (2 * 2), note: "Tem nhỏ mini (3.8cm)", matCost: Math.round(currentMatCost * 0.5625) },
       { size: '2.0"', factor: 1.0, note: "Chuẩn phổ thông (5cm) - Mặc định", isDefault: true, matCost: currentMatCost },
       { size: '2.5"', factor: (2.5 * 2.5) / (2 * 2), note: "Tem vừa (6.3cm)", matCost: Math.round(currentMatCost * 1.5625) },
@@ -4869,14 +4871,11 @@ function getProductVariantList(product, currentMatCost) {
       { size: '4.0"', factor: (4.0 * 4.0) / (2 * 2), note: "Tem đại (10.2cm)", matCost: Math.round(currentMatCost * 4.0) },
       { size: '5.0"', factor: (5.0 * 5.0) / (2 * 2), note: "Tem cực đại (12.7cm)", matCost: Math.round(currentMatCost * 6.25) }
     ];
-  }
-
-  // 2. Nhóm Mica Acrylic (Móc khoá, Standee) - Có phụ kiện móc khoá cố định (~1.000₫)
-  if (name.includes("mica") || cat.includes("mica") || name.includes("acrylic") || cat.includes("acrylic") || code.includes("mica")) {
+  } else if (name.includes("mica") || cat.includes("mica") || name.includes("acrylic") || cat.includes("acrylic") || code.includes("mica")) {
     const fixedAccCost = Math.min(1000, Math.round(currentMatCost * 0.2));
     const variableSheetCost = Math.max(0, currentMatCost - fixedAccCost);
 
-    return [
+    list = [
       { size: '1.5"', factor: 0.5625, note: "Móc khoá mini (3.8cm)", matCost: Math.round(variableSheetCost * 0.5625 + fixedAccCost) },
       { size: '2.0"', factor: 1.0, note: "Chuẩn móc khoá (5cm) - Mặc định", isDefault: true, matCost: currentMatCost },
       { size: '2.5"', factor: 1.5625, note: "Móc khoá vừa (6.3cm)", matCost: Math.round(variableSheetCost * 1.5625 + fixedAccCost) },
@@ -4884,30 +4883,40 @@ function getProductVariantList(product, currentMatCost) {
       { size: '4.0"', factor: 4.0, note: "Standee để bàn (10.2cm)", matCost: Math.round(variableSheetCost * 4.0 + fixedAccCost) },
       { size: '5.0"', factor: 6.25, note: "Standee lớn (12.7cm)", matCost: Math.round(variableSheetCost * 6.25 + fixedAccCost) }
     ];
-  }
-
-  // 3. Nhóm Cuộn DTF / Rolls (Mét dài)
-  if (name.includes("roll") || name.includes("cuộn") || cat.includes("roll") || cat.includes("cuộn")) {
-    return [
+  } else if (name.includes("roll") || name.includes("cuộn") || cat.includes("roll") || cat.includes("cuộn")) {
+    list = [
       { size: '50cm x 1m', factor: 0.5, note: "Nửa mét", matCost: Math.round(currentMatCost * 0.5) },
       { size: '1 Mét dài', factor: 1.0, note: "Khổ chuẩn 1 mét - Mặc định", isDefault: true, matCost: currentMatCost },
       { size: '5 Mét dài', factor: 5.0, note: "Cuộn 5 mét", matCost: Math.round(currentMatCost * 5.0) },
       { size: '10 Mét dài', factor: 10.0, note: "Cuộn 10 mét", matCost: Math.round(currentMatCost * 10.0) },
       { size: '50 Mét (Cuộn)', factor: 50.0, note: "Nguyên cuộn 50m", matCost: Math.round(currentMatCost * 50.0) }
     ];
+  } else {
+    list = [
+      { size: 'Size S / Nhỏ', factor: 0.9, note: "Kích cỡ nhỏ", matCost: Math.round(currentMatCost * 0.9) },
+      { size: 'Tiêu chuẩn', factor: 1.0, note: "Kích thước chuẩn - Mặc định", isDefault: true, matCost: currentMatCost },
+      { size: 'Size L / Lớn', factor: 1.15, note: "Kích cỡ lớn", matCost: Math.round(currentMatCost * 1.15) },
+      { size: 'Size XL / Đại', factor: 1.3, note: "Kích cỡ đại", matCost: Math.round(currentMatCost * 1.3) }
+    ];
   }
 
-  // 4. Mặc định cho các sản phẩm khác (Áo thun, thêu, nón...)
-  return [
-    { size: 'Size S / Nhỏ', factor: 0.9, note: "Kích cỡ nhỏ", matCost: Math.round(currentMatCost * 0.9) },
-    { size: 'Tiêu chuẩn', factor: 1.0, note: "Kích thước chuẩn - Mặc định", isDefault: true, matCost: currentMatCost },
-    { size: 'Size L / Lớn', factor: 1.15, note: "Kích cỡ lớn", matCost: Math.round(currentMatCost * 1.15) },
-    { size: 'Size XL / Đại', factor: 1.3, note: "Kích cỡ đại", matCost: Math.round(currentMatCost * 1.3) }
-  ];
+  // Bổ sung các kích cỡ tùy chỉnh do người dùng tự tạo thêm
+  if (product.extraVariants && Array.isArray(product.extraVariants)) {
+    product.extraVariants.forEach(ext => {
+      list.push({
+        size: ext.size,
+        note: ext.note || "Kích cỡ tùy chỉnh",
+        matCost: ext.matCost !== undefined ? ext.matCost : currentMatCost,
+        isExtra: true
+      });
+    });
+  }
+
+  return list;
 }
 
 /**
- * Render bảng ma trận giá biến thể tổng hợp dưới chân trang
+ * Render bảng ma trận giá biến thể tổng hợp dưới chân trang (Hỗ trợ chỉnh sửa và lưu giá thực tế)
  */
 function renderVariantPricingMatrix(product, currentMatCost, sharedOpsCost, sharedOpsCostAfter3y, profitPercentage) {
   const container = document.getElementById("variant-matrix-section");
@@ -4933,17 +4942,24 @@ function renderVariantPricingMatrix(product, currentMatCost, sharedOpsCost, shar
     currentSelectedVariantIndex = variants.findIndex(v => v.isDefault) !== -1 ? variants.findIndex(v => v.isDefault) : 0;
   }
 
+  // Đảm bảo object lưu trữ giá tùy chỉnh tồn tại
+  if (!product.customVariants) product.customVariants = {};
+
   // 1. Render Variant Pills
   pillsContainer.innerHTML = "";
   variants.forEach((v, idx) => {
     const isSelected = idx === currentSelectedVariantIndex;
+    const isCustomized = !!product.customVariants[v.size];
     const pill = document.createElement("button");
     pill.type = "button";
     pill.style.cssText = isSelected
       ? "border-radius: 9999px; padding: 0.4rem 0.95rem; font-size: 0.82rem; font-weight: 700; background: #3b82f6; color: #ffffff; border: 1px solid #60a5fa; box-shadow: 0 0 12px rgba(59, 130, 246, 0.5); cursor: pointer; transition: all 0.2s;"
       : "border-radius: 9999px; padding: 0.4rem 0.95rem; font-size: 0.82rem; font-weight: 500; background: rgba(30, 41, 59, 0.7); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.15); cursor: pointer; transition: all 0.2s;";
     
-    pill.innerHTML = `<span>${v.size}</span> ${v.isDefault ? '<span style="font-size: 0.7rem; color: #fbbf24; margin-left: 2px;">★ Chuẩn</span>' : ''}`;
+    let pillHtml = `<span>${v.size}</span>`;
+    if (v.isDefault) pillHtml += ` <span style="font-size: 0.7rem; color: #fbbf24; margin-left: 2px;">★ Chuẩn</span>`;
+    if (isCustomized) pillHtml += ` <span style="font-size: 0.68rem; color: #34d399; margin-left: 3px;" title="Đã có giá tùy chỉnh">✏️</span>`;
+    pill.innerHTML = pillHtml;
     
     pill.addEventListener("click", () => {
       currentSelectedVariantIndex = idx;
@@ -4953,58 +4969,110 @@ function renderVariantPricingMatrix(product, currentMatCost, sharedOpsCost, shar
     pillsContainer.appendChild(pill);
   });
 
-  // 2. Render Variant Pricing Table
+  // 2. Render Variant Pricing Table (Bảng có quyền chỉnh sửa)
   let html = `
     <div style="overflow-x: auto; margin-top: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;">
       <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
         <thead style="background: rgba(15, 23, 42, 0.85); color: #94a3b8; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
           <tr>
             <th style="padding: 0.75rem 0.85rem; min-width: 140px;">Kích cỡ / Quy cách</th>
-            <th style="padding: 0.75rem 0.85rem; min-width: 150px;">Ghi chú ứng dụng</th>
-            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 120px;">NVL Trực Tiếp</th>
-            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 140px;">Vận Hành Chung</th>
-            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 130px; background: rgba(59, 130, 246, 0.08); color: #60a5fa; font-weight: 700;">Tổng Giá Vốn</th>
-            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 140px; background: rgba(16, 185, 129, 0.12); color: #34d399; font-weight: 700;">Giá Bán (+${profitPercentage}%)</th>
-            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 130px; color: #10b981;">Sau 3 năm</th>
+            <th style="padding: 0.75rem 0.85rem; min-width: 130px;">Ghi chú ứng dụng</th>
+            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 130px;">NVL Trực Tiếp (₫)</th>
+            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 120px;">Vận Hành Chung</th>
+            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 120px; background: rgba(59, 130, 246, 0.08); color: #60a5fa; font-weight: 700;">Tổng Giá Vốn</th>
+            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 120px; color: #94a3b8;">Giá Công Thức</th>
+            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 170px; background: rgba(16, 185, 129, 0.12); color: #34d399; font-weight: 700;">💰 GIÁ BÁN THỰC TẾ (₫)</th>
+            <th style="padding: 0.75rem 0.85rem; text-align: right; min-width: 150px;">Lợi Nhuận Thực Tế</th>
+            <th style="padding: 0.75rem 0.85rem; text-align: center; min-width: 70px;">Thao Tác</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="variant-matrix-tbody">
   `;
 
   variants.forEach((v, idx) => {
     const isSelected = idx === currentSelectedVariantIndex;
     const isDefault = v.isDefault;
+    const isExtra = !!v.isExtra;
 
-    const variantMat = v.matCost;
-    const variantTotalCost = Math.round(variantMat + sharedOpsCost);
-    const variantSellerPrice = Math.round(variantTotalCost * (1 + profitPercentage / 100));
-    const variantTotalCostAfter3y = Math.round(variantMat + sharedOpsCostAfter3y);
-    const variantSellerPriceAfter3y = Math.round(variantTotalCostAfter3y * (1 + profitPercentage / 100));
+    const customData = product.customVariants[v.size] || {};
+    const hasCustomMat = customData.actualMatCost !== undefined && customData.actualMatCost !== null && !isNaN(customData.actualMatCost);
+    const hasCustomPrice = customData.actualPrice !== undefined && customData.actualPrice !== null && !isNaN(customData.actualPrice);
+
+    // Tính toán chi phí biến thể
+    const effectiveMat = hasCustomMat ? customData.actualMatCost : v.matCost;
+    const variantTotalCost = Math.round(effectiveMat + sharedOpsCost);
+    const formulaSellerPrice = Math.round(variantTotalCost * (1 + profitPercentage / 100));
+
+    // Giá bán thực tế chốt bán (nếu chưa chỉnh thì lấy theo công thức)
+    const effectiveSellerPrice = hasCustomPrice ? customData.actualPrice : formulaSellerPrice;
+    const profit = effectiveSellerPrice - variantTotalCost;
+    const marginPct = effectiveSellerPrice > 0 ? Math.round((profit / effectiveSellerPrice) * 100) : 0;
 
     const rowBg = isSelected 
       ? 'background: rgba(59, 130, 246, 0.18); border-left: 3px solid #3b82f6;' 
       : (isDefault ? 'background: rgba(245, 158, 11, 0.05);' : 'background: transparent;');
 
+    const profitBadgeHtml = profit >= 0
+      ? `<span style="color: #34d399; font-weight: 600;">+${formatVND(profit)}</span> <span style="font-size: 0.74rem; color: #6ee7b7; background: rgba(16, 185, 129, 0.2); padding: 1px 5px; border-radius: 3px; font-weight: 600;">+${marginPct}%</span>`
+      : `<span style="color: #f87171; font-weight: 700;">⚠️ Lỗ ${formatVND(profit)}</span> <span style="font-size: 0.74rem; color: #fca5a5; background: rgba(239, 68, 68, 0.2); padding: 1px 5px; border-radius: 3px; font-weight: 600;">${marginPct}%</span>`;
+
     html += `
-      <tr style="${rowBg} border-bottom: 1px solid rgba(255, 255, 255, 0.06); cursor: pointer; transition: background 0.15s;" onclick="window.setMatrixVariantIndex(${idx})">
-        <td style="padding: 0.75rem 0.85rem;">
-          <div style="display: flex; align-items: center; gap: 0.4rem;">
-            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.82rem; background: ${isDefault ? 'rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);' : 'rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3);'}">${v.size}</span>
+      <tr class="variant-matrix-row" data-size="${v.size}" data-idx="${idx}" style="${rowBg} border-bottom: 1px solid rgba(255, 255, 255, 0.06); transition: background 0.15s;">
+        <td style="padding: 0.65rem 0.85rem;" onclick="window.setMatrixVariantIndex(${idx})">
+          <div style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.82rem; background: ${isDefault ? 'rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);' : (isExtra ? 'rgba(168, 85, 247, 0.25); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);' : 'rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3);')}">${v.size}</span>
             ${isDefault ? '<span style="font-size: 0.65rem; background: #d97706; color: #ffffff; padding: 1px 5px; border-radius: 3px; font-weight: 600;">MẶC ĐỊNH</span>' : ''}
-            ${isSelected ? '<span style="color: #60a5fa; font-size: 0.85rem; font-weight: bold;">✔ Đang xem</span>' : ''}
+            ${isExtra ? '<span style="font-size: 0.65rem; background: #7e22ce; color: #ffffff; padding: 1px 5px; border-radius: 3px; font-weight: 600;">TỰ THÊM</span>' : ''}
+            ${hasCustomPrice || hasCustomMat ? '<span style="font-size: 0.65rem; background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 1px 4px; border-radius: 3px;" title="Giá thực tế đã được chỉnh sửa">ĐÃ SỬA</span>' : ''}
+            ${isSelected ? '<span style="color: #60a5fa; font-size: 0.85rem; font-weight: bold;">✔</span>' : ''}
           </div>
         </td>
-        <td style="padding: 0.75rem 0.85rem; color: #94a3b8; font-size: 0.8rem;">${v.note || ''}</td>
-        <td style="padding: 0.75rem 0.85rem; text-align: right; color: #cbd5e1; font-family: monospace;">${formatVND(variantMat)}</td>
-        <td style="padding: 0.75rem 0.85rem; text-align: right; color: #94a3b8; font-family: monospace;">${formatVND(sharedOpsCost)}</td>
-        <td style="padding: 0.75rem 0.85rem; text-align: right; font-family: monospace; background: rgba(59, 130, 246, 0.08); font-weight: 700; color: #93c5fd; font-size: 0.9rem;">
+        <td style="padding: 0.65rem 0.85rem; color: #94a3b8; font-size: 0.8rem;">${v.note || ''}</td>
+        
+        <!-- Cột 1: NVL Trực Tiếp (Có thể chỉnh sửa số tiền) -->
+        <td style="padding: 0.65rem 0.85rem; text-align: right;">
+          <input type="text" class="variant-mat-input form-control-sm" data-size="${v.size}" 
+            value="${hasCustomMat ? customData.actualMatCost.toLocaleString('vi-VN') : ''}" 
+            placeholder="${v.matCost.toLocaleString('vi-VN')}" 
+            title="Định mức NVL thực tế (bỏ trống để dùng theo công thức ${formatVND(v.matCost)})"
+            style="width: 95px; text-align: right; font-family: monospace; font-size: 0.82rem; background: rgba(15, 23, 42, 0.7); color: #cbd5e1; border: 1px solid ${hasCustomMat ? '#3b82f6' : 'rgba(255, 255, 255, 0.2)'}; border-radius: 4px; padding: 3px 6px;">
+        </td>
+
+        <!-- Cột 2: Vận Hành Chung (Cố định từ Phần 1) -->
+        <td style="padding: 0.65rem 0.85rem; text-align: right; color: #94a3b8; font-family: monospace;" title="Nhân công + Quản lý phân bổ + Khấu hao máy (Cố định cho mọi size)">
+          ${formatVND(sharedOpsCost)}
+        </td>
+
+        <!-- Cột 3: Tổng Giá Vốn -->
+        <td class="variant-cost-cell" style="padding: 0.65rem 0.85rem; text-align: right; font-family: monospace; background: rgba(59, 130, 246, 0.08); font-weight: 700; color: #93c5fd; font-size: 0.9rem;">
           ${formatVND(variantTotalCost)}
         </td>
-        <td style="padding: 0.75rem 0.85rem; text-align: right; font-family: monospace; background: rgba(16, 185, 129, 0.15); font-weight: 700; color: #34d399; font-size: 0.95rem;">
-          ${formatVND(variantSellerPrice)}
+
+        <!-- Cột 4: Giá Bán Theo Công Thức (+% profit) -->
+        <td class="variant-formula-cell" style="padding: 0.65rem 0.85rem; text-align: right; font-family: monospace; color: #64748b; font-size: 0.82rem;">
+          ${formatVND(formulaSellerPrice)}
         </td>
-        <td style="padding: 0.75rem 0.85rem; text-align: right; font-family: monospace; color: #6ee7b7; font-size: 0.82rem;">
-          ${formatVND(variantSellerPriceAfter3y)}
+
+        <!-- Cột 5: GIÁ BÁN THỰC TẾ (Người dùng có thể gõ giá thực tế) -->
+        <td style="padding: 0.65rem 0.85rem; text-align: right; background: rgba(16, 185, 129, 0.08);">
+          <input type="text" class="variant-price-input form-control-sm" data-size="${v.size}" 
+            value="${hasCustomPrice ? customData.actualPrice.toLocaleString('vi-VN') : ''}" 
+            placeholder="${formulaSellerPrice.toLocaleString('vi-VN')}" 
+            title="Giá bán thực tế niêm yết (bỏ trống để lấy theo giá công thức ${formatVND(formulaSellerPrice)})"
+            style="width: 120px; text-align: right; font-family: monospace; font-size: 0.88rem; font-weight: bold; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #10b981; border-radius: 4px; padding: 4px 8px; box-shadow: 0 0 8px rgba(16, 185, 129, 0.25);">
+        </td>
+
+        <!-- Cột 6: Lợi Nhuận Thực Tế & Biên Lợi Nhuận -->
+        <td class="variant-profit-cell" style="padding: 0.65rem 0.85rem; text-align: right; font-family: monospace;">
+          ${profitBadgeHtml}
+        </td>
+
+        <!-- Cột 7: Thao Tác (Khôi phục / Xóa) -->
+        <td style="padding: 0.65rem 0.85rem; text-align: center;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+            ${(hasCustomPrice || hasCustomMat) ? `<button type="button" class="btn-reset-variant" data-size="${v.size}" title="Khôi phục kích thước này về giá tính theo công thức" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #94a3b8; border-radius: 4px; padding: 2px 7px; font-size: 0.75rem; cursor: pointer;">↺</button>` : ''}
+            ${isExtra ? `<button type="button" class="btn-delete-variant" data-size="${v.size}" title="Xóa kích thước tùy chỉnh này" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 4px; padding: 2px 7px; font-size: 0.75rem; cursor: pointer;">🗑️</button>` : ''}
+          </div>
         </td>
       </tr>
     `;
@@ -5014,13 +5082,181 @@ function renderVariantPricingMatrix(product, currentMatCost, sharedOpsCost, shar
         </tbody>
       </table>
     </div>
-    <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-      <span>💡 <em>Chi phí Vận Hành Chung (<strong>${formatVND(sharedOpsCost)}</strong>) bao gồm Nhân công trực tiếp + Định phí quản lý phân bổ + Khấu hao máy móc, được giữ nguyên cố định cho tất cả các size.</em></span>
-      <span style="color: #34d399; font-weight: 600;">Tỷ suất LN: +${profitPercentage}%</span>
+
+    <!-- Thanh thao tác bổ sung kích thước và hướng dẫn -->
+    <div style="margin-top: 0.85rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <button type="button" id="btn-add-variant-size" class="btn btn-sm" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; border-radius: 6px; padding: 0.35rem 0.85rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+          <span>➕</span> Thêm kích thước mới
+        </button>
+        ${Object.keys(product.customVariants).length > 0 ? `
+          <button type="button" id="btn-reset-all-variants" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 6px; padding: 0.35rem 0.85rem; font-size: 0.8rem; cursor: pointer;">
+            <span>↺</span> Khôi phục tất cả về công thức
+          </button>
+        ` : ''}
+      </div>
+
+      <div style="font-size: 0.78rem; color: #94a3b8; display: flex; align-items: center; gap: 0.5rem;">
+        <span>💡 <em>Gõ trực tiếp vào ô <strong style="color: #34d399;">GIÁ BÁN THỰC TẾ</strong> để chốt giá niêm yết. Dữ liệu tự động lưu vĩnh viễn khi bạn gõ.</em></span>
+      </div>
     </div>
   `;
 
   tableContainer.innerHTML = html;
+
+  // 3. Gắn sự kiện nhập liệu tự động lưu và định dạng tiền tệ
+  const tbody = document.getElementById("variant-matrix-tbody");
+  if (tbody) {
+    const rows = tbody.querySelectorAll(".variant-matrix-row");
+
+    rows.forEach(row => {
+      const size = row.dataset.size;
+      const v = variants.find(x => x.size === size);
+      if (!v) return;
+
+      const matInput = row.querySelector(".variant-mat-input");
+      const priceInput = row.querySelector(".variant-price-input");
+      const costCell = row.querySelector(".variant-cost-cell");
+      const formulaCell = row.querySelector(".variant-formula-cell");
+      const profitCell = row.querySelector(".variant-profit-cell");
+
+      // Auto format thousand dots khi gõ
+      if (matInput) maskCurrencyInput(matInput);
+      if (priceInput) maskCurrencyInput(priceInput);
+
+      const onRowChange = () => {
+        const rawMat = matInput ? matInput.value.trim() : "";
+        const rawPrice = priceInput ? priceInput.value.trim() : "";
+
+        const customMat = rawMat ? parseCurrencyInput(rawMat) : null;
+        const customPrice = rawPrice ? parseCurrencyInput(rawPrice) : null;
+
+        if (!product.customVariants) product.customVariants = {};
+        if (!product.customVariants[size]) product.customVariants[size] = {};
+
+        if (customMat !== null && customMat > 0) {
+          product.customVariants[size].actualMatCost = customMat;
+          matInput.style.borderColor = "#3b82f6";
+        } else {
+          delete product.customVariants[size].actualMatCost;
+          if (matInput) matInput.style.borderColor = "rgba(255, 255, 255, 0.2)";
+        }
+
+        if (customPrice !== null && customPrice > 0) {
+          product.customVariants[size].actualPrice = customPrice;
+        } else {
+          delete product.customVariants[size].actualPrice;
+        }
+
+        if (Object.keys(product.customVariants[size]).length === 0) {
+          delete product.customVariants[size];
+        }
+
+        // Tự động tính toán lại các ô trên dòng này
+        const effectiveMat = customMat !== null ? customMat : v.matCost;
+        const variantTotalCost = Math.round(effectiveMat + sharedOpsCost);
+        const formulaSellerPrice = Math.round(variantTotalCost * (1 + profitPercentage / 100));
+        const effectiveSellerPrice = customPrice !== null ? customPrice : formulaSellerPrice;
+        const profit = effectiveSellerPrice - variantTotalCost;
+        const marginPct = effectiveSellerPrice > 0 ? Math.round((profit / effectiveSellerPrice) * 100) : 0;
+
+        if (costCell) costCell.textContent = formatVND(variantTotalCost);
+        if (formulaCell) formulaCell.textContent = formatVND(formulaSellerPrice);
+        if (priceInput && !rawPrice) priceInput.placeholder = formulaSellerPrice.toLocaleString('vi-VN');
+
+        if (profitCell) {
+          if (profit >= 0) {
+            profitCell.innerHTML = `<span style="color: #34d399; font-weight: 600;">+${formatVND(profit)}</span> <span style="font-size: 0.74rem; color: #6ee7b7; background: rgba(16, 185, 129, 0.2); padding: 1px 5px; border-radius: 3px; font-weight: 600;">+${marginPct}%</span>`;
+          } else {
+            profitCell.innerHTML = `<span style="color: #f87171; font-weight: 700;">⚠️ Lỗ ${formatVND(profit)}</span> <span style="font-size: 0.74rem; color: #fca5a5; background: rgba(239, 68, 68, 0.2); padding: 1px 5px; border-radius: 3px; font-weight: 600;">${marginPct}%</span>`;
+          }
+        }
+
+        // Lưu ngay vào localStorage
+        state.saveProducts();
+      };
+
+      if (matInput) {
+        matInput.addEventListener("input", onRowChange);
+        matInput.addEventListener("change", onRowChange);
+      }
+      if (priceInput) {
+        priceInput.addEventListener("input", onRowChange);
+        priceInput.addEventListener("change", onRowChange);
+      }
+
+      // Nút Reset từng dòng
+      const resetBtn = row.querySelector(".btn-reset-variant");
+      if (resetBtn) {
+        resetBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (product.customVariants && product.customVariants[size]) {
+            delete product.customVariants[size];
+            state.saveProducts();
+            renderVariantPricingMatrix(product, currentMatCost, sharedOpsCost, sharedOpsCostAfter3y, profitPercentage);
+          }
+        });
+      }
+
+      // Nút Xóa kích thước tự thêm
+      const deleteBtn = row.querySelector(".btn-delete-variant");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (confirm(`Bạn có chắc muốn xóa kích thước tùy chỉnh "${size}"?`)) {
+            if (product.extraVariants) {
+              product.extraVariants = product.extraVariants.filter(x => x.size !== size);
+            }
+            if (product.customVariants) {
+              delete product.customVariants[size];
+            }
+            state.saveProducts();
+            renderVariantPricingMatrix(product, currentMatCost, sharedOpsCost, sharedOpsCostAfter3y, profitPercentage);
+          }
+        });
+      }
+    });
+  }
+
+  // 4. Gắn sự kiện nút "+ Thêm kích thước mới"
+  const btnAddVariant = document.getElementById("btn-add-variant-size");
+  if (btnAddVariant) {
+    btnAddVariant.addEventListener("click", () => {
+      const sizeInput = prompt("Nhập tên kích thước mới (Ví dụ: 3.5\", 6.0\", Standee A5, v.v.):");
+      if (!sizeInput || !sizeInput.trim()) return;
+
+      const cleanSize = sizeInput.trim();
+      const existing = variants.find(x => x.size.toLowerCase() === cleanSize.toLowerCase());
+      if (existing) {
+        alert(`Kích thước "${cleanSize}" đã tồn tại trong bảng!`);
+        return;
+      }
+
+      const noteInput = prompt(`Nhập ghi chú ứng dụng cho kích thước "${cleanSize}" (Ví dụ: Tem trung, Khổ lỡ, v.v.):`, "Kích cỡ tùy chỉnh");
+
+      if (!product.extraVariants) product.extraVariants = [];
+      product.extraVariants.push({
+        size: cleanSize,
+        note: noteInput ? noteInput.trim() : "Kích cỡ tùy chỉnh",
+        matCost: currentMatCost
+      });
+
+      state.saveProducts();
+      renderVariantPricingMatrix(product, currentMatCost, sharedOpsCost, sharedOpsCostAfter3y, profitPercentage);
+    });
+  }
+
+  // 5. Gắn sự kiện nút "Khôi phục tất cả về công thức"
+  const btnResetAll = document.getElementById("btn-reset-all-variants");
+  if (btnResetAll) {
+    btnResetAll.addEventListener("click", () => {
+      if (confirm("Bạn có chắc chắn muốn khôi phục toàn bộ các mức giá đã sửa về giá tính theo công thức ban đầu?")) {
+        product.customVariants = {};
+        state.saveProducts();
+        renderVariantPricingMatrix(product, currentMatCost, sharedOpsCost, sharedOpsCostAfter3y, profitPercentage);
+      }
+    });
+  }
 }
 
 window.setMatrixVariantIndex = function(idx) {
